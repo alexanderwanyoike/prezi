@@ -31,6 +31,8 @@ export function useApplicationActions({
     });
   }
   function editor(code?: boolean): void {
+    setConnectionOpen(false);
+    setUpdatesOpen(false);
     setPresenting(false);
     if (code !== undefined) setCodeVisible(code);
     handleDesktop(window.prezi.fullscreen(false));
@@ -93,6 +95,8 @@ export function useApplicationActions({
       setConnectionOpen(true);
     },
     present: () => {
+      setConnectionOpen(false);
+      setUpdatesOpen(false);
       setAppearanceOpen(false);
       setPresenting(true);
     },
