@@ -1,4 +1,5 @@
 import { _electron as electron, expect, test } from '@playwright/test';
+import { z } from 'zod';
 import { resolve } from 'node:path';
 import { sceneJobResultSchema } from '../../src/shared/scene-jobs';
 import { connectDesktopMcp } from './mcp-client';
@@ -25,7 +26,7 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
       }),
     );
     const page = await desktop.firstWindow();
-    await expect(page.getByRole('button',{name:'Present',exact:true})).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     const initial = await page.evaluate(() => window.prezi.snapshot());
     if (!initial.ok) throw Error(initial.error.message);
     const slide = initial.value.project.slides[0];
@@ -37,11 +38,11 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
         headline: { type: 'text', label: 'Heading', default: 'Initial custom scene' },
         size: { type: 'number', label: 'Type size', default: 80, min: 20, max: 160 },
       },
-      layers: [{ id: 'heading', label: 'Heading', property: 'headline' }],
+      layers: [{ id: 'hero', label: 'Heading', property: 'headline' }],
       source: {
         entry: 'Scene.tsx',
         files: {
-          'Scene.tsx': `import {AbsoluteFill,useCurrentFrame} from 'remotion';import {Layer,Text} from 'prezi';import type {SceneProps} from 'prezi';export default function Scene({props}:SceneProps){return <AbsoluteFill style={{background:'#101513',color:'#edf2ec',padding:128,fontSize:props.size}}><Layer id="heading"><Text property="headline"/></Layer><span id="frame">{useCurrentFrame()}</span></AbsoluteFill>;}`,
+          'Scene.tsx': `import {AbsoluteFill,useCurrentFrame} from 'remotion';import {Layer,Text} from 'prezi';import type {SceneProps} from 'prezi';export default function Scene({props}:SceneProps){return <AbsoluteFill style={{background:'#101513',color:'#edf2ec',padding:128,fontSize:props.size}}><Layer id="hero"><Text property="headline"/></Layer><span id="frame">{useCurrentFrame()}</span></AbsoluteFill>;}`,
         },
       },
     };
@@ -59,11 +60,13 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
     await expect
       .poll(
         async () => {
-          const job = sceneJobResultSchema.parse(
-            (await client.callTool({ name: 'read_job', arguments: { jobId: 'viewer-source' } }))
-              .structuredContent?.result,
-          );
-          return job.ok ? job.value.state : 'failed';
+          const job = z
+            .object({ result: sceneJobResultSchema })
+            .parse(
+              (await client.callTool({ name: 'read_job', arguments: { jobId: 'viewer-source' } }))
+                .structuredContent,
+            );
+          return job.result.ok ? job.result.value.state : 'failed';
         },
         { timeout: 15000 },
       )
@@ -81,7 +84,7 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
     ).toMatchObject({
       result: {
         ok: true,
-        value: { selection: { slideId: slide.id, elementId: `${slide.id}:heading` } },
+        value: { selection: { slideId: slide.id, elementId: `${slide.id}:hero` } },
       },
     });
     await client.callTool({
@@ -112,7 +115,8 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     const stage = page.getByRole('region', { name: 'Presentation stage' });
     await expect(stage).toHaveAttribute('data-busy', 'false');
-    await child.getByText('Initial custom scene', { exact: true }).click();
+    await expect(child.getByText('Initial custom scene', { exact: true })).toBeVisible();
+    await page.locator('iframe[title="Custom scene"]').click({ position: { x: 20, y: 20 } });
     await page.keyboard.press('Space');
     await expect(stage).toHaveAttribute('data-slide', '2');
     await page.keyboard.press('Escape');
