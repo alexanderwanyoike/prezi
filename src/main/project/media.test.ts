@@ -129,3 +129,31 @@ test('updates media properties atomically without replacing asset identity', asy
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('retries the same media registration once even after its source is removed', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-media-retry-'));
+  const source = join(directory, 'image.png');
+  await writeFile(source, Buffer.from('image fixture'));
+  const owner = new ProjectOwner();
+  try {
+    const slideId = owner.snapshot().project.slides[0]?.id;
+    if (!slideId) throw new Error('Missing slide');
+    const [first, concurrent] = await Promise.all([
+      owner.importMedia(source, slideId, 0, 'register'),
+      owner.importMedia(source, slideId, 0, 'register'),
+    ]);
+    expect(first.ok).toBe(true);
+    expect(concurrent).toEqual(first);
+    await rm(source);
+    expect(await owner.importMedia(source, slideId, 0, 'register')).toEqual(first);
+    expect(owner.snapshot().revision).toBe(1);
+    expect(owner.snapshot().undoLabel).toBe('Agent: Import media');
+    expect(await owner.importMedia(source, slideId, 1, 'register')).toMatchObject({
+      ok: false,
+      error: { code: 'REQUEST_REUSED' },
+    });
+  } finally {
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
