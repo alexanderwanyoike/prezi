@@ -1,5 +1,6 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 import type { Slide } from '../../shared/project';
+import { SceneMedia } from './SceneMedia';
 import { SceneText } from './SceneText';
 import type { SceneEditing } from './SceneText';
 
@@ -23,7 +24,7 @@ export function SlideScene({
     extrapolateRight: 'clamp',
   });
   const entrance = reveal === 0 ? progress : 1;
-  let headingSize = slide.layout === 'title' ? 116 : 76;
+  let headingSize = slide.layout === 'title' && !slide.media ? 116 : 76;
   if (slide.title.length > 75) headingSize = 80;
   if (slide.title.length > 120) headingSize = 64;
   const revealSize = Math.min(37, Math.floor(390 / Math.max(1, slide.reveals.length)));
@@ -58,7 +59,7 @@ export function SlideScene({
         style={{
           opacity: entrance,
           transform: `translateY(${((1 - entrance) * 14).toString()}px)`,
-          maxWidth: 1550,
+          maxWidth: slide.media ? 760 : 1550,
         }}
       >
         <SceneText
@@ -122,6 +123,7 @@ export function SlideScene({
           </div>
         )}
       </div>
+      {slide.media && <SceneMedia key={slide.media.id} media={slide.media} />}
       <div
         style={{
           display: 'flex',

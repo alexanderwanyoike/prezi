@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   FilePlus2,
+  ImagePlus,
   FolderOpen,
   LayoutPanelTop,
   Palette,
@@ -20,7 +21,8 @@ import { AppearancePanel } from './AppearancePanel';
 import type { TextField } from '../shared/text-scene';
 
 export function App(): React.JSX.Element {
-  const { snapshot, error, busy, edit, undo, redo, save, open, newProject } = useProject();
+  const { snapshot, error, busy, edit, undo, redo, save, open, newProject, importMedia } =
+    useProject();
   const [selectedField, setSelectedField] = useState<TextField | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -96,6 +98,16 @@ export function App(): React.JSX.Element {
             }}
           >
             Save as
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              importMedia(slide.id);
+            }}
+          >
+            <ImagePlus size={15} />
+            Import media
           </button>
           <span className="toolbar-divider" />
           <button

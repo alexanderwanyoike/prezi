@@ -57,6 +57,9 @@ export function useProject() {
     );
   }
   return {
+    importMedia: (slideId: string) => {
+      dispatch(() => window.prezi.importMedia(slideId));
+    },
     newProject: () => {
       dispatch(() => window.prezi.newProject());
     },

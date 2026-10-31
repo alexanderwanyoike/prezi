@@ -45,7 +45,7 @@ test('imports an image into the scene and serves bounded ranges without exposing
     }, url);
     expect(range).toEqual({
       status: 206,
-      range: `bytes 0-7/${bytes.length}`,
+      range: `bytes 0-7/${bytes.length.toString()}`,
       bytes: [...bytes.subarray(0, 8)],
     });
     await page.getByRole('button', { name: 'Undo', exact: true }).click();

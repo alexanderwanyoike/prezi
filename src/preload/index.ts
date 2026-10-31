@@ -14,6 +14,7 @@ async function request(channel: string, input?: unknown) {
 }
 
 const bridge: DesktopBridge = {
+  importMedia: (slideId) => request('project:importMedia', slideId),
   async fullscreen(enabled) {
     try {
       const response: unknown = await ipcRenderer.invoke('presentation:fullscreen', enabled);

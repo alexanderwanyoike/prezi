@@ -29,6 +29,7 @@ export const snapshotResultSchema = z.union([
   }),
 ]);
 export interface DesktopBridge {
+  importMedia: (slideId: string) => Promise<Result<ProjectSnapshot>>;
   fullscreen: (enabled: boolean) => Promise<Result<boolean>>;
   newProject: () => Promise<Result<ProjectSnapshot>>;
   open: () => Promise<Result<ProjectSnapshot>>;
