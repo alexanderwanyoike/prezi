@@ -19,6 +19,13 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
     if (!slide) return failure('NOT_FOUND', 'The slide no longer exists.');
     const slides = [...project.slides];
     switch (operation.type) {
+      case 'updateSceneProperties':
+        if (!slide.scene) return failure('NOT_FOUND', 'This slide has no custom scene.');
+        slides[index] = {
+          ...slide,
+          scene: { ...slide.scene, properties: { ...slide.scene.properties, ...operation.patch } },
+        };
+        break;
       case 'updateSlide': {
         const updated = slideSchema.safeParse({ ...slide, ...operation.patch });
         if (!updated.success) return failure('INVALID_INPUT', 'The slide properties are invalid.');

@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { sceneDefinitionSchema, sceneInstanceSchema, validSceneValues } from './scene-definition';
+import {
+  sceneDefinitionSchema,
+  sceneInstanceSchema,
+  sceneValuesSchema,
+  validSceneValues,
+} from './scene-definition';
 import { textScenePropsSchema } from './text-scene';
 import { mediaPropertiesSchema, mediaSchema } from './media';
 
@@ -60,6 +65,11 @@ export const editRequestSchema = z.object({
   operations: z
     .array(
       z.discriminatedUnion('type', [
+        z.object({
+          type: z.literal('updateSceneProperties'),
+          slideId: z.uuid(),
+          patch: sceneValuesSchema,
+        }),
         z.object({
           type: z.literal('updateSlide'),
           slideId: z.uuid(),
