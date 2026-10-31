@@ -44,6 +44,10 @@ test('retains code drafts in portable saves and applies only validated source to
     await expect(code).toHaveText(
       'export default function Scene(){return <div>Saved draft</div>;}',
     );
+    await page.getByRole('button', { name: /^Slide 2:/ }).click();
+    await expect(code).not.toContainText('Saved draft');
+    await page.getByRole('button', { name: /^Slide 1:/ }).click();
+    await expect(code).toContainText('Saved draft');
     await code.fill('export default function Scene(){return <div>;}');
     await page.getByRole('button', { name: 'Apply scene code', exact: true }).click();
     await expect(page.getByRole('alert')).toContainText('Scene.tsx');
