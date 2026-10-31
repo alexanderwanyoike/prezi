@@ -23,7 +23,7 @@ it('saves an edited deck and reopens exactly the same content with a clean histo
         },
       ],
     });
-    const project = owner.snapshot().project;
+    const { project } = owner.snapshot();
     expect((await owner.save(path)).ok).toBe(true);
     expect(owner.snapshot().dirty).toBe(false);
     expect(JSON.parse(await readFile(path, 'utf8'))).toEqual(project);
@@ -43,4 +43,17 @@ it('saves an edited deck and reopens exactly the same content with a clean histo
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+it('creates a fresh unsaved deck without carrying history or permitting a stale reset', () => {
+  const owner = new ProjectOwner();
+  const original = owner.snapshot();
+  expect(owner.reset(0).ok).toBe(true);
+  const fresh = owner.snapshot();
+  expect(fresh.project.id).not.toBe(original.project.id);
+  expect(fresh.project.name).toBe('Untitled presentation');
+  expect(fresh.project.slides).toHaveLength(1);
+  expect(fresh).toMatchObject({ filePath: null, canUndo: false, canRedo: false });
+  expect(owner.reset(0)).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+  expect(owner.snapshot()).toEqual(fresh);
 });
