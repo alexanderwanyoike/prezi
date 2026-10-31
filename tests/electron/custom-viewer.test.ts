@@ -37,12 +37,13 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
       fields: {
         headline: { type: 'text', label: 'Heading', default: 'Initial custom scene' },
         size: { type: 'number', label: 'Type size', default: 80, min: 20, max: 160 },
+        broken: { type: 'boolean', label: 'Break scene', default: false },
       },
       layers: [{ id: 'hero', label: 'Heading', property: 'headline' }],
       source: {
         entry: 'Scene.tsx',
         files: {
-          'Scene.tsx': `import {AbsoluteFill,useCurrentFrame} from 'remotion';import {Layer,Text} from 'prezi';import type {SceneProps} from 'prezi';export default function Scene({props}:SceneProps){return <AbsoluteFill style={{background:'#101513',color:'#edf2ec',padding:128,fontSize:props.size}}><Layer id="hero"><Text property="headline"/></Layer><span id="frame">{useCurrentFrame()}</span></AbsoluteFill>;}`,
+          'Scene.tsx': `import {AbsoluteFill,useCurrentFrame} from 'remotion';import {Layer,Text} from 'prezi';import type {SceneProps} from 'prezi';export default function Scene({props}:SceneProps){if(props.broken)throw new Error("Scene needs Undo");return <AbsoluteFill style={{background:'#101513',color:'#edf2ec',padding:128,fontSize:props.size}}><Layer id="hero"><Text property="headline"/></Layer><span id="frame">{useCurrentFrame()}</span></AbsoluteFill>;}`,
         },
       },
     };
@@ -111,6 +112,18 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
     await expect(page.locator('iframe')).toHaveCount(0);
     await page.getByRole('button', { name: 'Redo', exact: true }).click();
+    await expect(heading).toHaveText('Initial custom scene');
+    await client.callTool({
+      name: 'edit_project',
+      arguments: {
+        requestId: 'break-scene',
+        expectedRevision: 7,
+        label: 'An incorrect property edit',
+        operations: [{ type: 'updateSceneProperties', slideId: slide.id, patch: { broken: true } }],
+      },
+    });
+    await expect(page.getByRole('alert').filter({ hasText: 'Scene needs Undo' })).toBeVisible();
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
     await expect(heading).toHaveText('Initial custom scene');
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     const stage = page.getByRole('region', { name: 'Presentation stage' });
