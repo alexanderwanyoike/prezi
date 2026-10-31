@@ -76,6 +76,10 @@ Fullscreen contains only the stage and any letterboxing. In windowed presentatio
 
 Choose **View > Agent connection** to copy a private Streamable HTTP configuration. The agent and editor share content, revisions and undo history. See [connection instructions and tools](docs/mcp.md).
 
+## Desktop updates
+
+Choose **View > Application updates**. Installed Windows/Linux builds offer explicit download, verification and restart; the app protects unsaved work and reopens the saved deck afterward. Other installed formats use the stable release page. Development builds explain that updates require installation. Installer/feed delivery follows separately; see [runtime verification and current limits](docs/verification/desktop-updates.md).
+
 ## Checks
 
 ```sh

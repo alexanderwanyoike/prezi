@@ -29,6 +29,7 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 - [ ] Code/media/process layouts and the animated Vibez workflow example.
 - [ ] Font import, provenance and missing-asset recovery.
 - [ ] Bounded preview capture, job status and static thumbnails.
+- [x] Update runtime: explicit download/progress, protected restart and saved-deck recovery.
 - [ ] Desktop updates: release feeds, explicit download/restart, unsaved-change protection and platform installer/update metadata.
 - [ ] Desktop packaging, memory/CPU verification and an OBS or ClipForge recording rehearsal.
 

@@ -53,3 +53,7 @@ The styled application menu uses Electron's documented `before-input-event` and 
 ## Model Context Protocol SDK
 
 The official MCP server/client 2.4.0 and Node adapter 2.1.2 provide the protocol and Streamable HTTP transport. Upstream identifies these packages as Apache-2.0 with existing MIT contributions; its exact licence is retained at [licenses/mcp-sdk.txt](licenses/mcp-sdk.txt). The official stateless Node example informs lifecycle, loopback binding and Host/Origin guards. Auto Digger's authenticated local connection pattern informs private credentials and client configuration. No reference source was copied.
+
+## Desktop updates
+
+Electron-updater 6.8.11 and electron-builder 26.18.0 use the MIT licence; the runtime licence is retained in [licenses/electron-updater.txt](licenses/electron-updater.txt). semver 7.7.3 uses ISC. Official v26 updater APIs inform download and checksum verification. Muzo's candidate validation/staged replacement and Auto Digger's will-quit restart inform the application design. No reference source was copied or modified; their MIT notices are retained above.
