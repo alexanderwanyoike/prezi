@@ -8,7 +8,7 @@ export async function runCompiler(
   source: SceneSource,
   signal: AbortSignal,
   directory = join(process.cwd(), 'out/compiler'),
-  _fields: SceneCandidate['fields'] = {},
+  fields: SceneCandidate['fields'] = {},
 ): Promise<Compilation> {
   const failed = (message: string): Compilation => ({
     ok: false,
@@ -108,7 +108,7 @@ export async function runCompiler(
         );
       }
     });
-    child.stdin.end(JSON.stringify(source));
+    child.stdin.end(JSON.stringify({ ...source, fields }));
     if (signal.aborted) abort();
   });
 }

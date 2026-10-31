@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { stop } from 'esbuild';
 import { z } from 'zod';
 import { sceneSourceSchema } from '../../shared/custom-scene';
+import { sceneCandidateSchema } from '../../shared/scene-definition';
 import { compileScene } from './compile';
 
 async function resourceUsage() {
@@ -39,14 +40,17 @@ async function resourceUsage() {
 }
 async function run(): Promise<void> {
   const input = readFileSync(0, 'utf8');
-  if (Buffer.byteLength(input) > 1100000) throw new Error('Source input exceeds its budget.');
+  if (Buffer.byteLength(input) > 2 * 1024 * 1024)
+    throw new Error('Source input exceeds its budget.');
   const raw: unknown = JSON.parse(input);
-  const source = sceneSourceSchema.parse(raw);
+  const { fields, ...source } = sceneSourceSchema
+    .extend({ fields: sceneCandidateSchema.shape.fields.default({}) })
+    .parse(raw);
   const rawTypes: unknown = JSON.parse(
     await readFile(join(dirname(process.argv[1] ?? '.'), 'types.json'), 'utf8'),
   );
   const libraries = z.record(z.string(), z.string()).parse(rawTypes);
-  const result = await compileScene(source, libraries);
+  const result = await compileScene(source, libraries, fields);
   await stop();
   if (result.ok) result.value.resources = await resourceUsage();
   process.stdout.write(JSON.stringify(result));
