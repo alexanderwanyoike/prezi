@@ -46,7 +46,7 @@ export async function compileScene(
       bundle: true,
       write: false,
       platform: 'browser',
-      format: 'cjs',
+      format: 'esm',
       jsx: 'automatic',
       target: 'es2022',
       logLevel: 'silent',
