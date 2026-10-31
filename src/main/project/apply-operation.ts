@@ -19,7 +19,7 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
     const slide = project.slides[index];
     if (!slide) return failure('NOT_FOUND', 'The slide no longer exists.');
     const slides = [...project.slides];
-    const { drafts: initialDrafts } = project;
+    const { drafts: initialDrafts, ...content } = project;
     let drafts = initialDrafts;
     switch (operation.type) {
       case 'setSceneDraft':
@@ -61,7 +61,7 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
       default:
         break;
     }
-    next = { ...project, slides, drafts };
+    next = { ...content, slides, ...(drafts ? { drafts } : {}) };
   }
   if (
     !projectSchema.safeParse(next).success ||

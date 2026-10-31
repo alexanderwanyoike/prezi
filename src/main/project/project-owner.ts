@@ -38,11 +38,13 @@ export class ProjectOwner {
       return failure('CONFLICT', 'The project changed while compiling. Read it and apply again.');
     if (!this.project.slides.some((slide) => slide.id === request.slideId))
       return failure('NOT_FOUND', 'The slide no longer exists.');
+    const { drafts: currentDrafts, ...content } = this.project;
+    const drafts = request.consumeDraft
+      ? withoutSceneDraft(currentDrafts, request.slideId)
+      : currentDrafts;
     const draft: Project = {
-      ...this.project,
-      drafts: request.consumeDraft
-        ? withoutSceneDraft(this.project.drafts, request.slideId)
-        : this.project.drafts,
+      ...content,
+      ...(drafts ? { drafts } : {}),
       scenes: {
         ...this.project.scenes,
         [request.definition.id]: { ...request.definition, version: crypto.randomUUID() },
