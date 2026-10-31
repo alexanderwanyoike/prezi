@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { z } from 'zod';
 import { connectDesktopMcp } from './mcp-client';
 import { previewResultSchema } from '../../src/shared/preview';
 
@@ -155,10 +156,12 @@ test('captures the entire custom composition rather than its upper-left viewport
         { timeout: 15000 },
       )
       .toMatchObject({ result: { ok: true, value: { state: 'complete' } } });
-    const captured = previewResultSchema.parse(
-      (await client.callTool({ name: 'read_job', arguments: { jobId: 'preview:full-frame' } }))
-        .structuredContent?.result,
-    );
+    const captured = z
+      .object({ result: previewResultSchema })
+      .parse(
+        (await client.callTool({ name: 'read_job', arguments: { jobId: 'preview:full-frame' } }))
+          .structuredContent,
+      ).result;
     if (!captured.ok || !captured.value.image) throw Error('No captured image');
     const pixel = await desktop.evaluate(({ nativeImage }, dataUrl) => {
       const image = nativeImage.createFromDataURL(dataUrl);
