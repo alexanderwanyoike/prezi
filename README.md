@@ -91,6 +91,10 @@ Agents can compile React/Remotion components with declared editable properties a
 
 Choose **View > Application updates**. Installed Windows/Linux builds offer explicit download, verification and restart; the app protects unsaved work and reopens the saved deck afterward. Other installed formats use the stable release page. Development builds explain that updates require installation. Releases require reviewed promotion to main, an annotated version tag and a draft release; no release has been published by this implementation. See [runtime verification](docs/verification/desktop-updates.md) and [installer verification](docs/verification/desktop-installers.md).
 
+## Renderer limits
+
+Linux scene and preview renderers default to 512 MiB, zero swap and one CPU after preparation. Set `PREZI_SCENE_MEMORY_MB` to an integer from 256 to 1024 before starting the app to adjust memory. Runtime warmup precedes scope attachment. Other platforms retain process isolation and deadlines.
+
 ## Checks
 
 ```sh

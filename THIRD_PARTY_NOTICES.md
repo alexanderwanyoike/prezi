@@ -65,3 +65,7 @@ esbuild 0.28.2 uses MIT; its licence is retained in [licenses/esbuild.txt](licen
 ## Slide preview capture
 
 Electron's documented offscreen BrowserWindow, webContents.capturePage, nativeImage.resize and JPEG APIs inform preview capture. The existing isolated scene runtime and bounded serial work queue are reused. Electron uses MIT. No upstream implementation code was copied. Reference: https://www.electronjs.org/docs/latest/api/web-contents#contentscapturepagerect-opts
+
+## Isolated renderer setup
+
+The CSP sandbox response-header pattern follows the browser directive documented by Mozilla: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/sandbox . The existing restrictive network policy remains in document metadata. Electron's offscreen window, audio mute and post-navigation zoom APIs inform worker setup: https://www.electronjs.org/docs/latest/tutorial/offscreen-rendering . These references inform API use; no implementation code was copied.
