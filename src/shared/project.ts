@@ -7,6 +7,17 @@ export const slideSchema = textScenePropsSchema.extend({
   media: mediaSchema.nullable().optional(),
 });
 export const projectSchema = z.object({
+  sources: z
+    .record(
+      z.string().regex(/^(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:tsx?|css|json)$/),
+      z.string().max(250000),
+    )
+    .refine(
+      (sources) =>
+        Object.keys(sources).length <= 128 &&
+        Object.values(sources).reduce((sum, source) => sum + source.length, 0) <= 1000000,
+    )
+    .optional(),
   schemaVersion: z.literal(1),
   id: z.uuid(),
   name: z.string().min(1).max(200),

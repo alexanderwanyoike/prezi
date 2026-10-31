@@ -9,6 +9,15 @@ import type { Result } from '../../shared/result';
 export class AssetStore {
   private readonly root = join(tmpdir(), `prezi-imports-${crypto.randomUUID()}`);
 
+  private readonly archiveDirectories = new Set<string>();
+
+  adopt(directory: string, assets: { id: string; path: string }[]): void {
+    this.archiveDirectories.add(directory);
+    assets.forEach((asset) => {
+      this.paths.set(asset.id, asset.path);
+    });
+  }
+
   private readonly paths = new Map<string, string>();
 
   path(id: string): string | undefined {
@@ -82,6 +91,11 @@ export class AssetStore {
   }
 
   async dispose(): Promise<void> {
-    await rm(this.root, { recursive: true, force: true });
+    await Promise.all(
+      [this.root, ...this.archiveDirectories].map((directory) =>
+        rm(directory, { recursive: true, force: true }),
+      ),
+    );
+    this.archiveDirectories.clear();
   }
 }

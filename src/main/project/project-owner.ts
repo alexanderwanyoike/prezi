@@ -1,5 +1,8 @@
 import { z } from 'zod';
+import { rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { readArchive } from '../archive/read-archive';
+import { writeArchive } from '../archive/write-archive';
 import { AssetStore } from '../media/asset-store';
 import { readProject, writeProject } from './project-files';
 import { applyOperation } from './apply-operation';
@@ -114,13 +117,18 @@ export class ProjectOwner {
     const project = structuredClone(this.project);
     try {
       const media = project.slides.flatMap((slide) => (slide.media ? [slide.media] : []));
-      const copied = await this.assets.save(path, media);
-      if (!copied.ok) return copied;
-      const result = await writeProject(path, project);
+      let result: Result<void>;
+      if (path.toLowerCase().endsWith('.prezi')) {
+        result = await writeArchive(path, project, (id) => this.assets.path(id));
+      } else {
+        const copied = await this.assets.save(path, media);
+        if (!copied.ok) return copied;
+        result = await writeProject(path, project);
+      }
       if (!result.ok) return result;
       this.savedContent = JSON.stringify(project);
       this.filePath = path;
-      this.assets.remember(path, media);
+      if (!path.toLowerCase().endsWith('.prezi')) this.assets.remember(path, media);
       this.listeners.forEach((listener) => {
         listener(this.snapshot());
       });
@@ -135,15 +143,28 @@ export class ProjectOwner {
       return failure('CONFLICT', 'The project changed or another file operation is running.');
     this.fileBusy = true;
     try {
-      const result = await readProject(path);
-      if (!result.ok) return result;
-      if (expectedRevision !== this.revision)
-        return failure('CONFLICT', 'The project was edited while opening. Try again.');
-      this.project = result.value;
-      this.assets.remember(
-        path,
-        this.project.slides.flatMap((slide) => (slide.media ? [slide.media] : [])),
-      );
+      let project: Project;
+      if (path.toLowerCase().endsWith('.prezi')) {
+        const archived = await readArchive(path);
+        if (!archived.ok) return archived;
+        if (expectedRevision !== this.revision) {
+          await rm(archived.value.directory, { recursive: true, force: true });
+          return failure('CONFLICT', 'The project was edited while opening. Try again.');
+        }
+        project = archived.value.project;
+        this.assets.adopt(archived.value.directory, archived.value.assets);
+      } else {
+        const result = await readProject(path);
+        if (!result.ok) return result;
+        if (expectedRevision !== this.revision)
+          return failure('CONFLICT', 'The project was edited while opening. Try again.');
+        project = result.value;
+        this.assets.remember(
+          path,
+          project.slides.flatMap((slide) => (slide.media ? [slide.media] : [])),
+        );
+      }
+      this.project = project;
       this.savedContent = JSON.stringify(this.project);
       this.filePath = path;
       this.revision += 1;
