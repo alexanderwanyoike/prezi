@@ -29,7 +29,17 @@ async function updateRequest(command: 'status' | UpdateCommand) {
 }
 const bridge: DesktopBridge = {
   platform: process.platform,
-  prepareScene: () => Promise.resolve(failure('IO_ERROR', 'The scene runtime is unavailable.')),
+  async prepareScene(instance) {
+    try {
+      const input: unknown = await ipcRenderer.invoke('scenes:prepare', instance);
+      const parsed = fullscreenResultSchema.safeParse(input);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The scene resource response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'The scene renderer could not be prepared.');
+    }
+  },
   updateStatus: () => updateRequest('status'),
   updateAction: (command) => updateRequest(command),
   subscribeUpdates(listener) {

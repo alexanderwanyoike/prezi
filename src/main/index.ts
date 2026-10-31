@@ -1,5 +1,6 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { registerSceneRuntime } from './scenes/register-runtime';
 import { consumeResume } from './updates/resume-project';
 import { createInstalledUpdates } from './updates/runtime';
 import { registerUpdateIpc } from './updates/register-ipc';
@@ -15,7 +16,13 @@ import { registerFileIpc } from './project/register-file-ipc';
 import { ProjectOwner } from './project/project-owner';
 import { registerProjectIpc } from './project/register-project-ipc';
 
+app.commandLine.appendSwitch('site-per-process');
+
 protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'prezi-scene',
+    privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true },
+  },
   {
     scheme: 'prezi-media',
     privileges: {
@@ -56,6 +63,7 @@ async function openWindow(): Promise<void> {
   registerProjectIpc(window, owner);
   registerDesktopIpc(window);
   registerMedia(window, owner);
+  registerSceneRuntime(window);
   const files = registerFileIpc(window, owner);
   installedUpdates = createInstalledUpdates(() => owner.snapshot().filePath);
   registerUpdateIpc(window, installedUpdates.updates, files.prepareRestart);

@@ -10,9 +10,9 @@
     "node": ">=22.16.0 <23"
   },
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "yarn scene:prepare && yarn scene:runtime && electron-vite dev",
     "start": "electron-vite preview",
-    "build": "electron-vite build && yarn scene:prepare",
+    "build": "electron-vite build && yarn scene:prepare && yarn scene:runtime",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx,.cjs --max-warnings 0 --report-unused-disable-directives",
     "format": "prettier --write .",
@@ -26,7 +26,8 @@
     "package:update:test": "playwright test --config playwright.packaged.config.ts tests/packaged/updates.test.ts",
     "release:verify": "node --experimental-strip-types scripts/verify-release.ts",
     "scene:types": "node --experimental-strip-types scripts/prepare-scene-types.ts",
-    "scene:prepare": "yarn scene:types && node --experimental-strip-types scripts/build-scene-worker.ts"
+    "scene:prepare": "yarn scene:types && node --experimental-strip-types scripts/build-scene-worker.ts",
+    "scene:runtime": "vite build --config scene-runtime.config.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",
