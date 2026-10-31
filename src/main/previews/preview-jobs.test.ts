@@ -14,7 +14,7 @@ it('captures an immutable snapshot once without changing the deck and cancels qu
   let release: (result: Result<void>) => void = () => undefined;
   const blocking = work.run(
     () =>
-      new Promise((resolve) => {
+      new Promise<Result<void>>((resolve) => {
         release = resolve;
       }),
     new AbortController().signal,

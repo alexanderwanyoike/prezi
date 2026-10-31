@@ -16,10 +16,10 @@ test('captures a different slide from Code without changing the shared project o
       PREZI_MCP_PORT: '0',
     },
   });
+  const page = await desktop.firstWindow();
+  await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
   const client = await connectDesktopMcp(profile);
   try {
-    const page = await desktop.firstWindow();
-    await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     const initial = await page.evaluate(() => window.prezi.snapshot());
     if (!initial.ok) throw Error(initial.error.message);
     const slide = initial.value.project.slides[1];
@@ -68,9 +68,7 @@ test('captures a different slide from Code without changing the shared project o
       'true',
     );
     expect(await page.evaluate(() => window.prezi.snapshot())).toEqual(initial);
-    await expect(
-      page.getByAltText('Rendered preview: From idea to something useful'),
-    ).toBeVisible();
+    await expect(page.getByAltText('Rendered preview: Workflow')).toBeVisible();
     const workers = await desktop.evaluate(
       ({ BrowserWindow }) => BrowserWindow.getAllWindows().length,
     );
