@@ -35,6 +35,7 @@ export const snapshotResultSchema = z.union([
 ]);
 export interface DesktopBridge {
   platform: NodeJS.Platform;
+  prepareScene: (instance: string) => Promise<Result<boolean>>;
   updateStatus: () => Promise<Result<UpdateSnapshot>>;
   updateAction: (command: UpdateCommand) => Promise<Result<UpdateSnapshot>>;
   subscribeUpdates: (listener: (snapshot: UpdateSnapshot) => void) => () => void;

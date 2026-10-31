@@ -29,6 +29,7 @@ async function updateRequest(command: 'status' | UpdateCommand) {
 }
 const bridge: DesktopBridge = {
   platform: process.platform,
+  prepareScene: () => Promise.resolve(failure('IO_ERROR', 'The scene runtime is unavailable.')),
   updateStatus: () => updateRequest('status'),
   updateAction: (command) => updateRequest(command),
   subscribeUpdates(listener) {
