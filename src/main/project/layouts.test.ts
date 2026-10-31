@@ -40,7 +40,7 @@ it('edits reusable code and process layouts through shared atomic history', () =
           slideId: first.id,
           patch: {
             layout: 'process',
-            reveals: Array.from({ length: 7 }, (_, index) => `Stage ${index}`),
+            reveals: Array.from({ length: 7 }, (_, index) => `Stage ${index.toString()}`),
           },
         },
       ],
