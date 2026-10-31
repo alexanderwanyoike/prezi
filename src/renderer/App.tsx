@@ -216,7 +216,7 @@ export function App(): React.JSX.Element {
               }
             >
               <CodeView
-                key={slide.scene?.definitionId ?? 'built-in'}
+                key={`${slide.id}:${slide.scene?.definitionId ?? 'built-in'}`}
                 project={snapshot.project}
                 slide={slide}
                 pending={busy}
