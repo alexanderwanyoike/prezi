@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
+import { isAbsolute } from 'node:path';
 import { builtInSceneSources } from '../../shared/scene-sources';
 import { failure } from '../../shared/result';
 import { selectionSchema } from '../../shared/workspace';
@@ -150,6 +151,29 @@ export function createToolServer(owner: ProjectOwner, workspace: WorkspaceOwner)
       },
     },
     (input) => changed(owner.edit({ ...input, label: `Agent: ${input.label}` })),
+  );
+  server.registerTool(
+    'import_media',
+    {
+      description:
+        'Copy a local image or browser-playable MP4/WebM into a slide. Use an absolute path and current revision. Successful registration is one reversible batch. Retry with the same requestId and payload.',
+      inputSchema: z.object({
+        requestId: z.string().min(1).max(100),
+        expectedRevision: z.number().int().nonnegative(),
+        slideId: z.uuid(),
+        path: z.string().min(1).max(4096).refine(isAbsolute),
+      }),
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input) =>
+      changed(
+        await owner.importMedia(input.path, input.slideId, input.expectedRevision, input.requestId),
+      ),
   );
   const historySchema = z.object({
     requestId: z.string().min(1).max(100),
