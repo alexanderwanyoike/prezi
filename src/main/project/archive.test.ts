@@ -65,3 +65,38 @@ test('moves a single .prezi file containing the deck, scene source, fonts and me
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('failed archive saves and opens preserve the last file and the current project', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-archive-failure-'));
+  const owner = new ProjectOwner();
+  try {
+    const source = join(directory, 'sample.png');
+    await writeFile(
+      source,
+      Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+        'base64',
+      ),
+    );
+    const slideId = owner.snapshot().project.slides[0]?.id;
+    if (!slideId) throw new Error('Missing opening slide');
+    expect((await owner.importMedia(source, slideId, 0)).ok).toBe(true);
+    const path = join(directory, 'deck.prezi');
+    expect((await owner.save(path)).ok).toBe(true);
+    const original = await readFile(path);
+    const assetId = owner.snapshot().project.slides[0]?.media?.id;
+    const assetPath = assetId ? owner.mediaPath(assetId) : null;
+    if (!assetPath) throw new Error('Missing imported file');
+    await rm(assetPath);
+    expect((await owner.save(path)).ok).toBe(false);
+    expect(await readFile(path)).toEqual(original);
+    const before = owner.snapshot();
+    const corrupt = join(directory, 'corrupt.prezi');
+    await writeFile(corrupt, 'not a project archive');
+    expect((await owner.open(corrupt, before.revision)).ok).toBe(false);
+    expect(owner.snapshot()).toEqual(before);
+  } finally {
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
