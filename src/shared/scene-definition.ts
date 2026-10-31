@@ -79,7 +79,7 @@ export function validSceneValues(
 ): boolean {
   return Object.entries(values).every(([key, value]) => {
     const field = definition.fields[key];
-    if (!Object.hasOwn(definition.fields, key)) return false;
+    if (!Object.hasOwn(definition.fields, key) || !field) return false;
     if (field.type === 'boolean') return typeof value === 'boolean';
     if (field.type === 'number')
       return (
