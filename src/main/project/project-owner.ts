@@ -315,7 +315,7 @@ export class ProjectOwner {
   }
 
   private remember(requestId: string, fingerprint: string, snapshot: ProjectSnapshot): void {
-    this.requests.set(requestId, { fingerprint, snapshot });
+    this.requests.set(requestId, { fingerprint, snapshot: structuredClone(snapshot) });
     if (this.requests.size > 128) {
       const oldest = this.requests.keys().next().value;
       if (oldest) this.requests.delete(oldest);
