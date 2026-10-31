@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { sceneInstallationSchema } from '../../shared/scene-definition';
-import type { SceneInstallation } from '../../shared/scene-definition';
 import { rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { sceneInstallationSchema } from '../../shared/scene-definition';
+import type { SceneInstallation } from '../../shared/scene-definition';
 import { readArchive } from '../archive/read-archive';
 import { writeArchive } from '../archive/write-archive';
 import { AssetStore } from '../media/asset-store';

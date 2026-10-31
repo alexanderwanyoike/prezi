@@ -14,14 +14,14 @@ export const sceneFieldSchema = z.discriminatedUnion('type', [
   z.object({
     ...label,
     type: z.literal('number'),
-    default: z.number().finite(),
-    min: z.number().finite().optional(),
-    max: z.number().finite().optional(),
+    default: z.number(),
+    min: z.number().optional(),
+    max: z.number().optional(),
   }),
   z.object({ ...label, type: z.literal('boolean'), default: z.boolean() }),
 ]);
 export const sceneValuesSchema = z
-  .record(propertyNameSchema, z.union([z.string().max(10000), z.number().finite(), z.boolean()]))
+  .record(propertyNameSchema, z.union([z.string().max(10000), z.number(), z.boolean()]))
   .refine((values) => Object.keys(values).length <= 32);
 export const sceneCandidateSchema = z.object({
   id: z.uuid(),
