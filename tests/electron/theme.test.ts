@@ -59,6 +59,24 @@ test('edits deck styling through View, saves it portably and uses it in presenta
     await expect(scene).toHaveCSS('background-color', 'rgb(244, 240, 232)');
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     await expect(scene).toHaveCSS('padding', '96px');
+    await page.keyboard.press('Escape');
+    await page.getByRole('tab', { name: 'Code', exact: true }).click();
+    await page.getByRole('button', { name: 'Create custom scene', exact: true }).click();
+    await page
+      .getByRole('textbox', { name: 'Scene source code' })
+      .fill(
+        `import {AbsoluteFill} from 'remotion'; import type {SceneProps} from 'prezi'; export default function Scene({theme}:SceneProps){if(theme.background !== '#f4f0e8') throw Error('Wrong validation theme');return <AbsoluteFill style={{background:theme.background,color:theme.foreground,padding:theme.padding,fontFamily:theme.fontFamily,fontSize:100}}>Theme reached code</AbsoluteFill>;}`,
+      );
+    await page.getByRole('button', { name: 'Apply scene code', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Edit scene code', exact: true })).toBeVisible({
+      timeout: 15000,
+    });
+    await page.getByRole('tab', { name: 'Canvas', exact: true }).click();
+    const custom = page
+      .frameLocator('iframe[title="Custom scene"]')
+      .getByText('Theme reached code', { exact: true });
+    await expect(custom).toHaveCSS('background-color', 'rgb(244, 240, 232)');
+    await expect(custom).toHaveCSS('padding', '96px');
   } finally {
     await desktop.close();
   }
