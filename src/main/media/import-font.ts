@@ -19,7 +19,7 @@ export async function importFontFile(
       if (!info.isFile() || info.size < 12 || info.size > 16 * 1024 * 1024)
         return failure('INVALID_INPUT', 'Choose a font between 12 bytes and 16 MiB.');
       const header = Buffer.alloc(48);
-      const { bytesRead } = await input.read(header, 0, 48, 0);
+      const { bytesRead: headerBytes } = await input.read(header, 0, 48, 0);
       const formats: Record<string, ProjectFont['extension']> = {
         OTTO: 'otf',
         wOFF: 'woff',
@@ -31,7 +31,7 @@ export async function importFontFile(
         formats[header.toString('ascii', 0, 4)] ?? formats[header.toString('hex', 0, 4)];
       if (
         (extension === 'woff' || extension === 'woff2') &&
-        (bytesRead < (extension === 'woff2' ? 48 : 44) ||
+        (headerBytes < (extension === 'woff2' ? 48 : 44) ||
           header.readUInt32BE(16) > 64 * 1024 * 1024 ||
           header.readUInt32BE(16) < 12)
       )
