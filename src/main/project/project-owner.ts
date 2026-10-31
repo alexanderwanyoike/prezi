@@ -11,6 +11,11 @@ import type { Project, ProjectSnapshot } from '../../shared/project';
 import { failure } from '../../shared/result';
 import type { Result } from '../../shared/result';
 
+interface HistoryEntry {
+  project: Project;
+  label: string;
+}
+
 export class ProjectOwner {
   private readonly assets = new AssetStore();
 
@@ -50,9 +55,9 @@ export class ProjectOwner {
 
   private revision = 0;
 
-  private past: Project[] = [];
+  private past: HistoryEntry[] = [];
 
-  private future: Project[] = [];
+  private future: HistoryEntry[] = [];
 
   private savedContent = JSON.stringify(this.project);
 
@@ -69,6 +74,8 @@ export class ProjectOwner {
       project: structuredClone(this.project),
       revision: this.revision,
       dirty: JSON.stringify(this.project) !== this.savedContent,
+      undoLabel: this.past.at(-1)?.label ?? null,
+      redoLabel: this.future.at(-1)?.label ?? null,
       canUndo: this.past.length > 0,
       canRedo: this.future.length > 0,
       filePath: this.filePath,
@@ -180,30 +187,43 @@ export class ProjectOwner {
     }
   }
 
-  undo(expectedRevision: number): Result<ProjectSnapshot> {
-    return this.restoreHistory(expectedRevision, this.past, this.future);
+  undo(expectedRevision: number, requestId?: string): Result<ProjectSnapshot> {
+    return this.restoreHistory(expectedRevision, this.past, this.future, 'undo', requestId);
   }
 
-  redo(expectedRevision: number): Result<ProjectSnapshot> {
-    return this.restoreHistory(expectedRevision, this.future, this.past);
+  redo(expectedRevision: number, requestId?: string): Result<ProjectSnapshot> {
+    return this.restoreHistory(expectedRevision, this.future, this.past, 'redo', requestId);
   }
 
   private restoreHistory(
     expectedRevision: number,
-    from: Project[],
-    to: Project[],
+    from: HistoryEntry[],
+    to: HistoryEntry[],
+    direction: 'undo' | 'redo',
+    requestId: string = crypto.randomUUID(),
   ): Result<ProjectSnapshot> {
+    if (!z.string().min(1).max(100).safeParse(requestId).success)
+      return failure('INVALID_INPUT', 'The history request ID is invalid.');
+    const fingerprint = JSON.stringify({ direction, expectedRevision });
+    const cached = this.requests.get(requestId);
+    if (cached) {
+      if (cached.fingerprint !== fingerprint)
+        return failure('REQUEST_REUSED', 'This request ID already belongs to a different edit.');
+      return { ok: true, value: structuredClone(cached.snapshot) };
+    }
     if (expectedRevision !== this.revision)
       return failure('CONFLICT', 'The project changed. Read its latest revision and retry.');
     const previous = from.pop();
     if (!previous) return failure('INVALID_INPUT', 'There is no history in that direction.');
-    to.push(this.project);
-    this.project = previous;
+    to.push({ project: this.project, label: previous.label });
+    this.project = previous.project;
     this.revision += 1;
     this.listeners.forEach((listener) => {
       listener(this.snapshot());
     });
-    return { ok: true, value: this.snapshot() };
+    const snapshot = this.snapshot();
+    this.remember(requestId, fingerprint, snapshot);
+    return { ok: true, value: snapshot };
   }
 
   edit(input: unknown): Result<ProjectSnapshot> {
@@ -224,7 +244,7 @@ export class ProjectOwner {
       { ok: true, value: draft },
     );
     if (!problem.ok) return problem;
-    this.past.push(this.project);
+    this.past.push({ project: this.project, label: parsed.data.label });
     this.past = this.past.slice(-50);
     this.future = [];
     this.project = draft;
@@ -233,11 +253,15 @@ export class ProjectOwner {
       listener(this.snapshot());
     });
     const snapshot = this.snapshot();
-    this.requests.set(parsed.data.requestId, { fingerprint, snapshot });
+    this.remember(parsed.data.requestId, fingerprint, snapshot);
+    return { ok: true, value: snapshot };
+  }
+
+  private remember(requestId: string, fingerprint: string, snapshot: ProjectSnapshot): void {
+    this.requests.set(requestId, { fingerprint, snapshot });
     if (this.requests.size > 128) {
       const oldest = this.requests.keys().next().value;
       if (oldest) this.requests.delete(oldest);
     }
-    return { ok: true, value: snapshot };
   }
 }

@@ -8,6 +8,8 @@ export const snapshotSchema = z.object({
   project: projectSchema,
   revision: z.number().int().nonnegative(),
   dirty: z.boolean(),
+  undoLabel: z.string().nullable(),
+  redoLabel: z.string().nullable(),
   canUndo: z.boolean(),
   canRedo: z.boolean(),
   filePath: z.string().nullable(),

@@ -29,6 +29,8 @@ export interface ProjectSnapshot {
   project: Project;
   revision: number;
   dirty: boolean;
+  undoLabel: string | null;
+  redoLabel: string | null;
   canUndo: boolean;
   canRedo: boolean;
   filePath: string | null;
