@@ -3,6 +3,25 @@ import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { compileScene } from './compile';
 
+it('types editable scene properties from their declared fields', async () => {
+  const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
+  const libraries = z.record(z.string(), z.string()).parse(input);
+  const source = {
+    entry: 'Scene.tsx',
+    files: {
+      'Scene.tsx': `import type {SceneProps} from 'prezi';
+import {Text, Layer} from 'prezi';
+export default function Scene({props}:SceneProps){return <Layer id="heading"><Text property="headline" style={{fontSize:props.size}}/></Layer>;}`,
+    },
+  };
+  const fields = {
+    headline: { type: 'text' as const, label: 'Heading', default: 'Editable' },
+    size: { type: 'number' as const, label: 'Size', default: 80 },
+  };
+  const result = await compileScene(source, libraries, fields);
+  expect(result.ok).toBe(true);
+});
+
 it('requires a default component and rejects dynamic module loading', async () => {
   const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
   const libraries = z.record(z.string(), z.string()).parse(input);
