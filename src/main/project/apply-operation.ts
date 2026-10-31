@@ -10,6 +10,14 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
   let next = project;
   if (operation.type === 'renameProject') {
     next = { ...project, name: operation.name };
+  } else if (operation.type === 'setTransition') {
+    next = { ...project };
+    if (operation.definition) next.transition = operation.definition;
+    else delete next.transition;
+  } else if (operation.type === 'setTransitionDraft') {
+    next = { ...project };
+    if (operation.draft) next.transitionDraft = operation.draft;
+    else delete next.transitionDraft;
   } else if (operation.type === 'addFont') {
     next = { ...project, fonts: [...(project.fonts ?? []), operation.font] };
   } else if (operation.type === 'replaceFont') {

@@ -6,6 +6,8 @@ import { registerFontTools } from './font-tools';
 import { registerSceneTools } from './scene-tools';
 import { registerPreviewTools } from './preview-tools';
 import type { PreviewJobs } from '../previews/preview-jobs';
+import type { TransitionJobs } from '../transitions/transition-jobs';
+import { registerTransitionTools } from './transition-tools';
 import type { SceneJobs } from '../source/scene-jobs';
 import { presentationTheme } from '../../shared/presentation-theme';
 import { projectSources } from '../../shared/project-sources';
@@ -24,6 +26,15 @@ function summary(snapshot: ProjectSnapshot) {
     undoLabel: snapshot.undoLabel,
     redoLabel: snapshot.redoLabel,
     project: {
+      transition: snapshot.project.transition
+        ? {
+            id: snapshot.project.transition.id,
+            version: snapshot.project.transition.version,
+            name: snapshot.project.transition.name,
+            fields: snapshot.project.transition.fields,
+            properties: snapshot.project.transition.properties,
+          }
+        : null,
       id: snapshot.project.id,
       name: snapshot.project.name,
       theme: presentationTheme(snapshot.project.theme),
@@ -65,6 +76,7 @@ export function createToolServer(
   workspace: WorkspaceOwner,
   jobs?: SceneJobs,
   previews?: PreviewJobs,
+  transitions?: TransitionJobs,
 ): McpServer {
   const server = new McpServer(
     { name: 'prezi', version: '0.1.0' },
@@ -227,6 +239,7 @@ export function createToolServer(
     );
   });
   if (previews) registerPreviewTools(server, previews);
-  if (jobs) registerSceneTools(server, jobs, previews);
+  if (transitions) registerTransitionTools(server, transitions);
+  if (jobs) registerSceneTools(server, jobs, previews, transitions);
   return server;
 }

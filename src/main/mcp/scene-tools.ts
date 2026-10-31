@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import type { SceneJobs } from '../source/scene-jobs';
 import type { PreviewJobs } from '../previews/preview-jobs';
+import type { TransitionJobs } from '../transitions/transition-jobs';
 import { sceneJobRequestSchema } from '../../shared/scene-jobs';
 import type { Result } from '../../shared/result';
 
@@ -16,7 +17,13 @@ export function registerSceneTools(
   server: McpServer,
   jobs: SceneJobs,
   previews?: PreviewJobs,
+  transitions?: TransitionJobs,
 ): void {
+  const route = (id: string) => {
+    if (id.startsWith('transition:') && transitions) return transitions;
+    if (id.startsWith('preview:') && previews) return previews;
+    return jobs;
+  };
   server.registerTool(
     'compile_scene',
     {
@@ -40,12 +47,7 @@ export function registerSceneTools(
       inputSchema: z.object({ jobId: z.string().min(1).max(100) }),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    (input) =>
-      respond(
-        input.jobId.startsWith('preview:') && previews
-          ? previews.read(input.jobId)
-          : jobs.read(input.jobId),
-      ),
+    (input) => respond(route(input.jobId).read(input.jobId)),
   );
   server.registerTool(
     'cancel_job',
@@ -60,11 +62,6 @@ export function registerSceneTools(
         openWorldHint: false,
       },
     },
-    (input) =>
-      respond(
-        input.jobId.startsWith('preview:') && previews
-          ? previews.cancel(input.jobId)
-          : jobs.cancel(input.jobId),
-      ),
+    (input) => respond(route(input.jobId).cancel(input.jobId)),
   );
 }

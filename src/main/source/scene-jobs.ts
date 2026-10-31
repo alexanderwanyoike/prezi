@@ -30,8 +30,8 @@ export class SceneJobs {
     if (!parsed.success)
       return failure('INVALID_INPUT', 'The scene compilation request is invalid.');
     const request = parsed.data;
-    if (request.requestId.startsWith('preview:'))
-      return failure('INVALID_INPUT', 'That request ID prefix is reserved for preview jobs.');
+    if (request.requestId.startsWith('preview:') || request.requestId.startsWith('transition:'))
+      return failure('INVALID_INPUT', 'That request ID prefix is reserved for another job type.');
     const problem = sceneDefinitionProblem(request.candidate);
     if (problem) return failure('INVALID_INPUT', problem);
     const fingerprint = createHash('sha256').update(JSON.stringify(request)).digest('hex');

@@ -4,6 +4,7 @@ import type { ComponentType } from 'react';
 import { Player } from '@remotion/player';
 import type { PlayerRef } from '@remotion/player';
 import { z } from 'zod';
+import { sampleTransition } from './sample-transition';
 import { SlideScene } from '../renderer/presentation/SlideScene';
 import type { Slide } from '../shared/project';
 import type { PresentationTheme } from '../shared/presentation-theme';
@@ -83,6 +84,18 @@ function Runtime(): React.JSX.Element | null {
       const parsed = runtimeMessageSchema.safeParse(event.data);
       if (!parsed.success) return;
       const message = parsed.data;
+      if (message.type === 'prezi:transition') {
+        void sampleTransition(message.code, message.properties).then((result) => {
+          if (!live) return;
+          if (!result.ok) {
+            failed(result.error.message);
+            return;
+          }
+          document.documentElement.dataset.samples = JSON.stringify(result.value);
+          document.documentElement.dataset.state = 'ready';
+        });
+        return;
+      }
       setState(message.state);
       if (message.type === 'prezi:preset') {
         setLoaded({

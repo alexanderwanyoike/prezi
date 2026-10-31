@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { transitionDefinitionSchema, transitionDraftSchema } from './transition';
 import { fontSchema, fontCreditSchema } from './fonts';
 import { presentationThemeSchema } from './presentation-theme';
 import { sceneDraftSchema } from './scene-draft';
@@ -19,6 +20,8 @@ export const slideSchema = textScenePropsSchema.extend({
 });
 export const projectSchema = z
   .object({
+    transition: transitionDefinitionSchema.optional(),
+    transitionDraft: transitionDraftSchema.optional(),
     fonts: z.array(fontSchema).max(16).optional(),
     theme: presentationThemeSchema.optional(),
     drafts: z.record(z.uuid(), sceneDraftSchema).optional(),
@@ -98,6 +101,14 @@ export const editRequestSchema = z.object({
   operations: z
     .array(
       z.discriminatedUnion('type', [
+        z.object({
+          type: z.literal('setTransition'),
+          definition: transitionDefinitionSchema.nullable(),
+        }),
+        z.object({
+          type: z.literal('setTransitionDraft'),
+          draft: transitionDraftSchema.nullable(),
+        }),
         z.object({ type: z.literal('addFont'), font: fontSchema }),
         z.object({ type: z.literal('replaceFont'), fontId: z.uuid(), font: fontSchema }),
         z.object({

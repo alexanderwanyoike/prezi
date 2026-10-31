@@ -2,6 +2,35 @@ import type { Project } from './project';
 import { builtInSceneSources } from './scene-sources';
 
 export function projectSources(project: Project): Record<string, string> {
+  const { transition } = project;
+  const transitionSources: Record<string, string> = transition
+    ? {
+        'transition/definition.json': JSON.stringify(
+          {
+            id: transition.id,
+            version: transition.version,
+            name: transition.name,
+            fields: transition.fields,
+            properties: transition.properties,
+          },
+          null,
+          2,
+        ),
+        ...Object.fromEntries(
+          Object.entries(transition.source.files).map(([name, text]) => [
+            `transition/source/${name}`,
+            text,
+          ]),
+        ),
+      }
+    : {};
+  const { transitionDraft } = project;
+  if (transitionDraft) {
+    transitionSources['transition-draft/definition.json'] = transitionDraft.metadata;
+    Object.entries(transitionDraft.files).forEach(([name, text]) => {
+      transitionSources[`transition-draft/source/${name}`] = text;
+    });
+  }
   const custom = Object.values(project.scenes ?? {}).flatMap<readonly [string, string]>(
     (definition) => [
       [
@@ -36,6 +65,7 @@ export function projectSources(project: Project): Record<string, string> {
   );
   return {
     ...(project.sources ?? builtInSceneSources),
+    ...transitionSources,
     ...Object.fromEntries(custom),
     ...Object.fromEntries(drafts),
   };

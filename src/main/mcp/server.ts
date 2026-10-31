@@ -8,6 +8,7 @@ import {
 import { z } from 'zod';
 import type { SceneJobs } from '../source/scene-jobs';
 import type { PreviewJobs } from '../previews/preview-jobs';
+import type { TransitionJobs } from '../transitions/transition-jobs';
 import type { WorkspaceOwner } from './workspace-owner';
 import type { ProjectOwner } from '../project/project-owner';
 import { createToolServer } from './tools';
@@ -27,6 +28,7 @@ export async function startMcp(
   workspace: WorkspaceOwner,
   jobs?: SceneJobs,
   previews?: PreviewJobs,
+  transitions?: TransitionJobs,
 ): Promise<Result<McpConnection>> {
   const credentials = await readToken(directory);
   if (!credentials.ok) return credentials;
@@ -59,7 +61,7 @@ export async function startMcp(
           response.writeHead(400).end(body.error.message);
           return;
         }
-        const mcp = createToolServer(owner, workspace, jobs, previews);
+        const mcp = createToolServer(owner, workspace, jobs, previews, transitions);
         const transport = new NodeStreamableHTTPServerTransport({
           sessionIdGenerator: undefined,
           enableJsonResponse: true,

@@ -31,6 +31,11 @@ export const runtimeStateSchema = z.object({
 });
 export const runtimeMessageSchema = z.discriminatedUnion('type', [
   z.object({
+    type: z.literal('prezi:transition'),
+    code: z.string().max(2 * 1024 * 1024),
+    properties: sceneValuesSchema,
+  }),
+  z.object({
     type: z.literal('prezi:preset'),
     slide: slideSchema,
     slideNumber: z.number().int().min(1).max(200),

@@ -2,6 +2,8 @@ import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
 import { RenderWork } from './source/render-work';
 import { PreviewJobs } from './previews/preview-jobs';
+import { TransitionJobs } from './transitions/transition-jobs';
+import { evaluateTransition } from './transitions/evaluate-transition';
 import { captureSlide } from './previews/capture-slide';
 import { registerPreviewIpc } from './previews/register-preview-ipc';
 import { registerSceneIpc } from './source/register-scene-ipc';
@@ -50,6 +52,7 @@ const workspace = new WorkspaceOwner(owner);
 let mcp: McpConnection | undefined;
 let sceneJobs: SceneJobs | undefined;
 let previewJobs: PreviewJobs | undefined;
+let transitionJobs: TransitionJobs | undefined;
 let installedUpdates: ReturnType<typeof createInstalledUpdates> | undefined;
 
 async function openWindow(): Promise<void> {
@@ -73,6 +76,20 @@ async function openWindow(): Promise<void> {
     captureSlide(project, id, reveal, signal, window.webContents.mainFrame.osProcessId),
   );
   registerPreviewIpc(window, previewJobs);
+  transitionJobs = new TransitionJobs(
+    owner,
+    renderWork,
+    (request, signal) =>
+      runCompiler(
+        request.candidate.source,
+        signal,
+        join(import.meta.dirname, '../compiler'),
+        request.candidate.fields,
+        'transition',
+      ),
+    (code, properties, signal) =>
+      evaluateTransition(code, properties, signal, window.webContents.mainFrame.osProcessId),
+  );
   sceneJobs = new SceneJobs(
     owner,
     (request, signal) =>
@@ -103,6 +120,7 @@ async function openWindow(): Promise<void> {
   window.on('closed', () => {
     sceneJobs?.dispose();
     previewJobs?.dispose();
+    transitionJobs?.dispose();
     app.quit();
   });
   const connected = await startMcp(
@@ -111,6 +129,7 @@ async function openWindow(): Promise<void> {
     workspace,
     sceneJobs,
     previewJobs,
+    transitionJobs,
   );
   if (connected.ok) mcp = connected.value;
   else process.stderr.write(`${connected.error.message}\n`);
@@ -160,6 +179,7 @@ app.on('will-quit', () => {
   installedUpdates?.stop();
   sceneJobs?.dispose();
   previewJobs?.dispose();
+  transitionJobs?.dispose();
   void mcp?.close();
   void owner.dispose();
 });
