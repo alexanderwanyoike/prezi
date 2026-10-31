@@ -77,6 +77,19 @@ test('edits deck styling through View, saves it portably and uses it in presenta
       .getByText('Theme reached code', { exact: true });
     await expect(custom).toHaveCSS('background-color', 'rgb(244, 240, 232)');
     await expect(custom).toHaveCSS('padding', '96px');
+    await page.evaluate(async () => {
+      const snapshot = await window.prezi.snapshot();
+      if (!snapshot.ok) throw Error(snapshot.error.message);
+      return window.prezi.edit({
+        requestId: crypto.randomUUID(),
+        expectedRevision: snapshot.value.revision,
+        label: 'A live theme change',
+        operations: [{ type: 'setTheme', patch: { background: '#000000' } }],
+      });
+    });
+    await expect(page.getByRole('alert')).toContainText('Wrong validation theme');
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(custom).toHaveCSS('background-color', 'rgb(244, 240, 232)');
   } finally {
     await desktop.close();
   }
