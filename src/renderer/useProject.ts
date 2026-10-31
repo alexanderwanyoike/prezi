@@ -57,6 +57,7 @@ export function useProject() {
     );
   }
   return {
+    flush: () => queue.current,
     importMedia: (slideId: string) => {
       dispatch(() => window.prezi.importMedia(slideId));
     },

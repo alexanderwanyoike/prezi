@@ -54,7 +54,9 @@ export function useApplicationActions({
       if (id) importMedia(id);
     },
     close: () => {
-      handleDesktop(window.prezi.close());
+      void project.flush().then(() => {
+        handleDesktop(window.prezi.close());
+      });
     },
     undo,
     redo,
