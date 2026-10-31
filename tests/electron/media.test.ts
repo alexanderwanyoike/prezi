@@ -54,6 +54,10 @@ test('imports an image into the scene and serves bounded ranges without exposing
     expect(missing).toBe(404);
     await page.getByRole('button', { name: 'Redo', exact: true }).click();
     await expect(image).toBeVisible();
+    await page.getByRole('button', { name: 'Remove media', exact: true }).click({ timeout: 1000 });
+    await expect(image).toHaveCount(0);
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(image).toBeVisible();
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     await expect(image).toBeVisible();
   } finally {
