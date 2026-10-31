@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { sceneDefinitionProblem } from '../../shared/scene-definition';
 import { sceneJobRequestSchema } from '../../shared/scene-jobs';
 import type { SceneJob, SceneJobRequest } from '../../shared/scene-jobs';
 import type { Result } from '../../shared/result';
@@ -35,6 +36,8 @@ export class SceneJobs {
     if (!parsed.success)
       return failure('INVALID_INPUT', 'The scene compilation request is invalid.');
     const request = parsed.data;
+    const problem = sceneDefinitionProblem(request.candidate);
+    if (problem) return failure('INVALID_INPUT', problem);
     const fingerprint = createHash('sha256').update(JSON.stringify(request)).digest('hex');
     const existing = this.records.get(request.requestId);
     if (existing)

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  sceneDefinitionProblem,
   sceneDefinitionSchema,
   sceneInstanceSchema,
   sceneValuesSchema,
@@ -36,6 +37,15 @@ export const projectSchema = z
     slides: z.array(slideSchema).min(1).max(200),
   })
   .superRefine((project, context) => {
+    Object.entries(project.scenes ?? {}).forEach(([id, definition]) => {
+      const problem = sceneDefinitionProblem(definition);
+      if (problem || id !== definition.id)
+        context.addIssue({
+          code: 'custom',
+          message: problem ?? 'Scene definition IDs must match their registration.',
+          path: ['scenes', id],
+        });
+    });
     project.slides.forEach((slide) => {
       if (!slide.scene) return;
       const definition = project.scenes?.[slide.scene.definitionId];

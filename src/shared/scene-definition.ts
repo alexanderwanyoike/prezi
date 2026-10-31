@@ -85,3 +85,28 @@ export function validSceneValues(definition: CustomSceneDefinition, values: Scen
     return typeof value === 'string' && (field.type !== 'color' || /^#[0-9a-fA-F]{6}$/.test(value));
   });
 }
+
+export function sceneDefinitionProblem(candidate: SceneCandidate): string | null {
+  if (
+    !candidate.source.entry.endsWith('.tsx') ||
+    !Object.hasOwn(candidate.source.files, candidate.source.entry)
+  )
+    return 'A scene needs an existing TSX entry file.';
+  const invalidDefault = Object.entries(candidate.fields).find(
+    ([, field]) =>
+      field.type === 'number' &&
+      (field.default < (field.min ?? -Infinity) || field.default > (field.max ?? Infinity)),
+  );
+  if (invalidDefault) return `The default for ${invalidDefault[1].label} is outside its limits.`;
+  if (new Set(candidate.layers.map((layer) => layer.id)).size !== candidate.layers.length)
+    return 'Editable layer IDs must be unique.';
+  const invalidLayer = candidate.layers.find(
+    (layer) =>
+      (layer.property && !Object.hasOwn(candidate.fields, layer.property)) ||
+      (layer.frame &&
+        Object.values(layer.frame).some((name) => candidate.fields[name]?.type !== 'number')),
+  );
+  return invalidLayer
+    ? `The editable properties for ${invalidLayer.label} are missing or have the wrong type.`
+    : null;
+}
