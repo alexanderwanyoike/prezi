@@ -46,33 +46,31 @@ test('runs editable Remotion code in a bounded renderer without the desktop brid
     const source = `import {AbsoluteFill,useCurrentFrame} from 'remotion'; import {jsx,jsxs} from 'react/jsx-runtime'; import {Text,Layer} from 'prezi'; export default function Scene(){return jsxs(AbsoluteFill,{style:{background:'#101513',color:'#edf2ec'},children:[jsx(Layer,{id:'heading',style:{padding:128,fontSize:80},children:jsx(Text,{property:'headline'})}),jsx('div',{id:'frame',children:useCurrentFrame()})]});}`;
     await page.evaluate(
       ({ code, id }) => {
-        document
-          .querySelector('iframe')
-          ?.contentWindow?.postMessage(
-            {
-              type: 'prezi:load',
-              code,
-              definition: {
-                id,
-                name: 'Editable scene',
-                fields: { headline: { type: 'text', label: 'Heading', default: 'Hello' } },
-                layers: [{ id: 'heading', label: 'Heading', property: 'headline' }],
-              },
-              state: {
-                title: 'Scene',
-                body: '',
-                reveal: 0,
-                properties: { headline: 'An isolated scene' },
-                media: null,
-                editing: true,
-                pending: false,
-                active: true,
-                autoplay: false,
-                selectedLayer: null,
-              },
+        document.querySelector('iframe')?.contentWindow?.postMessage(
+          {
+            type: 'prezi:load',
+            code,
+            definition: {
+              id,
+              name: 'Editable scene',
+              fields: { headline: { type: 'text', label: 'Heading', default: 'Hello' } },
+              layers: [{ id: 'heading', label: 'Heading', property: 'headline' }],
             },
-            '*',
-          );
+            state: {
+              title: 'Scene',
+              body: '',
+              reveal: 0,
+              properties: { headline: 'An isolated scene' },
+              media: null,
+              editing: true,
+              pending: false,
+              active: true,
+              autoplay: false,
+              selectedLayer: null,
+            },
+          },
+          '*',
+        );
       },
       { code: source, id: instance },
     );
