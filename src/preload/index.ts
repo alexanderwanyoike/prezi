@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { fullscreenResultSchema, snapshotResultSchema, snapshotSchema } from '../shared/desktop';
 import type { DesktopBridge } from '../shared/desktop';
+import { selectionSchema } from '../shared/workspace';
 import { desktopCommandSchema } from '../shared/desktop-commands';
 import { failure } from '../shared/result';
 
@@ -16,6 +17,27 @@ async function request(channel: string, input?: unknown) {
 
 const bridge: DesktopBridge = {
   platform: process.platform,
+  async publishView(patch) {
+    try {
+      const response: unknown = await ipcRenderer.invoke('workspace:publish', patch);
+      const parsed = fullscreenResultSchema.safeParse(response);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The workspace response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'Workspace state could not be shared.');
+    }
+  },
+  subscribeSelection(listener) {
+    const receive = (_event: Electron.IpcRendererEvent, input: unknown): void => {
+      const parsed = selectionSchema.safeParse(input);
+      if (parsed.success) listener(parsed.data);
+    };
+    ipcRenderer.on('workspace:selection', receive);
+    return () => {
+      ipcRenderer.removeListener('workspace:selection', receive);
+    };
+  },
   async close() {
     try {
       const response: unknown = await ipcRenderer.invoke('desktop:close');

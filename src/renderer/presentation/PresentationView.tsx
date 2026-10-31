@@ -23,6 +23,22 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
   );
   const slide = project.slides[index];
   const reveal = Math.min(position.reveal, slide?.reveals.length ?? 0);
+  const activeSlideId = slide?.id;
+  useEffect(() => {
+    if (activeSlideId)
+      void window.prezi
+        .publishView({ presentation: { slideId: activeSlideId, reveal } })
+        .then((result) => {
+          if (!result.ok) setError(result.error.message);
+        });
+  }, [activeSlideId, reveal]);
+  useEffect(
+    () => () => {
+      void window.prezi.publishView({ presentation: null });
+    },
+    [],
+  );
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setBusy(false);

@@ -6,6 +6,7 @@ import { MenuBar } from './menu/MenuBar';
 import { WorkspaceTabs } from './WorkspaceTabs';
 import { ProjectName } from './ProjectName';
 import { useApplicationActions } from './useApplicationActions';
+import { useWorkspaceSelection } from './useWorkspaceSelection';
 import { useProject } from './useProject';
 import { SlideRail } from './SlideRail';
 import { SlideInspector } from './SlideInspector';
@@ -34,6 +35,13 @@ export function App(): React.JSX.Element {
     setCodeVisible,
     setAppearanceOpen,
   });
+  const workspaceError = useWorkspaceSelection(
+    snapshot,
+    selectedId,
+    selectedField,
+    setSelectedId,
+    setSelectedField,
+  );
   if (!snapshot)
     return (
       <main className="loading" role="status">
@@ -239,7 +247,7 @@ export function App(): React.JSX.Element {
         <span>
           <span className="status-dot" />
           <span role={error || desktopError ? 'alert' : undefined}>
-            {error ?? desktopError ?? appearanceError ?? status}
+            {error ?? desktopError ?? workspaceError ?? appearanceError ?? status}
           </span>
         </span>
         <span>

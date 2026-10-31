@@ -1,5 +1,7 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { WorkspaceOwner } from './mcp/workspace-owner';
+import { registerWorkspaceIpc } from './mcp/register-workspace-ipc';
 import { startMcp } from './mcp/server';
 import type { McpConnection } from './mcp/server';
 import { registerMedia } from './media/register-media';
@@ -23,6 +25,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 const owner = new ProjectOwner();
+const workspace = new WorkspaceOwner(owner);
 let mcp: McpConnection | undefined;
 
 async function openWindow(): Promise<void> {
@@ -39,9 +42,10 @@ async function openWindow(): Promise<void> {
       nodeIntegration: false,
     },
   });
-  const connected = await startMcp(owner, app.getPath('userData'));
+  const connected = await startMcp(owner, app.getPath('userData'), workspace);
   if (connected.ok) mcp = connected.value;
   else process.stderr.write(`${connected.error.message}\n`);
+  registerWorkspaceIpc(window, workspace);
   registerProjectIpc(window, owner);
   registerDesktopIpc(window);
   registerMedia(window, owner);
