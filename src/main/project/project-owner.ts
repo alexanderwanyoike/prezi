@@ -295,16 +295,15 @@ export class ProjectOwner {
     }
     if (this.restarting || parsed.data.expectedRevision !== this.revision)
       return failure('CONFLICT', 'The project changed. Read its latest revision and retry.');
-    const draft = structuredClone(this.project);
     const problem = parsed.data.operations.reduce<Result<Project>>(
       (result, operation) => (result.ok ? applyOperation(result.value, operation) : result),
-      { ok: true, value: draft },
+      { ok: true, value: this.project },
     );
     if (!problem.ok) return problem;
     this.past.push({ project: this.project, label: parsed.data.label });
     this.past = this.past.slice(-50);
     this.future = [];
-    this.project = draft;
+    this.project = problem.value;
     this.revision += 1;
     this.listeners.forEach((listener) => {
       listener(this.snapshot());
@@ -315,7 +314,7 @@ export class ProjectOwner {
   }
 
   private remember(requestId: string, fingerprint: string, snapshot: ProjectSnapshot): void {
-    this.requests.set(requestId, { fingerprint, snapshot: structuredClone(snapshot) });
+    this.requests.set(requestId, { fingerprint, snapshot: { ...snapshot, project: this.project } });
     if (this.requests.size > 128) {
       const oldest = this.requests.keys().next().value;
       if (oldest) this.requests.delete(oldest);
