@@ -2,6 +2,55 @@ import { describe, expect, it } from 'vitest';
 import { ProjectOwner } from './project-owner';
 
 describe('project editing', () => {
+  it('labels history and retries an undo or redo without restoring a second batch', () => {
+    const owner = new ProjectOwner();
+    const initial = owner.snapshot();
+    owner.edit({
+      requestId: 'manual',
+      expectedRevision: 0,
+      label: 'Manual title',
+      operations: [{ type: 'renameProject', name: 'My deck' }],
+    });
+    owner.edit({
+      requestId: 'agent',
+      expectedRevision: 1,
+      label: 'Agent: rebuild opening',
+      operations: [{ type: 'renameProject', name: 'Agent version' }],
+    });
+    expect(owner.snapshot()).toMatchObject({
+      undoLabel: 'Agent: rebuild opening',
+      redoLabel: null,
+    });
+    const undone = owner.undo(2, 'undo-agent');
+    expect(undone).toMatchObject({
+      ok: true,
+      value: {
+        project: { name: 'My deck' },
+        undoLabel: 'Manual title',
+        redoLabel: 'Agent: rebuild opening',
+      },
+    });
+    expect(owner.undo(2, 'undo-agent')).toEqual(undone);
+    expect(owner.snapshot().revision).toBe(3);
+    expect(owner.redo(3, 'undo-agent')).toMatchObject({
+      ok: false,
+      error: { code: 'REQUEST_REUSED' },
+    });
+    const redone = owner.redo(3, 'redo-agent');
+    expect(redone).toMatchObject({
+      ok: true,
+      value: {
+        project: { name: 'Agent version' },
+        undoLabel: 'Agent: rebuild opening',
+        redoLabel: null,
+      },
+    });
+    expect(owner.redo(3, 'redo-agent')).toEqual(redone);
+    owner.undo(4);
+    owner.undo(5);
+    expect(owner.snapshot().project).toEqual(initial.project);
+    expect(owner.undo(0, 'stale')).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+  });
   it('builds a deck by adding, duplicating, reordering and deleting slides with stable IDs', () => {
     const owner = new ProjectOwner();
     const originalIds = owner.snapshot().project.slides.map((slide) => slide.id);
