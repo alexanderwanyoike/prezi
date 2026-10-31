@@ -38,6 +38,10 @@ test('uses application menus, desktop shortcuts and Canvas/Code workspace tabs',
     await expect(page.getByRole('textbox', { name: 'Scene source code' })).toBeVisible();
     await page.getByRole('tab', { name: 'Code', exact: true }).press('ArrowLeft');
     await expect(page.getByRole('tab', { name: 'Canvas', exact: true })).toBeFocused();
+    await page.getByRole('tab', { name: 'Canvas', exact: true }).press('ArrowLeft');
+    await expect(page.getByRole('tab', { name: 'Code', exact: true })).toBeFocused();
+    await page.getByRole('tab', { name: 'Code', exact: true }).press('ArrowRight');
+    await expect(page.getByRole('tab', { name: 'Canvas', exact: true })).toBeFocused();
     await expect(page.getByRole('textbox', { name: 'Canvas heading' })).toHaveText(
       'An application workspace',
     );
