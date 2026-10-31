@@ -1,17 +1,21 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 import type { Slide } from '../../shared/project';
+import { SceneText } from './SceneText';
+import type { SceneEditing } from './SceneText';
 
 export interface SceneProps extends Record<string, unknown> {
   slide: Slide;
   reveal: number;
   slideNumber: number;
   slideCount: number;
+  editing?: SceneEditing;
 }
 export function SlideScene({
   slide,
   reveal,
   slideNumber,
   slideCount,
+  editing,
 }: SceneProps): React.JSX.Element {
   const frame = useCurrentFrame();
   const progress = interpolate(frame, [0, 10], [0, 1], {
@@ -57,7 +61,10 @@ export function SlideScene({
           maxWidth: 1550,
         }}
       >
-        <h2
+        <SceneText
+          field="title"
+          value={slide.title}
+          editing={editing}
           style={{
             fontSize: headingSize,
             lineHeight: 1.15,
@@ -66,11 +73,12 @@ export function SlideScene({
             whiteSpace: 'pre-wrap',
             overflowWrap: 'anywhere',
           }}
-        >
-          {slide.title}
-        </h2>
-        {slide.body && (
-          <p
+        />
+        {(slide.body || editing) && (
+          <SceneText
+            field="body"
+            value={slide.body}
+            editing={editing}
             style={{
               marginTop: 36,
               color: '#a5b2a8',
@@ -79,9 +87,7 @@ export function SlideScene({
               whiteSpace: 'pre-wrap',
               maxWidth: 1430,
             }}
-          >
-            {slide.body}
-          </p>
+          />
         )}
         {slide.reveals.length > 0 && (
           <div style={{ marginTop: 36, display: 'flex', flexDirection: 'column', gap: 16 }}>

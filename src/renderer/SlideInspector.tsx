@@ -1,9 +1,12 @@
 import { ArrowDown, ArrowUp, Copy, Trash2 } from 'lucide-react';
 import { EditableText } from './EditableText';
 import type { Slide } from '../shared/project';
+import type { TextField } from './presentation/SceneText';
 
 interface Props {
   slide: Slide;
+  selectedField: TextField | null;
+  selectField: (field: TextField) => void;
   index: number;
   count: number;
   update: (patch: Partial<Omit<Slide, 'id'>>) => void;
@@ -13,6 +16,8 @@ interface Props {
 }
 export function SlideInspector({
   slide,
+  selectedField,
+  selectField,
   index,
   count,
 
@@ -29,9 +34,16 @@ export function SlideInspector({
       </div>
       <div className="inspector-body">
         <div className="inspector-section">
-          <span className="eyebrow">CONTENT</span>
+          <span className="eyebrow">
+            {selectedField === null
+              ? 'CONTENT'
+              : `SELECTED / ${selectedField === 'title' ? 'HEADING' : 'BODY'}`}
+          </span>
           <label htmlFor="slide-title">Heading</label>
           <EditableText
+            onFocus={() => {
+              selectField('title');
+            }}
             id="slide-title"
             value={slide.title}
             maxLength={200}
@@ -41,6 +53,9 @@ export function SlideInspector({
           />
           <label htmlFor="slide-body">Body</label>
           <EditableText
+            onFocus={() => {
+              selectField('body');
+            }}
             id="slide-body"
             value={slide.body}
             maxLength={10000}

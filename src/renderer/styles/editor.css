@@ -452,3 +452,27 @@ button.accent-option[aria-pressed='true'] {
 .project-name:hover {
   border-color: var(--line);
 }
+
+.editable-scene-text {
+  position: relative;
+  cursor: text;
+  min-height: 1em;
+  outline: 2px solid transparent;
+  outline-offset: 12px;
+}
+
+.editable-scene-text:hover {
+  outline-color: var(--accent);
+}
+
+.editable-scene-text[data-selected='true'],
+.editable-scene-text:focus {
+  outline: 3px solid var(--accent);
+}
+
+.editable-scene-text:empty::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  opacity: 0.45;
+  pointer-events: none;
+}

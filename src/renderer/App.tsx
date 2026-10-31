@@ -17,9 +17,11 @@ import { SlideRail } from './SlideRail';
 import { SlideInspector } from './SlideInspector';
 import { useAppearance } from './appearance';
 import { AppearancePanel } from './AppearancePanel';
+import type { TextField } from './presentation/SceneText';
 
 export function App(): React.JSX.Element {
   const { snapshot, error, busy, edit, undo, redo, save, open, newProject } = useProject();
+  const [selectedField, setSelectedField] = useState<TextField | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
@@ -181,12 +183,24 @@ export function App(): React.JSX.Element {
         }}
       />
       <SlideCanvas
+        editing={{
+          selected: selectedField,
+          select: setSelectedField,
+          update: (field, value) => {
+            edit(
+              [{ type: 'updateSlide', slideId: slide.id, patch: { [field]: value } }],
+              'Edit scene text',
+            );
+          },
+        }}
         key={`canvas:${slide.id}`}
         slide={slide}
         index={selectedIndex}
         count={snapshot.project.slides.length}
       />
       <SlideInspector
+        selectedField={selectedField}
+        selectField={setSelectedField}
         key={`inspector:${slide.id}`}
         slide={slide}
         index={selectedIndex}

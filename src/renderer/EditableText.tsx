@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 interface Props {
   id: string;
+  onFocus?: () => void;
   value: string;
   commit: (value: string) => void;
   rows?: number;
@@ -11,6 +12,7 @@ interface Props {
 }
 export function EditableText({
   id,
+  onFocus,
   value,
   commit,
   rows,
@@ -37,6 +39,7 @@ export function EditableText({
         maxLength={maxLength}
         onFocus={() => {
           setFocused(true);
+          onFocus?.();
         }}
         onChange={(event) => {
           setDraft(event.target.value);
@@ -54,6 +57,7 @@ export function EditableText({
       maxLength={maxLength}
       onFocus={() => {
         setFocused(true);
+        onFocus?.();
       }}
       onChange={(event) => {
         setDraft(event.target.value);
