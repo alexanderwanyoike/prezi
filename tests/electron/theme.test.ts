@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { connectDesktopMcp } from './mcp-client';
 import { fileCommand } from './file-command';
 
 test('edits deck styling through View, saves it portably and uses it in presentation', async () => {
@@ -38,6 +39,19 @@ test('edits deck styling through View, saves it portably and uses it in presenta
     await expect(scene).toHaveCSS('background-color', 'rgb(244, 240, 232)');
     await expect(scene).toHaveCSS('padding', '96px');
     await expect(scene).toHaveCSS('font-family', '"IBM Plex Mono", monospace');
+    const client = await connectDesktopMcp(test.info().outputPath('profile'));
+    try {
+      expect(
+        (await client.callTool({ name: 'read_project', arguments: {} })).structuredContent,
+      ).toMatchObject({
+        result: {
+          ok: true,
+          value: { project: { theme: { background: '#f4f0e8', bodyFont: 'plex' } } },
+        },
+      });
+    } finally {
+      await client.close();
+    }
     await fileCommand(page, 'save');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     await fileCommand(page, 'newProject');

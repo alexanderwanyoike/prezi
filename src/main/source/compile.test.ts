@@ -101,3 +101,21 @@ export default function Scene() { return <AbsoluteFill>{message} {useCurrentFram
     error: { diagnostics: [expect.objectContaining({ file: 'Scene.tsx', line: 1 })] },
   });
 });
+
+it('types the shared presentation theme for custom scene authors', async () => {
+  const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
+  const libraries = z.record(z.string(), z.string()).parse(input);
+  expect(
+    (
+      await compileScene(
+        {
+          entry: 'Scene.tsx',
+          files: {
+            'Scene.tsx': `import type {SceneProps} from 'prezi'; export default function Scene({theme}:SceneProps){return <div style={{background:theme.background,color:theme.foreground,padding:theme.padding,fontFamily:theme.fontFamily}}>Shared theme</div>;}`,
+          },
+        },
+        libraries,
+      )
+    ).ok,
+  ).toBe(true);
+});
