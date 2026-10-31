@@ -6,6 +6,7 @@ import { ProjectOwner } from './project-owner';
 
 test('imports local media into an undoable slide edit and saves a copy independent of its source', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'prezi-media-test-'));
+  const owner = new ProjectOwner();
   try {
     const source = join(directory, 'sample.png');
     const bytes = Buffer.from(
@@ -13,7 +14,6 @@ test('imports local media into an undoable slide edit and saves a copy independe
       'base64',
     );
     await writeFile(source, bytes);
-    const owner = new ProjectOwner();
     const initial = owner.snapshot();
     const slideId = initial.project.slides[0]?.id;
     if (!slideId) throw new Error('Missing example slide');
@@ -35,6 +35,7 @@ test('imports local media into an undoable slide edit and saves a copy independe
     expect((await reopened.save(secondPath)).ok).toBe(true);
     expect(await readFile(join(`${secondPath}.assets`, `${media.id}.png`))).toEqual(bytes);
   } finally {
+    await owner.dispose();
     await rm(directory, { recursive: true, force: true });
   }
 });
