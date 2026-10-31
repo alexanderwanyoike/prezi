@@ -74,4 +74,17 @@ it('installs source and instance properties atomically and restores both through
   expect(owner.snapshot().project).toEqual(before.project);
   owner.redo(4);
   expect(owner.snapshot().project).toEqual(installed.project);
+  const working = owner.snapshot();
+  expect(
+    owner.installScene({
+      ...request,
+      requestId: 'invalid-layer',
+      expectedRevision: working.revision,
+      definition: {
+        ...definition,
+        layers: [{ id: 'bad', label: 'Missing property', property: 'missing' }],
+      },
+    }).ok,
+  ).toBe(false);
+  expect(owner.snapshot()).toEqual(working);
 });
