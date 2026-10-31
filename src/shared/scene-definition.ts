@@ -49,6 +49,7 @@ export const sceneCandidateSchema = z.object({
     .max(32),
 });
 export const sceneDefinitionSchema = sceneCandidateSchema.extend({
+  version: z.uuid().optional(),
   code: z
     .string()
     .min(1)
