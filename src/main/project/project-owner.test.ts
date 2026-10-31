@@ -184,3 +184,29 @@ describe('project editing', () => {
     expect(before.project.slides[0]?.title).not.toBe('A quieter opening');
   });
 });
+
+it('blocks new content changes during update handoff and unlocks after an installation failure', () => {
+  const owner = new ProjectOwner();
+  const initial = owner.snapshot();
+  const locked = owner.beginRestart();
+  expect(locked.ok).toBe(true);
+  expect(
+    owner.edit({
+      requestId: 'during-update',
+      expectedRevision: 0,
+      label: 'Agent edit',
+      operations: [{ type: 'renameProject', name: 'Must not disappear' }],
+    }),
+  ).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+  expect(owner.snapshot()).toEqual(initial);
+  if (!locked.ok) throw new Error('Missing restart lock');
+  locked.value();
+  expect(
+    owner.edit({
+      requestId: 'after-failure',
+      expectedRevision: 0,
+      label: 'Recovered',
+      operations: [{ type: 'renameProject', name: 'Can keep working' }],
+    }).ok,
+  ).toBe(true);
+});
