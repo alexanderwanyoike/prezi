@@ -213,3 +213,13 @@
 .presentation-theme-dialog > button {
   margin-top: 20px;
 }
+
+.presentation-theme-dialog .panel-heading {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--panel);
+  margin: -24px -24px 0;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+}
