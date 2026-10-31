@@ -17,7 +17,7 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 - [x] Additional source slice: read-only Remotion Code view and live instance properties.
 - [x] Additional persistence slice: a self-contained `.prezi` archive with source, assets and built-in fonts/licences.
 - [x] Import local images/video and persist asset references; stream media with range requests.
-- [ ] Keep video playing while the reveal holds; stop inactive media and expose useful playback settings.
+- [x] Keep video playing while the reveal holds; stop inactive media and expose useful playback settings.
 - [ ] Official MCP SDK adapter connected to the existing owner, selection and edits, conflict/retry verification, and connection instructions.
 
 ## Checkpoint 3: phases 9-14

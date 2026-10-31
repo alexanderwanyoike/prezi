@@ -2,7 +2,7 @@
 
 A small local-first Electron presentation desk for narrated explanations. Built with strict TypeScript, React, Vite and Remotion. Recording happens in OBS or ClipForge.
 
-Checkpoint one covers phases 1-5: edit a text deck, save it locally, reopen it and present manually controlled animated reveals. Media, MCP and custom source are the next checkpoints.
+Checkpoint one covers phases 1-5: edit a text deck, save it locally, reopen it and present manually controlled animated reveals. Media import, independent video playback, portable projects and source inspection extend checkpoint two. MCP and custom source follow.
 
 ![Dark editor](docs/screenshots/editor-dark.png)
 
@@ -33,7 +33,7 @@ There is no installer yet. Desktop packaging is part of checkpoint three.
 - Choose **Title / chapter** or **Text / reveals**. Enter one reveal per line, up to 30. Use the reveal buttons to preview any step or **Restart preview** to replay the initial entrance.
 - Undo and redo operate on content edits. Each accepted edit batch is one undo action; typing creates successive edits.
 - **Code** opens a read-only browser for Remotion components, schemas and presentation styles. **Slide properties** shows live instance values; use the inspector to change them. Custom source editing and compilation follow in phases 9-10.
-- **Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Video playback settings follow in the next slice.
+- **Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Use the inspector to position/resize media and choose contain or cover. Video has autoplay, looping, mute and volume settings; hover it for play/pause/restart controls.
 - Default saves create a single `.prezi` file containing deck content, scene source, local media, built-in fonts and their licences. Move that file on its own. Legacy JSON projects still use an adjacent `<project path>.assets` directory.
 - **Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.
 - The app asks whether to save, discard or cancel before replacing or closing a changed deck. Failed saves and invalid imports leave the current deck open.
@@ -49,6 +49,8 @@ There is no installer yet. Desktop packaging is part of checkpoint three.
 | Left Arrow          | Previous reveal, or the previous slide's final reveal |
 | Escape              | Return to the editor and leave fullscreen             |
 | Full screen         | Hide the presenter toolbar and fill the display       |
+
+Video keeps playing while reveals hold. Reveals retain the current video node; leaving the slide pauses and mutes it, and returning starts it again. Editor preview starts paused. Video completion does not advance.
 
 The final slide stays visible. There is no automatic progression. Repeated keydown events and navigation during the brief 400 ms animation lock are ignored. Space cannot scroll the stage, and typing in the editor does not trigger presentation navigation.
 
