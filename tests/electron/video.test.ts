@@ -63,3 +63,56 @@ test('keeps video independent of held reveal frames and stops inactive slide med
     await desktop.close();
   }
 });
+
+test('configures playback and placement while media controls keep keyboard focus', async () => {
+  const desktop = await electron.launch({
+    args: [resolve('.'), '--mute-audio', `--user-data-dir=${test.info().outputPath('profile')}`],
+    env: Object.fromEntries(
+      Object.entries(process.env).filter(
+        (entry): entry is [string, string] =>
+          typeof entry[1] === 'string' && entry[0] !== 'ELECTRON_RUN_AS_NODE',
+      ),
+    ),
+  });
+  try {
+    await desktop.evaluate(({ dialog }, path) => {
+      Object.assign(dialog, {
+        showOpenDialog: () => Promise.resolve({ canceled: false, filePaths: [path] }),
+        showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
+      });
+    }, resolve('tests/fixtures/held-video.webm'));
+    const page = await desktop.firstWindow();
+    await page.getByRole('button', { name: 'Import media', exact: true }).click();
+    await page.getByLabel('Autoplay video', { exact: true }).uncheck({ timeout: 1500 });
+    await page.getByLabel('Loop video', { exact: true }).check();
+    await page.getByLabel('Mute video', { exact: true }).uncheck();
+    await page.getByLabel('Video volume', { exact: true }).fill('0.35');
+    await page.getByLabel('Video volume', { exact: true }).press('Tab');
+    await page.getByLabel('Media fit', { exact: true }).selectOption('cover');
+    await page.getByLabel('Media X', { exact: true }).fill('950');
+    await page.getByLabel('Media X', { exact: true }).press('Tab');
+    await page.getByRole('button', { name: 'Present', exact: true }).click();
+    const stage = page.getByRole('region', { name: 'Presentation stage' });
+    const video = stage.locator('video');
+    await expect
+      .poll(() =>
+        video.evaluate((node: HTMLVideoElement) => ({
+          paused: node.paused,
+          muted: node.muted,
+          loop: node.loop,
+          volume: node.volume,
+          fit: getComputedStyle(node).objectFit,
+        })),
+      )
+      .toEqual({ paused: true, muted: false, loop: true, volume: 0.35, fit: 'cover' });
+    await page.getByRole('button', { name: 'Play video', exact: true }).click();
+    await expect.poll(() => video.evaluate((node: HTMLVideoElement) => node.paused)).toBe(false);
+    await page.getByRole('button', { name: 'Pause video', exact: true }).press('Space');
+    await expect.poll(() => video.evaluate((node: HTMLVideoElement) => node.paused)).toBe(true);
+    await expect(stage).toHaveAttribute('data-slide', '1');
+    await page.keyboard.press('Escape');
+    await expect(page.getByLabel('Media X', { exact: true })).toHaveValue('950');
+  } finally {
+    await desktop.close();
+  }
+});
