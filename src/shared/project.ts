@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { textScenePropsSchema } from './text-scene';
+import { mediaSchema } from './media';
 
-export const slideSchema = textScenePropsSchema.extend({ id: z.uuid() });
+export const slideSchema = textScenePropsSchema.extend({
+  id: z.uuid(),
+  media: mediaSchema.nullable().optional(),
+});
 export const projectSchema = z.object({
   schemaVersion: z.literal(1),
   id: z.uuid(),

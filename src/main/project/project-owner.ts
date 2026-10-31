@@ -1,4 +1,6 @@
+import { z } from 'zod';
 import { createHash } from 'node:crypto';
+import { AssetStore } from '../media/asset-store';
 import { readProject, writeProject } from './project-files';
 import { applyOperation } from './apply-operation';
 import { createProject, editRequestSchema } from '../../shared/project';
@@ -7,6 +9,40 @@ import { failure } from '../../shared/result';
 import type { Result } from '../../shared/result';
 
 export class ProjectOwner {
+  private readonly assets = new AssetStore();
+
+  mediaPath(id: string): string | undefined {
+    return this.project.slides.some((slide) => slide.media?.id === id)
+      ? this.assets.path(id)
+      : undefined;
+  }
+
+  async dispose(): Promise<void> {
+    await this.assets.dispose();
+  }
+
+  async importMedia(
+    path: string,
+    slideId: string,
+    expectedRevision: number,
+  ): Promise<Result<ProjectSnapshot>> {
+    if (this.fileBusy || expectedRevision !== this.revision)
+      return failure('CONFLICT', 'The project changed or a file operation is running.');
+    if (
+      !z.uuid().safeParse(slideId).success ||
+      !this.project.slides.some((slide) => slide.id === slideId)
+    )
+      return failure('NOT_FOUND', 'The slide no longer exists.');
+    const imported = await this.assets.import(path);
+    if (!imported.ok) return imported;
+    return this.edit({
+      requestId: crypto.randomUUID(),
+      expectedRevision,
+      label: 'Import media',
+      operations: [{ type: 'updateSlide', slideId, patch: { media: imported.value } }],
+    });
+  }
+
   private project: Project = createProject();
 
   private revision = 0;
@@ -77,10 +113,14 @@ export class ProjectOwner {
     this.fileBusy = true;
     const project = structuredClone(this.project);
     try {
+      const media = project.slides.flatMap((slide) => (slide.media ? [slide.media] : []));
+      const copied = await this.assets.save(path, media);
+      if (!copied.ok) return copied;
       const result = await writeProject(path, project);
       if (!result.ok) return result;
       this.savedContent = JSON.stringify(project);
       this.filePath = path;
+      this.assets.remember(path, media);
       this.listeners.forEach((listener) => {
         listener(this.snapshot());
       });
@@ -100,6 +140,10 @@ export class ProjectOwner {
       if (expectedRevision !== this.revision)
         return failure('CONFLICT', 'The project was edited while opening. Try again.');
       this.project = result.value;
+      this.assets.remember(
+        path,
+        this.project.slides.flatMap((slide) => (slide.media ? [slide.media] : [])),
+      );
       this.savedContent = JSON.stringify(this.project);
       this.filePath = path;
       this.revision += 1;
