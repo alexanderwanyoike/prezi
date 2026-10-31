@@ -28,6 +28,8 @@ module.exports = {
       ],
       rules: {
         '@typescript-eslint/no-explicit-any': 'error',
+        'no-void': ['error', { allowAsStatement: true }],
+        'jsx-a11y/label-has-associated-control': ['error', { assert: 'either' }],
         '@typescript-eslint/no-unsafe-assignment': 'error',
         '@typescript-eslint/no-unsafe-argument': 'error',
         '@typescript-eslint/no-unsafe-call': 'error',
