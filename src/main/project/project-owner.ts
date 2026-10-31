@@ -237,6 +237,8 @@ export class ProjectOwner {
   ): Result<ProjectSnapshot> {
     if (!z.string().min(1).max(100).safeParse(requestId).success)
       return failure('INVALID_INPUT', 'The history request ID is invalid.');
+    if (this.pendingImports.has(requestId))
+      return failure('REQUEST_REUSED', 'This request ID belongs to a pending import.');
     const fingerprint = JSON.stringify({ direction, expectedRevision });
     const cached = this.requests.get(requestId);
     if (cached) {
@@ -262,6 +264,8 @@ export class ProjectOwner {
   edit(input: unknown): Result<ProjectSnapshot> {
     const parsed = editRequestSchema.safeParse(input);
     if (!parsed.success) return failure('INVALID_INPUT', 'The edit request is invalid.');
+    if (this.pendingImports.has(parsed.data.requestId))
+      return failure('REQUEST_REUSED', 'This request ID belongs to a pending import.');
     const fingerprint = createHash('sha256').update(JSON.stringify(parsed.data)).digest('hex');
     const cached = this.requests.get(parsed.data.requestId);
     if (cached) {
