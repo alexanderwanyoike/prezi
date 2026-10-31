@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
+import type { SceneCandidate } from '../../shared/scene-definition';
 import { compilationSchema, sceneSourceSchema } from '../../shared/custom-scene';
 import type { Compilation, SceneSource } from '../../shared/custom-scene';
 
@@ -7,6 +8,7 @@ export async function runCompiler(
   source: SceneSource,
   signal: AbortSignal,
   directory = join(process.cwd(), 'out/compiler'),
+  _fields: SceneCandidate['fields'] = {},
 ): Promise<Compilation> {
   const failed = (message: string): Compilation => ({
     ok: false,

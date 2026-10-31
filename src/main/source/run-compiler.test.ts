@@ -1,6 +1,21 @@
 import { expect, it } from 'vitest';
 import { runCompiler } from './run-compiler';
 
+it('passes property declarations into the real isolated compiler', async () => {
+  const result = await runCompiler(
+    {
+      entry: 'Scene.tsx',
+      files: {
+        'Scene.tsx': `import type {SceneProps} from 'prezi'; export default function Scene({props}:SceneProps){return <div style={{fontSize:props.size}}>Editable</div>;}`,
+      },
+    },
+    new AbortController().signal,
+    undefined,
+    { size: { type: 'number', label: 'Size', default: 80 } },
+  );
+  expect(result.ok).toBe(true);
+}, 30000);
+
 it('compiles in a separate bounded process and cancels before spawning', async () => {
   const source = {
     entry: 'Scene.tsx',
