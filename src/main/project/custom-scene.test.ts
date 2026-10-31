@@ -51,8 +51,27 @@ it('installs source and instance properties atomically and restores both through
     }).ok,
   ).toBe(false);
   expect(owner.snapshot()).toEqual(installed);
-  owner.undo(1);
+  expect(
+    owner.edit({
+      requestId: 'properties',
+      expectedRevision: 1,
+      label: 'Edit scene properties',
+      operations: [
+        {
+          type: 'updateSceneProperties',
+          slideId: slide.id,
+          patch: { headline: 'Updated in the inspector' },
+        },
+      ],
+    }),
+  ).toMatchObject({ ok: true, value: { revision: 2 } });
+  expect(owner.snapshot().project.slides[0]?.scene?.properties).toEqual({
+    headline: 'Updated in the inspector',
+  });
+  owner.undo(2);
+  expect(owner.snapshot().project).toEqual(installed.project);
+  owner.undo(3);
   expect(owner.snapshot().project).toEqual(before.project);
-  owner.redo(2);
+  owner.redo(4);
   expect(owner.snapshot().project).toEqual(installed.project);
 });
