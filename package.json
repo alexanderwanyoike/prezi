@@ -23,6 +23,7 @@
     "verify": "yarn format:check && yarn lint && yarn typecheck && yarn test && yarn build"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/lang-javascript": "^6.2.5",
     "@codemirror/lang-json": "^6.0.2",

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Result } from '../shared/result';
 import type { useProject } from './useProject';
+import { selectFocusedSource } from './source/source-selection';
 import { useDesktopCommands } from './useDesktopCommands';
 import type { DesktopActions } from './useDesktopCommands';
 
@@ -67,7 +68,7 @@ export function useApplicationActions({
       handleDesktop(window.prezi.nativeEdit('paste'));
     },
     selectAll: () => {
-      handleDesktop(window.prezi.nativeEdit('selectAll'));
+      if (!selectFocusedSource()) handleDesktop(window.prezi.nativeEdit('selectAll'));
     },
     canvas: () => {
       editor(false);

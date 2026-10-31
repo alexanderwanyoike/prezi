@@ -59,10 +59,13 @@ export function MenuBar({ actions, code, canUndo, canRedo }: Props): React.JSX.E
   }, []);
   function execute(command: DesktopCommand): void {
     setOpen(null);
-    if (['cut', 'copy', 'paste', 'selectAll'].includes(command)) {
+    if (['cut', 'copy', 'paste', 'selectAll', 'save', 'saveAs'].includes(command)) {
       previousFocus.current?.focus();
       const range = previousRange.current;
-      if (range?.commonAncestorContainer.isConnected) {
+      if (
+        range?.commonAncestorContainer.isConnected &&
+        previousFocus.current?.contains(range.commonAncestorContainer)
+      ) {
         const selection = window.getSelection();
         selection?.removeAllRanges();
         selection?.addRange(range);
@@ -77,6 +80,17 @@ export function MenuBar({ actions, code, canUndo, canRedo }: Props): React.JSX.E
   function disabled(command: DesktopCommand): boolean {
     if (command === 'undo') return !canUndo;
     if (command === 'redo') return !canRedo;
+    const target = previousFocus.current;
+    const input =
+      target instanceof HTMLInputElement &&
+      !target.readOnly &&
+      !['checkbox', 'radio', 'range', 'button', 'submit', 'reset', 'file'].includes(target.type);
+    const editable =
+      input ||
+      (target instanceof HTMLTextAreaElement && !target.readOnly) ||
+      target?.isContentEditable;
+    if (command === 'cut' || command === 'paste') return !editable;
+    if (command === 'selectAll') return !editable && !target?.closest('.source-code');
     return false;
   }
   function moveInMenu(event: React.KeyboardEvent<HTMLDivElement>): void {
