@@ -233,10 +233,6 @@ button.slide-card.is-selected {
   align-items: center;
   margin-bottom: 16px;
 }
-.reveal-strip p {
-  font-size: 10px;
-  color: var(--muted);
-}
 .reveal-chips {
   display: flex;
   gap: 8px;

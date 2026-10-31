@@ -150,9 +150,7 @@ export function SlideInspector({
         )}
         <div className="inspector-section">
           <span className="eyebrow">PROGRESSION</span>
-          <p className="muted small">
-            Reveals appear when you advance. Nothing moves on without you.
-          </p>
+          <p className="muted small">Reveals appear when you advance.</p>
           <label htmlFor="slide-reveals">
             Reveal text <span className="muted">one per line</span>
           </label>

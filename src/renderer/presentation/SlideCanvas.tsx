@@ -85,7 +85,6 @@ export function SlideCanvas({
       <section className="reveal-strip" aria-label="Reveal overview">
         <div>
           <span className="eyebrow">REVEAL STEPS</span>
-          <p>One thought at a time.</p>
         </div>
         <div className="reveal-chips">
           <button
