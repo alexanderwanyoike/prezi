@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { sceneDraftSchema } from './scene-draft';
 import {
   sceneDefinitionProblem,
   sceneDefinitionSchema,
@@ -16,6 +17,7 @@ export const slideSchema = textScenePropsSchema.extend({
 });
 export const projectSchema = z
   .object({
+    drafts: z.record(z.uuid(), sceneDraftSchema).optional(),
     scenes: z
       .record(z.uuid(), sceneDefinitionSchema)
       .refine((scenes) => Object.keys(scenes).length <= 32)
