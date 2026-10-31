@@ -6,6 +6,7 @@ import './styles/tokens.css';
 import './styles/editor.css';
 import './styles/presentation.css';
 import './styles/source.css';
+import './styles/menus.css';
 
 const root = document.getElementById('root');
 if (root) createRoot(root).render(<App />);

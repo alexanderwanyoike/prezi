@@ -24,7 +24,19 @@ export function registerProjectIpc(window: BrowserWindow, owner: ProjectOwner): 
         : failure('INVALID_INPUT', 'A valid project revision is required.');
     });
   });
+  window.on('page-title-updated', (event) => {
+    event.preventDefault();
+  });
+  function updateTitle(snapshot: ProjectSnapshot): void {
+    window.setTitle(`${snapshot.project.name}${snapshot.dirty ? ' *' : ''} - Prezi`);
+    if (process.platform === 'darwin') {
+      window.setDocumentEdited(snapshot.dirty);
+      window.setRepresentedFilename(snapshot.filePath ?? '');
+    }
+  }
+  updateTitle(owner.snapshot());
   const unsubscribe = owner.subscribe((snapshot) => {
+    if (!window.isDestroyed()) updateTitle(snapshot);
     if (!window.isDestroyed()) window.webContents.send('project:changed', snapshot);
   });
   window.on('closed', unsubscribe);

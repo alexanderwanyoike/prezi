@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { fullscreenResultSchema, snapshotResultSchema, snapshotSchema } from '../shared/desktop';
 import type { DesktopBridge } from '../shared/desktop';
+import { desktopCommandSchema } from '../shared/desktop-commands';
 import { failure } from '../shared/result';
 
 async function request(channel: string, input?: unknown) {
@@ -14,6 +15,37 @@ async function request(channel: string, input?: unknown) {
 }
 
 const bridge: DesktopBridge = {
+  platform: process.platform,
+  async close() {
+    try {
+      const response: unknown = await ipcRenderer.invoke('desktop:close');
+      const parsed = fullscreenResultSchema.safeParse(response);
+      return parsed.success ? parsed.data : failure('IO_ERROR', 'The close response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'The window could not be closed.');
+    }
+  },
+  async nativeEdit(command) {
+    try {
+      const response: unknown = await ipcRenderer.invoke('desktop:edit', command);
+      const parsed = fullscreenResultSchema.safeParse(response);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The editing response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'The editing command could not be completed.');
+    }
+  },
+  subscribeCommand(listener) {
+    const receive = (_event: Electron.IpcRendererEvent, command: unknown): void => {
+      const parsed = desktopCommandSchema.safeParse(command);
+      if (parsed.success) listener(parsed.data);
+    };
+    ipcRenderer.on('desktop:command', receive);
+    return () => {
+      ipcRenderer.removeListener('desktop:command', receive);
+    };
+  },
   importMedia: (slideId) => request('project:importMedia', slideId),
   async fullscreen(enabled) {
     try {

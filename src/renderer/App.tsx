@@ -1,18 +1,12 @@
 import { lazy, Suspense, useState } from 'react';
-import {
-  FilePlus2,
-  Code2,
-  ImagePlus,
-  FolderOpen,
-  LayoutPanelTop,
-  Palette,
-  Play,
-  Redo2,
-  Save,
-  Undo2,
-} from 'lucide-react';
+import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
 import { PresentationView } from './presentation/PresentationView';
 import { SlideCanvas } from './presentation/SlideCanvas';
+import { MenuBar } from './menu/MenuBar';
+import { WorkspaceTabs } from './WorkspaceTabs';
+import { useDesktopCommands } from './useDesktopCommands';
+import type { DesktopActions } from './useDesktopCommands';
+import type { Result } from '../shared/result';
 import { ProjectName } from './ProjectName';
 import { useProject } from './useProject';
 import { SlideRail } from './SlideRail';
@@ -35,6 +29,72 @@ export function App(): React.JSX.Element {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const { appearance, change, error: appearanceError } = useAppearance();
+  const [desktopError, setDesktopError] = useState<string | null>(null);
+  function handleDesktop(result: Promise<Result<boolean>>): void {
+    void result.then((response) => {
+      setDesktopError(response.ok ? null : response.error.message);
+    });
+  }
+  function editor(code?: boolean): void {
+    setPresenting(false);
+    if (code !== undefined) setCodeVisible(code);
+    handleDesktop(window.prezi.fullscreen(false));
+  }
+  const actions: DesktopActions = {
+    newProject: () => {
+      editor();
+      newProject();
+    },
+    open: () => {
+      editor();
+      open();
+    },
+    save: () => {
+      save();
+    },
+    saveAs: () => {
+      save(true);
+    },
+    importMedia: () => {
+      editor();
+      const id =
+        snapshot?.project.slides.find((item) => item.id === selectedId)?.id ??
+        snapshot?.project.slides[0]?.id;
+      if (id) importMedia(id);
+    },
+    close: () => {
+      handleDesktop(window.prezi.close());
+    },
+    undo,
+    redo,
+    cut: () => {
+      handleDesktop(window.prezi.nativeEdit('cut'));
+    },
+    copy: () => {
+      handleDesktop(window.prezi.nativeEdit('copy'));
+    },
+    paste: () => {
+      handleDesktop(window.prezi.nativeEdit('paste'));
+    },
+    selectAll: () => {
+      handleDesktop(window.prezi.nativeEdit('selectAll'));
+    },
+    canvas: () => {
+      editor(false);
+    },
+    code: () => {
+      editor(true);
+    },
+    present: () => {
+      setAppearanceOpen(false);
+      setPresenting(true);
+    },
+    appearance: () => {
+      editor();
+      setAppearanceOpen(true);
+    },
+  };
+  useDesktopCommands(actions);
   if (!snapshot)
     return (
       <main className="loading" role="status">
@@ -63,70 +123,23 @@ export function App(): React.JSX.Element {
     <div className="app-shell">
       <h1 className="sr-only">Your presentation desk</h1>
       <header className="app-header">
-        <div className="brand">
-          <span className="brand-symbol">
-            <LayoutPanelTop size={20} />
-          </span>
-          <span>
-            prezi<span className="brand-dot">.</span>
-          </span>
-          <span className="brand-caption">PRESENTATION DESK</span>
+        <div className="application-navigation">
+          <div className="brand">
+            <span className="brand-symbol">
+              <LayoutPanelTop size={20} />
+            </span>
+            <span>
+              prezi<span className="brand-dot">.</span>
+            </span>
+          </div>
+          <MenuBar
+            actions={actions}
+            code={codeVisible}
+            canUndo={snapshot.canUndo}
+            canRedo={snapshot.canRedo}
+          />
         </div>
         <div className="header-actions">
-          <button
-            type="button"
-            className="icon-button"
-            aria-label="New presentation"
-            title="New presentation"
-
-            onClick={newProject}
-          >
-            <FilePlus2 size={17} />
-          </button>
-          <button type="button" onClick={open}>
-            <FolderOpen size={15} />
-            Open
-          </button>
-          <button
-            type="button"
-
-            onClick={() => {
-              save();
-            }}
-          >
-            <Save size={15} />
-            Save
-          </button>
-          <button
-            type="button"
-
-            onClick={() => {
-              save(true);
-            }}
-          >
-            Save as
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              importMedia(slide.id);
-            }}
-          >
-            <ImagePlus size={15} />
-            Import media
-          </button>
-          <button
-            type="button"
-            aria-pressed={codeVisible}
-            onClick={() => {
-              setCodeVisible(!codeVisible);
-            }}
-          >
-            <Code2 size={15} />
-            Code
-          </button>
-          <span className="toolbar-divider" />
           <button
             type="button"
             className="icon-button"
@@ -213,35 +226,45 @@ export function App(): React.JSX.Element {
           setSelectedId(id);
         }}
       />
-      {codeVisible ? (
-        <Suspense
-          fallback={
-            <main className="workspace" role="status">
-              Opening scene source…
-            </main>
-          }
+      <section className="workspace-area" aria-label="Slide workspace">
+        <WorkspaceTabs code={codeVisible} select={setCodeVisible} />
+        <div
+          id="workspace-panel"
+          className="workspace-panel"
+          role="tabpanel"
+          aria-labelledby={codeVisible ? 'code-tab' : 'canvas-tab'}
         >
-          <CodeView project={snapshot.project} slide={slide} />
-        </Suspense>
-      ) : (
-        <SlideCanvas
-          pending={selectionPending}
-          editing={{
-            selected: selectedField,
-            select: setSelectedField,
-            update: (field, value) => {
-              edit(
-                [{ type: 'updateSlide', slideId: slide.id, patch: { [field]: value } }],
-                'Edit scene text',
-              );
-            },
-          }}
-          key={`canvas:${slide.id}`}
-          slide={slide}
-          index={selectedIndex}
-          count={snapshot.project.slides.length}
-        />
-      )}
+          {codeVisible ? (
+            <Suspense
+              fallback={
+                <main className="workspace" role="status">
+                  Opening scene source…
+                </main>
+              }
+            >
+              <CodeView project={snapshot.project} slide={slide} />
+            </Suspense>
+          ) : (
+            <SlideCanvas
+              pending={selectionPending}
+              editing={{
+                selected: selectedField,
+                select: setSelectedField,
+                update: (field, value) => {
+                  edit(
+                    [{ type: 'updateSlide', slideId: slide.id, patch: { [field]: value } }],
+                    'Edit scene text',
+                  );
+                },
+              }}
+              key={`canvas:${slide.id}`}
+              slide={slide}
+              index={selectedIndex}
+              count={snapshot.project.slides.length}
+            />
+          )}
+        </div>
+      </section>
       <SlideInspector
         pending={selectionPending}
         updateMedia={(patch) => {
@@ -272,7 +295,9 @@ export function App(): React.JSX.Element {
       <footer className="status-bar">
         <span>
           <span className="status-dot" />
-          <span role={error ? 'alert' : undefined}>{error ?? appearanceError ?? status}</span>
+          <span role={error || desktopError ? 'alert' : undefined}>
+            {error ?? desktopError ?? appearanceError ?? status}
+          </span>
         </span>
         <span>
           SLIDE {selectedIndex + 1} OF {snapshot.project.slides.length}

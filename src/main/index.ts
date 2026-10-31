@@ -1,6 +1,7 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
 import { registerMedia } from './media/register-media';
+import { registerDesktopIpc } from './register-desktop-ipc';
 import { registerPresentationIpc } from './register-presentation-ipc';
 import { registerFileIpc } from './project/register-file-ipc';
 import { ProjectOwner } from './project/project-owner';
@@ -36,6 +37,7 @@ async function openWindow(): Promise<void> {
     },
   });
   registerProjectIpc(window, owner);
+  registerDesktopIpc(window);
   registerMedia(window, owner);
   registerFileIpc(window, owner);
   registerPresentationIpc(window);

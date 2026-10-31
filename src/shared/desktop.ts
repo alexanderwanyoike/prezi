@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { projectSchema } from './project';
+import type { DesktopCommand, NativeEditCommand } from './desktop-commands';
 import type { Result } from './result';
 import type { EditRequest, ProjectSnapshot } from './project';
 
@@ -29,6 +30,10 @@ export const snapshotResultSchema = z.union([
   }),
 ]);
 export interface DesktopBridge {
+  platform: NodeJS.Platform;
+  close: () => Promise<Result<boolean>>;
+  nativeEdit: (command: NativeEditCommand) => Promise<Result<boolean>>;
+  subscribeCommand: (listener: (command: DesktopCommand) => void) => () => void;
   importMedia: (slideId: string) => Promise<Result<ProjectSnapshot>>;
   fullscreen: (enabled: boolean) => Promise<Result<boolean>>;
   newProject: () => Promise<Result<ProjectSnapshot>>;
@@ -58,3 +63,5 @@ export const fullscreenResultSchema = z.union([
     }),
   }),
 ]);
+
+export const booleanResultSchema = fullscreenResultSchema;
