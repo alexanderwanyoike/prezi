@@ -42,7 +42,11 @@ test('previews manually revealed process stages, edits a code layout and plays t
     const video = page.locator('video');
     await expect(video).toHaveJSProperty('readyState', 4);
     await page.getByRole('button', { name: 'Play video', exact: true }).click();
-    await expect.poll(() => video.evaluate((node) => node.currentTime)).toBeGreaterThan(0.1);
+    await expect
+      .poll(() =>
+        video.evaluate((node) => (node instanceof HTMLVideoElement ? node.currentTime : 0)),
+      )
+      .toBeGreaterThan(0.1);
   } finally {
     await desktop.evaluate(({ dialog }) =>
       Object.assign(dialog, {
