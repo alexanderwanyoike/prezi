@@ -56,3 +56,7 @@ read_project includes the resolved presentation theme. Use setTheme with a parti
 ## Project fonts
 
 read_project lists registered font IDs, names, format, provenance and notice length. read_font({fontId}) returns one retained notice (maximum 65,536 characters). import_font accepts requestId, expectedRevision, absolute path and optional credit {provenance, license}. Retry with identical input. Use a setTheme patch with bodyFont or monoFont set to that UUID to select it. updateFont edits supplied credit metadata. Font imports are limited to 16 MiB input and declared WOFF/WOFF2 decoded size of 64 MiB; only 16 registrations are allowed per project.
+
+## Resource replacement
+
+import_media accepts optional credit {provenance, license} and replace: true. Replacement retains the old frame/playback/credits, requires the same image/video kind and registers a new resource identity. updateMedia can edit provenance and licence text. import_font accepts replaceFontId to replace one registration, retain its supplied credits and update body/detail theme references atomically. Both replacement routes use the same request-ID retry and revision rules as normal imports. Undo restores the original resource references.

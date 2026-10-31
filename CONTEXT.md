@@ -20,3 +20,5 @@ Checkpoint one covers text editing, saving/reopening and manual Remotion present
 - Presentation theme: saved, revisioned deck colours, fonts, spacing and motion defaults. Separate from application appearance. Custom source receives the resolved theme through SceneProps.
 
 - Project font: a stable resource ID, detected format, managed disk bytes, optional provenance and supplied licence notice. Theme choices reference registered IDs; runtime loading omits credit text and loads only selected faces.
+
+- Resource replacement: a new managed identity retaining the previous placement/playback and supplied credits. Font replacement updates theme references in the same undo action. Absent assets can be repaired after open; saves remain atomic and require readable referenced resources.

@@ -29,7 +29,7 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 - [x] Human code authoring in the Code workspace, with retained drafts and Apply diagnostics.
 - [x] Code/media/process layouts and the animated Vibez workflow example.
 - [x] Font import, retained font provenance/licences and portable font loading in reusable and custom scenes.
-- [ ] Missing-asset recovery and media provenance.
+- [x] Missing-asset recovery and retained media provenance/licences.
 - [ ] Bounded preview capture, job status and static thumbnails.
 - [x] Update runtime: explicit download/progress, protected restart and saved-deck recovery.
 - [x] Desktop updates: release feeds, explicit download/restart, unsaved-change protection and platform installer/update metadata. Native cross-platform verification runs in CI; Linux update/restart was exercised locally.
