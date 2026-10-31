@@ -18,3 +18,5 @@ A local-first Electron presentation app for recording narrated explanations with
 Checkpoint one covers text editing, saving/reopening and manual Remotion presentation. Media and shared MCP editing complete checkpoint two. Custom scenes and desktop updates/installers are available. Human code authoring, fonts, previews and the recording rehearsal follow.
 
 - Presentation theme: saved, revisioned deck colours, fonts, spacing and motion defaults. Separate from application appearance. Custom source receives the resolved theme through SceneProps.
+
+- Project font: a stable resource ID, detected format, managed disk bytes, optional provenance and supplied licence notice. Theme choices reference registered IDs; runtime loading omits credit text and loads only selected faces.

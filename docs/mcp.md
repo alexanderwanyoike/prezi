@@ -52,3 +52,7 @@ The source is accepted only after type checking and isolated render validation. 
 Human drafts are exposed at `drafts/<slide UUID>/source/<file>` and `drafts/<slide UUID>/definition.json`. `setSceneDraft` in edit_project retains incomplete source without replacing the working scene. compile_scene accepts optional expectedDefinitionVersion (UUID or null) and consumeDraft. Agent installs preserve drafts by default; set consumeDraft only when deliberately applying that human draft. Working definitions include a fresh version UUID after every accepted installation.
 
 read_project includes the resolved presentation theme. Use setTheme with a partial patch in edit_project; it is one shared history action. Custom SceneProps.theme includes deck colours, padding, motion defaults, and resolved fontFamily/monoFamily strings.
+
+## Project fonts
+
+read_project lists registered font IDs, names, format, provenance and notice length. read_font({fontId}) returns one retained notice (maximum 65,536 characters). import_font accepts requestId, expectedRevision, absolute path and optional credit {provenance, license}. Retry with identical input. Use a setTheme patch with bodyFont or monoFont set to that UUID to select it. updateFont edits supplied credit metadata. Font imports are limited to 16 MiB input and declared WOFF/WOFF2 decoded size of 64 MiB; only 16 registrations are allowed per project.
