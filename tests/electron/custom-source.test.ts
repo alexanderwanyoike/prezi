@@ -78,6 +78,13 @@ test('compiles and validates shared scene source before atomically publishing it
       undoLabel: 'Agent: Build an editable scene',
       project: { scenes: { [request.candidate.id]: { source: request.candidate.source } } },
     });
+    const source = await client.callTool({
+      name: 'read_source',
+      arguments: { path: `scenes/${request.candidate.id}/source/Scene.tsx`, length: 64000 },
+    });
+    expect(source.structuredContent).toMatchObject({
+      result: { ok: true, value: { text: request.candidate.source.files['Scene.tsx'] } },
+    });
     const bad = {
       ...request,
       requestId: 'invalid-custom',
