@@ -214,63 +214,6 @@ button.slide-card.is-selected {
   align-items: center;
   justify-content: center;
 }
-.slide-preview {
-  aspect-ratio: 16/9;
-  width: 100%;
-  max-height: 100%;
-  background: #101513;
-  color: #edf2ec;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 6.5%;
-  box-shadow: 0 14px 45px #00000020;
-  container-type: inline-size;
-  border: 1px solid #ffffff08;
-  overflow: hidden;
-}
-.scene-kicker {
-  font:
-    9px 'IBM Plex Mono',
-    monospace;
-  color: #9bbb9f;
-  letter-spacing: 2px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.scene-kicker > span {
-  width: 18px;
-  height: 1px;
-  background: #7fa989;
-}
-.scene-text {
-  max-width: 90%;
-}
-.scene-text h2 {
-  font-size: clamp(23px, 6cqw, 70px);
-  line-height: 1.16;
-  font-weight: 550;
-  letter-spacing: -1.8px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.scene-text p {
-  margin-top: 24px;
-  font-size: clamp(11px, 1.9cqw, 22px);
-  color: #a5b2a8;
-  line-height: 1.7;
-  white-space: pre-wrap;
-}
-.scene-footer {
-  display: flex;
-  justify-content: space-between;
-  color: #84968a;
-  font:
-    7px 'IBM Plex Mono',
-    monospace;
-  letter-spacing: 1px;
-}
 .canvas-toolbar {
   height: 48px;
   display: flex;

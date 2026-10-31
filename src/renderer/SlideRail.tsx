@@ -37,7 +37,7 @@ export function SlideRail({ slides, selectedId, select, add }: Props): React.JSX
               }}
             >
               <span className="slide-number">{(index + 1).toString().padStart(2, '0')}</span>
-              <span className={`thumbnail thumbnail-${slide.layout}`}>
+              <span className="thumbnail">
                 <span className="mini-kicker">THE 0SMOSYS SHOW</span>
                 <strong>{slide.title}</strong>
                 <span className="mini-rule" />
