@@ -50,7 +50,6 @@ export async function captureSlide(
     },
   });
   window.webContents.setAudioMuted(true);
-  window.webContents.setZoomFactor(0.5);
   window.webContents.setFrameRate(30);
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', (event) => {
@@ -79,6 +78,7 @@ export async function captureSlide(
   const capture = async (): Promise<Result<PreviewImage>> => {
     try {
       await window.loadURL(`prezi-scene://${crypto.randomUUID()}/index.html`);
+      window.webContents.setZoomFactor(0.5);
       const prepared = await prepareSceneFrame(window.webContents.mainFrame, editorPid);
       if (!prepared.ok) return prepared;
       const state = {
