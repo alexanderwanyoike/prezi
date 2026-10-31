@@ -349,6 +349,8 @@ export class ProjectOwner {
       { ok: true, value: this.project },
     );
     if (!problem.ok) return problem;
+    if (Buffer.byteLength(JSON.stringify(problem.value, null, 2)) > 8 * 1024 * 1024)
+      return failure('INVALID_INPUT', 'The project exceeds its 8 MiB content budget.');
     this.past.push({ project: this.project, label: parsed.data.label });
     this.past = this.past.slice(-50);
     this.future = [];
