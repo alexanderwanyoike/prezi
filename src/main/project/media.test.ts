@@ -66,3 +66,66 @@ test('failed and stale media imports preserve the current deck and revision', as
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('updates media properties atomically without replacing asset identity', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-media-properties-'));
+  const owner = new ProjectOwner();
+  try {
+    const path = join(directory, 'clip.webm');
+    await writeFile(path, 'small media fixture');
+    const slideId = owner.snapshot().project.slides[0]?.id;
+    if (!slideId) throw new Error('Missing opening slide');
+    expect((await owner.importMedia(path, slideId, 0)).ok).toBe(true);
+    const original = owner.snapshot();
+    const edited = owner.edit({
+      requestId: 'media-properties',
+      expectedRevision: original.revision,
+      label: 'Configure media',
+      operations: [
+        { type: 'updateMedia', slideId, patch: { autoplay: false } },
+        {
+          type: 'updateMedia',
+          slideId,
+          patch: {
+            loop: true,
+            muted: false,
+            volume: 0.35,
+            fit: 'cover',
+            frame: { x: 900, y: 200, width: 800, height: 600 },
+          },
+        },
+      ],
+    });
+    expect(edited.ok).toBe(true);
+    expect(owner.snapshot().project.slides[0]?.media).toMatchObject({
+      ...original.project.slides[0]?.media,
+      autoplay: false,
+      loop: true,
+      muted: false,
+      volume: 0.35,
+      fit: 'cover',
+    });
+    expect(owner.undo(owner.snapshot().revision).ok).toBe(true);
+    expect(owner.snapshot().project).toEqual(original.project);
+    expect(owner.redo(owner.snapshot().revision).ok).toBe(true);
+    const before = owner.snapshot();
+    expect(
+      owner.edit({
+        requestId: 'invalid-frame',
+        expectedRevision: before.revision,
+        label: 'Move outside stage',
+        operations: [
+          {
+            type: 'updateMedia',
+            slideId,
+            patch: { frame: { x: 1800, y: 200, width: 800, height: 600 } },
+          },
+        ],
+      }),
+    ).toMatchObject({ ok: false });
+    expect(owner.snapshot()).toEqual(before);
+  } finally {
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
