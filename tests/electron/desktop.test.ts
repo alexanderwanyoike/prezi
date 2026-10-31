@@ -28,6 +28,28 @@ test('opens the isolated desktop with an editor ready for a local presentation',
     await expect(page.locator('html')).toHaveAttribute('data-accent', 'sage');
     await expect(page.getByRole('complementary', { name: 'Slides' })).toBeVisible();
     await expect(page.getByRole('complementary', { name: 'Slide properties' })).toBeVisible();
+    const title = page.getByLabel('Heading', { exact: true });
+    await expect(title).toBeEditable({ timeout: 1500 });
+    await title.fill('A working presentation');
+    await title.press('Tab');
+    await expect(
+      page.getByRole('button', { name: 'Slide 1: A working presentation', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Duplicate', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Slide 2: A working presentation', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'Move slide down', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Slide 3: A working presentation', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'Delete slide', exact: true }).click();
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Slide 3: A working presentation', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Add slide', exact: true }).click();
+    await expect(title).toHaveValue('Untitled slide');
     expect(await page.evaluate(() => 'require' in window || 'process' in window)).toBe(false);
   } finally {
     await desktop.close();
