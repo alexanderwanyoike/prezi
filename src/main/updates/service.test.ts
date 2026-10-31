@@ -64,3 +64,14 @@ test('downloads explicitly, reports progress and only installs after save protec
   expect(releaseCount).toBe(1);
   expect(updates.status()).toMatchObject({ stage: 'ready', version: '0.2.0' });
 });
+
+test('reports a completed check with no newer release distinctly from the unchecked state', async () => {
+  const updates = createUpdateService({
+    automatic: true,
+    check: () => Promise.resolve({ ok: true, value: null }),
+    download: () => Promise.resolve({ ok: true, value: undefined }),
+    install: () => Promise.resolve({ ok: true, value: undefined }),
+  });
+  expect(updates.status()).toMatchObject({ stage: 'idle' });
+  expect(await updates.check()).toMatchObject({ ok: true, value: { stage: 'current' } });
+});
