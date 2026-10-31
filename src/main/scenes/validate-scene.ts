@@ -1,6 +1,7 @@
 import { BrowserWindow } from 'electron';
 import { setTimeout as pause } from 'node:timers/promises';
 import { z } from 'zod';
+import type { PresentationTheme } from '../../shared/presentation-theme';
 import { prepareSceneFrame } from './register-runtime';
 import type { SceneJobRequest } from '../../shared/scene-jobs';
 import type { Slide } from '../../shared/project';
@@ -27,6 +28,7 @@ export async function validateScene(
   slide: Slide,
   signal: AbortSignal,
   editorPid: number,
+  theme?: PresentationTheme,
 ): Promise<Result<void>> {
   if (signal.aborted) return failure('CANCELLED', 'Scene validation was cancelled.');
   const window = new BrowserWindow({
@@ -73,6 +75,7 @@ export async function validateScene(
       const prepared = await prepareSceneFrame(window.webContents.mainFrame, editorPid);
       if (!prepared.ok) return prepared;
       const state = {
+        theme,
         title: slide.title,
         body: slide.body,
         reveal: 0,

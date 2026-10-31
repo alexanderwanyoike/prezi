@@ -72,9 +72,17 @@ async function openWindow(): Promise<void> {
         request.candidate.fields,
       ),
     (request, code, signal) => {
-      const slide = owner.snapshot().project.slides.find((item) => item.id === request.slideId);
+      const { project } = owner.snapshot();
+      const slide = project.slides.find((item) => item.id === request.slideId);
       return slide
-        ? validateScene(request, code, slide, signal, window.webContents.mainFrame.osProcessId)
+        ? validateScene(
+            request,
+            code,
+            slide,
+            signal,
+            window.webContents.mainFrame.osProcessId,
+            project.theme,
+          )
         : Promise.resolve(failure('NOT_FOUND', 'The slide no longer exists.'));
     },
   );
