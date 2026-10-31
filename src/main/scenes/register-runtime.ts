@@ -42,9 +42,13 @@ export function registerSceneRuntime(window: BrowserWindow): void {
       )
     )
       return new Response('Scene resource not found', { status: 404 });
-    return net.fetch(
+    const resource = await net.fetch(
       pathToFileURL(join(import.meta.dirname, '../scenes', url.pathname.slice(1))).toString(),
     );
+    if (url.pathname !== '/index.html') return resource;
+    const headers = new Headers(resource.headers);
+    headers.set('Content-Security-Policy', 'sandbox allow-scripts allow-same-origin');
+    return new Response(resource.body, { status: resource.status, headers });
   });
   ipcMain.handle('scenes:prepare', async (event, input: unknown) => {
     if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame)
