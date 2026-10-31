@@ -45,7 +45,9 @@ export class SceneJobs {
         ? { ok: true, value: structuredClone(existing.job) }
         : failure('REQUEST_REUSED', 'This request ID belongs to another scene job.');
     const snapshot = this.owner.snapshot();
-    const version = snapshot.project.scenes?.[request.candidate.id]?.version ?? null;
+    const boundId = snapshot.project.slides.find((slide) => slide.id === request.slideId)?.scene
+      ?.definitionId;
+    const version = snapshot.project.scenes?.[boundId ?? '']?.version ?? null;
     if (
       request.expectedDefinitionVersion !== undefined &&
       request.expectedDefinitionVersion !== version
@@ -120,6 +122,7 @@ export class SceneJobs {
     if (!validated.ok) return validated;
     const installed = this.owner.installScene({
       requestId: request.requestId,
+      consumeDraft: request.consumeDraft,
       expectedRevision: request.expectedRevision,
       label: request.label,
       slideId: request.slideId,

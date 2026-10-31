@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { withoutSceneDraft } from '../../shared/scene-draft';
 import { sceneInstallationSchema } from '../../shared/scene-definition';
 import type { SceneInstallation } from '../../shared/scene-definition';
 import { readArchive } from '../archive/read-archive';
@@ -39,6 +40,9 @@ export class ProjectOwner {
       return failure('NOT_FOUND', 'The slide no longer exists.');
     const draft: Project = {
       ...this.project,
+      drafts: request.consumeDraft
+        ? withoutSceneDraft(this.project.drafts, request.slideId)
+        : this.project.drafts,
       scenes: {
         ...this.project.scenes,
         [request.definition.id]: { ...request.definition, version: crypto.randomUUID() },
