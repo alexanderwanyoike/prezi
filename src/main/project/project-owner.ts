@@ -8,6 +8,8 @@ export class ProjectOwner {
   private project: Project = createProject();
 
   private revision = 0;
+  private past: Project[] = [];
+  private future: Project[] = [];
 
   private dirty = false;
 
@@ -19,8 +21,8 @@ export class ProjectOwner {
       project: structuredClone(this.project),
       revision: this.revision,
       dirty: this.dirty,
-      canUndo: false,
-      canRedo: false,
+      canUndo: this.past.length > 0,
+      canRedo: this.future.length > 0,
       filePath: null,
     };
   }
@@ -30,6 +32,33 @@ export class ProjectOwner {
     return () => {
       this.listeners.delete(listener);
     };
+  }
+
+  undo(expectedRevision: number): Result<ProjectSnapshot> {
+    return this.restoreHistory(expectedRevision, this.past, this.future);
+  }
+
+  redo(expectedRevision: number): Result<ProjectSnapshot> {
+    return this.restoreHistory(expectedRevision, this.future, this.past);
+  }
+
+  private restoreHistory(
+    expectedRevision: number,
+    from: Project[],
+    to: Project[],
+  ): Result<ProjectSnapshot> {
+    if (expectedRevision !== this.revision)
+      return failure('CONFLICT', 'The project changed. Read its latest revision and retry.');
+    const previous = from.pop();
+    if (!previous) return failure('INVALID_INPUT', 'There is no history in that direction.');
+    to.push(this.project);
+    this.project = previous;
+    this.revision += 1;
+    this.dirty = true;
+    this.listeners.forEach((listener) => {
+      listener(this.snapshot());
+    });
+    return { ok: true, value: this.snapshot() };
   }
 
   edit(input: unknown): Result<ProjectSnapshot> {
@@ -56,6 +85,9 @@ export class ProjectOwner {
       { ok: true, value: draft },
     );
     if (!problem.ok) return problem;
+    this.past.push(this.project);
+    this.past = this.past.slice(-50);
+    this.future = [];
     this.project = draft;
     this.revision += 1;
     this.dirty = true;
