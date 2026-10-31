@@ -94,6 +94,18 @@ export function MenuBar({ actions, code, canUndo, canRedo }: Props): React.JSX.E
     return false;
   }
   function moveInMenu(event: React.KeyboardEvent<HTMLDivElement>): void {
+    if (event.key === 'Tab') {
+      root.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
+      setOpen(null);
+      return;
+    }
+    if (open && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      event.preventDefault();
+      const index = menuNames.indexOf(open);
+      const direction = event.key === 'ArrowLeft' ? -1 : 1;
+      setOpen(menuNames[(index + direction + menuNames.length) % menuNames.length] ?? null);
+      return;
+    }
     if (event.key === 'Escape' && open) {
       event.preventDefault();
       event.stopPropagation();
@@ -181,6 +193,7 @@ export function MenuBar({ actions, code, canUndo, canRedo }: Props): React.JSX.E
                   <button
                     type="button"
                     role={checked === undefined ? 'menuitem' : 'menuitemradio'}
+                    tabIndex={-1}
                     aria-checked={checked}
                     aria-label={item.label}
                     disabled={disabled(item.command)}
