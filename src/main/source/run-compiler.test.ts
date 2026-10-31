@@ -27,7 +27,9 @@ it('cancels a running compiler and returns its resource boundary', async () => {
   };
   const controller = new AbortController();
   const running = runCompiler(source, controller.signal);
-  const timer = setTimeout(() => { controller.abort(); }, 100);
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, 100);
   const result = await running;
   clearTimeout(timer);
   expect(result.ok).toBe(false);
