@@ -11,8 +11,17 @@ interface Props {
   code: boolean;
   canUndo: boolean;
   canRedo: boolean;
+  undoLabel: string | null;
+  redoLabel: string | null;
 }
-export function MenuBar({ actions, code, canUndo, canRedo }: Props): React.JSX.Element {
+export function MenuBar({
+  actions,
+  code,
+  canUndo,
+  canRedo,
+  undoLabel,
+  redoLabel,
+}: Props): React.JSX.Element {
   const [open, setOpen] = useState<MenuName | null>(null);
   const root = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
@@ -183,6 +192,9 @@ export function MenuBar({ actions, code, canUndo, canRedo }: Props): React.JSX.E
                       key={`separator-${itemIndex.toString()}`}
                     />
                   );
+                let { label } = item;
+                if (item.command === 'undo' && undoLabel) label = `Undo: ${undoLabel}`;
+                if (item.command === 'redo' && redoLabel) label = `Redo: ${redoLabel}`;
                 let checked: boolean | undefined;
                 if (item.command === 'canvas') checked = !code;
                 if (item.command === 'code') checked = code;
@@ -195,7 +207,7 @@ export function MenuBar({ actions, code, canUndo, canRedo }: Props): React.JSX.E
                     role={checked === undefined ? 'menuitem' : 'menuitemradio'}
                     tabIndex={-1}
                     aria-checked={checked}
-                    aria-label={item.label}
+                    aria-label={label}
                     disabled={disabled(item.command)}
                     key={item.command}
                     onPointerDown={(event) => {
@@ -206,7 +218,7 @@ export function MenuBar({ actions, code, canUndo, canRedo }: Props): React.JSX.E
                     }}
                   >
                     <span className="menu-check">{checked && <Check size={13} />}</span>
-                    <span>{item.label}</span>
+                    <span>{label}</span>
                     <kbd>{shortcut}</kbd>
                   </button>
                 );

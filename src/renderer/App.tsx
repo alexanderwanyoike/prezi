@@ -74,6 +74,8 @@ export function App(): React.JSX.Element {
           <MenuBar
             actions={actions}
             code={codeVisible}
+            undoLabel={snapshot.undoLabel}
+            redoLabel={snapshot.redoLabel}
             canUndo={snapshot.canUndo}
             canRedo={snapshot.canRedo}
           />
@@ -130,6 +132,7 @@ export function App(): React.JSX.Element {
             type="button"
             className="icon-button"
             aria-label="Undo"
+            title={snapshot.undoLabel ? `Undo: ${snapshot.undoLabel}` : 'Undo'}
             disabled={!snapshot.canUndo}
             onClick={undo}
           >
@@ -139,6 +142,7 @@ export function App(): React.JSX.Element {
             type="button"
             className="icon-button"
             aria-label="Redo"
+            title={snapshot.redoLabel ? `Redo: ${snapshot.redoLabel}` : 'Redo'}
             disabled={!snapshot.canRedo}
             onClick={redo}
           >
