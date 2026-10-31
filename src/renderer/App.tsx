@@ -2,6 +2,8 @@ import { lazy, Suspense, useState } from 'react';
 import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
 import { PresentationView } from './presentation/PresentationView';
 import { SlideCanvas } from './presentation/SlideCanvas';
+import { useUpdates } from './useUpdates';
+import { UpdateDialog } from './UpdateDialog';
 import { AgentConnection } from './AgentConnection';
 import { MenuBar } from './menu/MenuBar';
 import { WorkspaceTabs } from './WorkspaceTabs';
@@ -22,6 +24,8 @@ const CodeView = lazy(async () => {
 
 export function App(): React.JSX.Element {
   const project = useProject();
+  const updates = useUpdates(project.flush);
+  const [updatesOpen, setUpdatesOpen] = useState(false);
   const { snapshot, error, busy, edit, undo, redo } = project;
   const [selectedField, setSelectedField] = useState<TextField | null>(null);
   const [codeVisible, setCodeVisible] = useState(false);
@@ -37,6 +41,7 @@ export function App(): React.JSX.Element {
     setCodeVisible,
     setAppearanceOpen,
     setConnectionOpen,
+    setUpdatesOpen,
   });
   const workspaceError = useWorkspaceSelection(
     snapshot,
@@ -71,6 +76,14 @@ export function App(): React.JSX.Element {
   if (busy) status = 'Updating the deck…';
   return (
     <div className="app-shell">
+      {updatesOpen && (
+        <UpdateDialog
+          updates={updates}
+          close={() => {
+            setUpdatesOpen(false);
+          }}
+        />
+      )}
       {connectionOpen && (
         <AgentConnection
           close={() => {
@@ -260,9 +273,21 @@ export function App(): React.JSX.Element {
             {error ?? desktopError ?? workspaceError ?? appearanceError ?? status}
           </span>
         </span>
+        {['available', 'ready'].includes(updates.snapshot?.state.stage ?? '') && (
+          <button
+            type="button"
+            className="update-notice"
+            onClick={() => {
+              setUpdatesOpen(true);
+            }}
+          >
+            Update {updates.snapshot?.state.stage === 'ready' ? 'ready' : 'available'}
+          </button>
+        )}
         <span>
           SLIDE {selectedIndex + 1} OF {snapshot.project.slides.length}
-          <span className="status-separator">/</span>PREZI 0.1
+          <span className="status-separator">/</span>PREZI{' '}
+          {updates.snapshot?.installedVersion ?? '…'}
         </span>
       </footer>
     </div>

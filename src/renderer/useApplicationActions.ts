@@ -12,6 +12,7 @@ interface Props {
   setCodeVisible: (value: boolean) => void;
   setAppearanceOpen: (value: boolean) => void;
   setConnectionOpen: (value: boolean) => void;
+  setUpdatesOpen: (value: boolean) => void;
 }
 export function useApplicationActions({
   project,
@@ -20,6 +21,7 @@ export function useApplicationActions({
   setCodeVisible,
   setAppearanceOpen,
   setConnectionOpen,
+  setUpdatesOpen,
 }: Props): { actions: DesktopActions; error: string | null } {
   const { snapshot, newProject, open, save, importMedia, undo, redo } = project;
   const [desktopError, setDesktopError] = useState<string | null>(null);
@@ -79,6 +81,11 @@ export function useApplicationActions({
     },
     code: () => {
       editor(true);
+    },
+    updates: () => {
+      editor();
+      setAppearanceOpen(false);
+      setUpdatesOpen(true);
     },
     connection: () => {
       editor();

@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { fullscreenResultSchema, snapshotResultSchema, snapshotSchema } from '../shared/desktop';
 import type { DesktopBridge } from '../shared/desktop';
+import { updateResultSchema, updateSnapshotSchema } from '../shared/updates';
+import type { UpdateCommand } from '../shared/updates';
 import { mcpStatusSchema } from '../shared/mcp';
 import { selectionSchema } from '../shared/workspace';
 import { desktopCommandSchema } from '../shared/desktop-commands';
@@ -16,8 +18,29 @@ async function request(channel: string, input?: unknown) {
   }
 }
 
+async function updateRequest(command: 'status' | UpdateCommand) {
+  try {
+    const response: unknown = await ipcRenderer.invoke(`updates:${command}`);
+    const parsed = updateResultSchema.safeParse(response);
+    return parsed.success ? parsed.data : failure('IO_ERROR', 'The update response was invalid.');
+  } catch {
+    return failure('IO_ERROR', 'The update service could not be reached.');
+  }
+}
 const bridge: DesktopBridge = {
   platform: process.platform,
+  updateStatus: () => updateRequest('status'),
+  updateAction: (command) => updateRequest(command),
+  subscribeUpdates(listener) {
+    const receive = (_event: Electron.IpcRendererEvent, input: unknown): void => {
+      const parsed = updateSnapshotSchema.safeParse(input);
+      if (parsed.success) listener(parsed.data);
+    };
+    ipcRenderer.on('updates:changed', receive);
+    return () => {
+      ipcRenderer.removeListener('updates:changed', receive);
+    };
+  },
   async mcpStatus() {
     try {
       const response: unknown = await ipcRenderer.invoke('mcp:status');

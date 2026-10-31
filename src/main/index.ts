@@ -1,5 +1,7 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { createInstalledUpdates } from './updates/runtime';
+import { registerUpdateIpc } from './updates/register-ipc';
 import { WorkspaceOwner } from './mcp/workspace-owner';
 import { registerWorkspaceIpc } from './mcp/register-workspace-ipc';
 import { registerConnectionIpc } from './mcp/register-connection-ipc';
@@ -28,6 +30,7 @@ protocol.registerSchemesAsPrivileged([
 const owner = new ProjectOwner();
 const workspace = new WorkspaceOwner(owner);
 let mcp: McpConnection | undefined;
+let installedUpdates: ReturnType<typeof createInstalledUpdates> | undefined;
 
 async function openWindow(): Promise<void> {
   const window = new BrowserWindow({
@@ -51,7 +54,10 @@ async function openWindow(): Promise<void> {
   registerProjectIpc(window, owner);
   registerDesktopIpc(window);
   registerMedia(window, owner);
-  registerFileIpc(window, owner);
+  const files = registerFileIpc(window, owner);
+  installedUpdates = createInstalledUpdates();
+  registerUpdateIpc(window, installedUpdates.updates, files.prepareRestart);
+  installedUpdates.start();
   registerPresentationIpc(window);
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', (event) => {
@@ -76,6 +82,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
+  installedUpdates?.stop();
   void mcp?.close();
   void owner.dispose();
 });

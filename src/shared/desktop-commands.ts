@@ -18,6 +18,7 @@ export const desktopCommandSchema = z.enum([
   'present',
   'appearance',
   'connection',
+  'updates',
 ]);
 export type DesktopCommand = z.infer<typeof desktopCommandSchema>;
 export const nativeEditSchema = z.enum(['undo', 'redo', 'cut', 'copy', 'paste', 'selectAll']);

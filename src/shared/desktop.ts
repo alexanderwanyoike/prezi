@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { projectSchema } from './project';
 import type { DesktopCommand, NativeEditCommand } from './desktop-commands';
+import type { UpdateCommand, UpdateSnapshot } from './updates';
 import type { Selection, WorkspacePatch } from './workspace';
 import type { Result } from './result';
 import type { EditRequest, ProjectSnapshot } from './project';
@@ -34,6 +35,9 @@ export const snapshotResultSchema = z.union([
 ]);
 export interface DesktopBridge {
   platform: NodeJS.Platform;
+  updateStatus: () => Promise<Result<UpdateSnapshot>>;
+  updateAction: (command: UpdateCommand) => Promise<Result<UpdateSnapshot>>;
+  subscribeUpdates: (listener: (snapshot: UpdateSnapshot) => void) => () => void;
   mcpStatus: () => Promise<Result<{ url: string }>>;
   copyMcpConfig: () => Promise<Result<boolean>>;
   publishView: (patch: WorkspacePatch) => Promise<Result<boolean>>;

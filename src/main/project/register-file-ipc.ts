@@ -53,7 +53,10 @@ async function confirmReplacement(
   );
 }
 
-export function registerFileIpc(window: BrowserWindow, owner: ProjectOwner): void {
+export function registerFileIpc(
+  window: BrowserWindow,
+  owner: ProjectOwner,
+): { prepareRestart: () => Promise<Result<() => void>> } {
   function handle(channel: string, run: () => Promise<Result<ProjectSnapshot>>): void {
     ipcMain.handle(channel, async (event) => {
       if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame)
@@ -114,4 +117,26 @@ export function registerFileIpc(window: BrowserWindow, owner: ProjectOwner): voi
         confirming = false;
       });
   });
+  return {
+    async prepareRestart() {
+      if (confirming) return failure('CONFLICT', 'A save prompt is already open.');
+      confirming = true;
+      try {
+        const confirmed = await confirmReplacement(window, owner);
+        if (!confirmed.ok) return confirmed;
+        const locked = owner.beginRestart();
+        if (!locked.ok) return locked;
+        allowClose = true;
+        return {
+          ok: true,
+          value: () => {
+            allowClose = false;
+            locked.value();
+          },
+        };
+      } finally {
+        confirming = false;
+      }
+    },
+  };
 }
