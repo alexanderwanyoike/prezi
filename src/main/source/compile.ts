@@ -1,6 +1,7 @@
 import { posix } from 'node:path';
 import { build } from 'esbuild';
 import { z } from 'zod';
+import { checkSceneTypes } from './check-types';
 import { sceneSourceSchema } from '../../shared/custom-scene';
 import type { Compilation, SceneSource } from '../../shared/custom-scene';
 
@@ -14,7 +15,7 @@ const buildErrorSchema = z.object({
 });
 export async function compileScene(
   source: SceneSource,
-  _libraries?: Record<string, string>,
+  libraries?: Record<string, string>,
 ): Promise<Compilation> {
   const invalid = (message: string): Compilation => ({
     ok: false,
@@ -66,6 +67,12 @@ export async function compileScene(
     const code = output.outputFiles[0]?.text;
     if (!code || Buffer.byteLength(code) > 2 * 1024 * 1024)
       return invalid('The compiled scene must be smaller than 2 MiB.');
+    const diagnostics = libraries ? checkSceneTypes(source, libraries) : [];
+    if (diagnostics.length)
+      return {
+        ok: false,
+        error: { code: 'INVALID_INPUT', message: 'The scene has type errors.', diagnostics },
+      };
     return { ok: true, value: { code } };
   } catch (error) {
     const parsed = buildErrorSchema.safeParse(error);

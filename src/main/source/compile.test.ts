@@ -16,18 +16,14 @@ it('rejects type errors and unapproved imports with useful diagnostics', async (
     },
     libraries,
   );
-  expect(invalid).toMatchObject({
-    ok: false,
-    error: {
-      diagnostics: expect.arrayContaining([
-        expect.objectContaining({
-          file: 'Scene.tsx',
-          line: 1,
-          message: expect.stringContaining('not assignable'),
-        }),
-      ]),
-    },
-  });
+  expect(invalid.ok).toBe(false);
+  if (invalid.ok) throw new Error('Expected a type error');
+  expect(
+    invalid.error.diagnostics.some(
+      (item) =>
+        item.file === 'Scene.tsx' && item.line === 1 && item.message.includes('not assignable'),
+    ),
+  ).toBe(true);
   const denied = await compileScene(
     {
       entry: 'Scene.tsx',
@@ -52,10 +48,9 @@ export default function Scene() { return <AbsoluteFill>{message} {useCurrentFram
       'message.ts': 'export const message = "A working scene";',
     },
   });
-  expect(compiled).toMatchObject({
-    ok: true,
-    value: { code: expect.stringContaining('A working scene') },
-  });
+  expect(compiled.ok).toBe(true);
+  if (!compiled.ok) throw new Error('Expected a compiled scene');
+  expect(compiled.value.code).toContain('A working scene');
   const invalid = await compileScene({
     entry: 'Scene.tsx',
     files: { 'Scene.tsx': 'export default function Scene() { return <div>;' },
