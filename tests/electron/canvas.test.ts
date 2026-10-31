@@ -40,6 +40,29 @@ test('edits scene text on the canvas through the same properties and undo histor
     ).toBeVisible();
     await expect(page.locator('[contenteditable="plaintext-only"]')).toHaveCount(0);
     await page.keyboard.press('Escape');
+    await body.fill('');
+    await body.press('Tab');
+    await expect(page.getByLabel('Body', { exact: true })).toHaveValue('');
+    const headingPosition = async (): Promise<number> => {
+      await expect
+        .poll(() =>
+          page
+            .locator('.slide-scene h2')
+            .evaluate((node) =>
+              node.parentElement ? getComputedStyle(node.parentElement).opacity : null,
+            ),
+        )
+        .toBe('1');
+      return page.locator('.slide-scene h2').evaluate((node) => {
+        const scene = node.closest('.slide-scene')?.getBoundingClientRect();
+        if (!scene) throw new Error('The scene is missing');
+        return (node.getBoundingClientRect().top - scene.top) / scene.height;
+      });
+    };
+    const editorPosition = await headingPosition();
+    await page.getByRole('button', { name: 'Present', exact: true }).click();
+    await expect.poll(headingPosition).toBeCloseTo(editorPosition, 3);
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Add slide', exact: true }).click();
     await page
       .getByRole('textbox', { name: 'Canvas body', exact: true })
