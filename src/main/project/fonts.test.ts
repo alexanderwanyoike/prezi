@@ -101,3 +101,21 @@ it('keeps font identities separate from existing media identities', () => {
   ).toBe(false);
   expect(owner.snapshot()).toEqual(initial);
 });
+
+it('rejects a compressed font that declares an excessive decoded size', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-font-decoded-'));
+  const owner = new ProjectOwner();
+  try {
+    const header = Buffer.alloc(48);
+    header.write('wOF2');
+    header.writeUInt32BE(1024 * 1024 * 1024, 16);
+    const path = join(directory, 'huge.woff2');
+    await writeFile(path, header);
+    const initial = owner.snapshot();
+    expect((await owner.importFont(path, 0)).ok).toBe(false);
+    expect(owner.snapshot()).toEqual(initial);
+  } finally {
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
