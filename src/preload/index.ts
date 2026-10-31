@@ -140,6 +140,8 @@ const bridge: DesktopBridge = {
       ipcRenderer.removeListener('desktop:command', receive);
     };
   },
+  replaceMedia: (id) => request('project:replaceMedia', id),
+  replaceFont: (id) => request('project:replaceFont', id),
   importFont: () => request('project:importFont'),
   importMedia: (slideId) => request('project:importMedia', slideId),
   async fullscreen(enabled) {

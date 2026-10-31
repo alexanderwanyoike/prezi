@@ -2,14 +2,16 @@ import { Trash2 } from 'lucide-react';
 import { mediaFrame } from '../shared/media';
 import type { MediaAsset, MediaProperties } from '../shared/media';
 import { CheckboxField } from './CheckboxField';
+import { EditableText } from './EditableText';
 import { NumberField } from './NumberField';
 
 interface Props {
   media: MediaAsset;
   update: (patch: MediaProperties) => void;
   remove: () => void;
+  locate: () => void;
 }
-export function MediaInspector({ media, update, remove }: Props): React.JSX.Element {
+export function MediaInspector({ media, update, remove, locate }: Props): React.JSX.Element {
   const frame = mediaFrame(media);
   const fields = [
     { key: 'x', label: 'Media X', min: 0, max: 1920 - frame.width },
@@ -23,6 +25,9 @@ export function MediaInspector({ media, update, remove }: Props): React.JSX.Elem
       <p className="small" style={{ overflowWrap: 'anywhere' }}>
         {media.name}
       </p>
+      <button type="button" onClick={locate}>
+        Locate replacement…
+      </button>
       <div className="media-frame-fields">
         {fields.map(({ key, label, min, max }) => (
           <NumberField
@@ -87,6 +92,25 @@ export function MediaInspector({ media, update, remove }: Props): React.JSX.Elem
           </span>
         </>
       )}
+      <label htmlFor="media-provenance">Media source / attribution</label>
+      <EditableText
+        id="media-provenance"
+        value={media.provenance ?? ''}
+        maxLength={2048}
+        commit={(provenance) => {
+          update({ provenance });
+        }}
+      />
+      <label htmlFor="media-license">Media licence notice</label>
+      <EditableText
+        id="media-license"
+        value={media.license ?? ''}
+        maxLength={65536}
+        rows={3}
+        commit={(license) => {
+          update({ license });
+        }}
+      />
       <button type="button" onClick={remove}>
         <Trash2 size={14} />
         Remove media

@@ -58,6 +58,12 @@ export function useProject() {
   }
   return {
     flush: () => queue.current,
+    replaceMedia: (id: string) => {
+      dispatch(() => window.prezi.replaceMedia(id));
+    },
+    replaceFont: (id: string) => {
+      dispatch(() => window.prezi.replaceFont(id));
+    },
     importFont: () => {
       dispatch(() => window.prezi.importFont());
     },

@@ -88,6 +88,7 @@ export function App(): React.JSX.Element {
           value={snapshot.project.theme}
           fonts={snapshot.project.fonts ?? []}
           importFont={project.importFont}
+          replaceFont={project.replaceFont}
           updateFont={(fontId, patch) => {
             edit([{ type: 'updateFont', fontId, patch }], 'Edit font credits');
           }}
@@ -303,6 +304,9 @@ export function App(): React.JSX.Element {
           );
         }}
         pending={selectionPending}
+        replaceMedia={() => {
+          project.replaceMedia(slide.id);
+        }}
         updateMedia={(patch) => {
           edit([{ type: 'updateMedia', slideId: slide.id, patch }], 'Configure media');
         }}

@@ -26,8 +26,8 @@ export function SceneMedia({
     >
       {failed && (
         <p role="alert" style={{ fontSize: 28, padding: 30 }}>
-          Could not display {media.name}. Check that the file exists and uses a supported image or
-          video codec.
+          Could not display {media.name}. Locate a replacement in Media properties, or choose a
+          supported image or video codec.
         </p>
       )}
       {!failed && media.kind === 'image' && (

@@ -12,6 +12,7 @@ interface Props {
   slide: Slide;
   pending: boolean;
   updateMedia: (patch: MediaProperties) => void;
+  replaceMedia: () => void;
   selectedField: string | null;
   definition?: CustomSceneDefinition | undefined;
   updateCustom: (property: string, value: SceneValues[string]) => void;
@@ -35,6 +36,7 @@ export function SlideInspector({
 
   update,
   updateMedia,
+  replaceMedia,
   duplicate,
   remove,
   move,
@@ -139,6 +141,7 @@ export function SlideInspector({
         {slide.media && (
           <MediaInspector
             media={slide.media}
+            locate={replaceMedia}
             update={updateMedia}
             remove={() => {
               update({ media: null });

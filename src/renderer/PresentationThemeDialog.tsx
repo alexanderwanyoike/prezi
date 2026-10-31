@@ -10,6 +10,7 @@ export function PresentationThemeDialog({
   value,
   fonts,
   importFont,
+  replaceFont,
   updateFont,
   change,
   close,
@@ -17,6 +18,7 @@ export function PresentationThemeDialog({
   value: PresentationTheme | undefined;
   fonts: ProjectFont[];
   importFont: () => void;
+  replaceFont: (id: string) => void;
   updateFont: (id: string, patch: FontCredit) => void;
   change: (patch: Partial<PresentationTheme>) => void;
   close: () => void;
@@ -135,7 +137,7 @@ export function PresentationThemeDialog({
       <button type="button" onClick={importFont} disabled={fonts.length >= 16}>
         Import font…
       </button>
-      <FontCredits fonts={fonts} update={updateFont} />
+      <FontCredits fonts={fonts} update={updateFont} locate={replaceFont} />
     </dialog>
   );
 }

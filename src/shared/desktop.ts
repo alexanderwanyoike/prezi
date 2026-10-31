@@ -50,6 +50,8 @@ export interface DesktopBridge {
   close: () => Promise<Result<boolean>>;
   nativeEdit: (command: NativeEditCommand) => Promise<Result<boolean>>;
   subscribeCommand: (listener: (command: DesktopCommand) => void) => () => void;
+  replaceMedia: (slideId: string) => Promise<Result<ProjectSnapshot>>;
+  replaceFont: (fontId: string) => Promise<Result<ProjectSnapshot>>;
   importFont: () => Promise<Result<ProjectSnapshot>>;
   importMedia: (slideId: string) => Promise<Result<ProjectSnapshot>>;
   fullscreen: (enabled: boolean) => Promise<Result<boolean>>;

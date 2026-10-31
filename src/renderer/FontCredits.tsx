@@ -4,9 +4,11 @@ import { EditableText } from './EditableText';
 export function FontCredits({
   fonts,
   update,
+  locate,
 }: {
   fonts: ProjectFont[];
   update: (id: string, patch: FontCredit) => void;
+  locate: (id: string) => void;
 }): React.JSX.Element | null {
   if (!fonts.length) return null;
   return (
@@ -15,6 +17,14 @@ export function FontCredits({
       {fonts.map((font) => (
         <fieldset key={font.id}>
           <legend>{font.name}</legend>
+          <button
+            type="button"
+            onClick={() => {
+              locate(font.id);
+            }}
+          >
+            Locate font…
+          </button>
           <label htmlFor={`font-${font.id}-source`}>Source / attribution</label>
           <EditableText
             id={`font-${font.id}-source`}

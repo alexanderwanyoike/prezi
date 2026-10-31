@@ -50,28 +50,41 @@ export function registerMedia(window: BrowserWindow, owner: ProjectOwner): void 
       return new Response('Media is missing or unreadable', { status: 404 });
     }
   });
-  ipcMain.handle('project:importMedia', async (event, input: unknown) => {
-    if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame)
-      return failure('INVALID_INPUT', 'Untrusted media request.');
-    const slideId = z.uuid().safeParse(input);
-    if (!slideId.success) return failure('INVALID_INPUT', 'Choose a slide before importing media.');
-    const { revision } = owner.snapshot();
-    try {
-      const chosen = await dialog.showOpenDialog(window, {
-        title: 'Import media',
-        properties: ['openFile'],
-        filters: [
-          {
-            name: 'Images and video',
-            extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'webm'],
-          },
-        ],
-      });
-      const path = chosen.filePaths[0];
-      if (chosen.canceled || !path) return failure('CANCELLED', 'Media import was cancelled.');
-      return await owner.importMedia(path, slideId.data, revision);
-    } catch {
-      return failure('IO_ERROR', 'The media file dialog could not be opened.');
-    }
+  (['importMedia', 'replaceMedia'] as const).forEach((command) => {
+    ipcMain.handle(`project:${command}`, async (event, input: unknown) => {
+      if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame)
+        return failure('INVALID_INPUT', 'Untrusted media request.');
+      const slideId = z.uuid().safeParse(input);
+      if (!slideId.success)
+        return failure('INVALID_INPUT', 'Choose a slide before importing media.');
+      const snapshot = owner.snapshot();
+      const replace = command === 'replaceMedia';
+      const media = snapshot.project.slides.find((slide) => slide.id === slideId.data)?.media;
+      if (replace && !media) return failure('NOT_FOUND', 'This slide has no media to replace.');
+      try {
+        const chosen = await dialog.showOpenDialog(window, {
+          title: replace ? 'Locate media' : 'Import media',
+          properties: ['openFile'],
+          filters: [
+            {
+              name: 'Images and video',
+              extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'webm'],
+            },
+          ],
+        });
+        const path = chosen.filePaths[0];
+        if (chosen.canceled || !path) return failure('CANCELLED', 'Media selection was cancelled.');
+        return await owner.importMedia(
+          path,
+          slideId.data,
+          snapshot.revision,
+          undefined,
+          {},
+          replace,
+        );
+      } catch {
+        return failure('IO_ERROR', 'The media file dialog could not be opened.');
+      }
+    });
   });
 }
