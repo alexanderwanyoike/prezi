@@ -67,6 +67,28 @@ test('shares revisioned MCP edits and retry-safe undo with the live Electron edi
     await client.connect(
       new StreamableHTTPClientTransport(new URL(connection.url), { requestInit: { headers } }),
     );
+    await page.getByRole('menubar').getByRole('menuitem', { name: 'View', exact: true }).click();
+    await expect(
+      page.getByRole('menuitem', { name: 'Agent connection…', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Agent connection…', exact: true }).click();
+    const connectionDialog = page.getByRole('dialog', { name: 'Agent connection', exact: true });
+    await expect(connectionDialog).toContainText(connection.url);
+    await page.getByRole('button', { name: 'Copy connection configuration', exact: true }).click();
+    const copied: unknown = JSON.parse(
+      await desktop.evaluate(({ clipboard }) => clipboard.readText()),
+    );
+    const config = z
+      .object({
+        mcpServers: z.object({
+          prezi: z.object({ url: z.string(), headers: z.object({ Authorization: z.string() }) }),
+        }),
+      })
+      .parse(copied);
+    expect(config.mcpServers.prezi.url).toBe(connection.url);
+    expect(config.mcpServers.prezi.headers.Authorization === headers.Authorization).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(connectionDialog).toHaveCount(0);
     const before = summarySchema.parse(
       (await client.callTool({ name: 'read_project', arguments: {} })).structuredContent,
     ).result.value;
