@@ -24,7 +24,6 @@ export function createNativeBackend(options: Options): UpdateBackend {
   let client: NativeUpdateClient | undefined;
   let downloaded: string | null = null;
   let reportProgress: ((percent: number) => void) | undefined;
-  let failed = false;
   function getClient(): NativeUpdateClient {
     if (!client) {
       client = options.createClient();
@@ -33,7 +32,7 @@ export function createNativeBackend(options: Options): UpdateBackend {
       client.allowPrerelease = false;
       client.allowDowngrade = false;
       client.on('error', () => {
-        failed = true;
+        downloaded = null;
       });
       client.on('download-progress', ({ percent }) => {
         reportProgress?.(percent);
@@ -69,13 +68,8 @@ export function createNativeBackend(options: Options): UpdateBackend {
     async install() {
       if (!client || !downloaded)
         return failure('INVALID_INPUT', 'Download and verify the update before installing.');
-      failed = false;
       try {
-        const result = await options.installVerified(downloaded, client);
-        if (!result.ok) return result;
-        return failed
-          ? failure('IO_ERROR', 'The installer could not start. Please retry.')
-          : result;
+        return await options.installVerified(downloaded, client);
       } catch {
         return failure('IO_ERROR', 'The installer could not start. Please retry.');
       }
