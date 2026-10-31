@@ -1,4 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
+import { BlobReader, TextWriter, ZipReader } from '@zip.js/zip.js';
+import { openAsBlob } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -83,5 +85,59 @@ test('uses application menus, desktop shortcuts and Canvas/Code workspace tabs',
       .toBe(expectedSource);
   } finally {
     await desktop.close();
+  }
+});
+
+test('saves the final queued text edit before closing from the keyboard', async () => {
+  const path = test.info().outputPath('closing.prezi');
+  const desktop = await electron.launch({
+    args: [resolve('.'), '--mute-audio', `--user-data-dir=${test.info().outputPath('profile')}`],
+    env: Object.fromEntries(
+      Object.entries(process.env).filter(
+        (entry): entry is [string, string] =>
+          typeof entry[1] === 'string' && entry[0] !== 'ELECTRON_RUN_AS_NODE',
+      ),
+    ),
+  });
+  let isClosed = false;
+  desktop.on('close', () => {
+    isClosed = true;
+  });
+  try {
+    await desktop.evaluate(({ dialog }, filePath) => {
+      Object.assign(dialog, {
+        showSaveDialog: () => Promise.resolve({ canceled: false, filePath }),
+        showMessageBox: () => Promise.resolve({ response: 0, checkboxChecked: false }),
+      });
+    }, path);
+    const page = await desktop.firstWindow();
+    const text = 'Closing keeps the final queued edit.';
+    await page.getByRole('textbox', { name: 'Canvas heading', exact: true }).fill('');
+    await page
+      .getByRole('textbox', { name: 'Canvas heading', exact: true })
+      .evaluate((node, value) => {
+        [...value].forEach((character, index) => {
+          Object.assign(node, { textContent: value.slice(0, index + 1) });
+          node.dispatchEvent(
+            new InputEvent('input', { bubbles: true, inputType: 'insertText', data: character }),
+          );
+        });
+      }, text);
+    const closed = desktop.waitForEvent('close');
+    await page.keyboard.press('Control+w').catch(() => undefined);
+    await closed;
+    const zip = new ZipReader(new BlobReader(await openAsBlob(path)), { useWebWorkers: false });
+    try {
+      const content = (await zip.getEntries()).find((entry) => entry.filename === 'project.json');
+      if (!content || content.directory) throw new Error('Missing saved project');
+      const project: unknown = JSON.parse(await content.getData(new TextWriter()));
+      expect(project).toMatchObject({
+        slides: expect.arrayContaining([expect.objectContaining({ title: text })]),
+      });
+    } finally {
+      await zip.close();
+    }
+  } finally {
+    if (!isClosed) await desktop.close();
   }
 });
