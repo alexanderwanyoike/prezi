@@ -29,7 +29,7 @@ it('installs source and instance properties atomically and restores both through
     ok: true,
     value: { revision: 1, undoLabel: 'Agent: Create scene' },
   });
-  expect(owner.snapshot().project.scenes?.[definition.id]).toEqual(definition);
+  expect(owner.snapshot().project.scenes?.[definition.id]).toMatchObject(definition);
   expect(owner.snapshot().project.slides[0]?.scene).toEqual({
     definitionId: definition.id,
     properties: { headline: 'Human editable' },

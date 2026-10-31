@@ -39,7 +39,10 @@ export class ProjectOwner {
       return failure('NOT_FOUND', 'The slide no longer exists.');
     const draft: Project = {
       ...this.project,
-      scenes: { ...this.project.scenes, [request.definition.id]: request.definition },
+      scenes: {
+        ...this.project.scenes,
+        [request.definition.id]: { ...request.definition, version: crypto.randomUUID() },
+      },
       slides: this.project.slides.map((slide) =>
         slide.id === request.slideId
           ? {

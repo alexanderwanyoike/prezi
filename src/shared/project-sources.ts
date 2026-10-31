@@ -9,6 +9,7 @@ export function projectSources(project: Project): Record<string, string> {
         JSON.stringify(
           {
             id: definition.id,
+            version: definition.version,
             name: definition.name,
             entry: definition.source.entry,
             fields: definition.fields,

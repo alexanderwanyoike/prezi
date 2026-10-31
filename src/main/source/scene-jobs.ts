@@ -44,7 +44,17 @@ export class SceneJobs {
       return existing.fingerprint === fingerprint
         ? { ok: true, value: structuredClone(existing.job) }
         : failure('REQUEST_REUSED', 'This request ID belongs to another scene job.');
-    if (request.expectedRevision !== this.owner.snapshot().revision)
+    const snapshot = this.owner.snapshot();
+    const version = snapshot.project.scenes?.[request.candidate.id]?.version ?? null;
+    if (
+      request.expectedDefinitionVersion !== undefined &&
+      request.expectedDefinitionVersion !== version
+    )
+      return failure(
+        'CONFLICT',
+        'The working scene changed after this draft was created. Keep the draft or reload the current source.',
+      );
+    if (request.expectedRevision !== snapshot.revision)
       return failure('CONFLICT', 'Read the latest project revision before compiling.');
     if (this.controllers.size >= 4)
       return failure('CONFLICT', 'The scene queue is full. Wait for or cancel a job.');
