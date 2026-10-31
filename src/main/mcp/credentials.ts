@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { chmod, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { failure } from '../../shared/result';
@@ -38,8 +38,17 @@ export async function writeConnection(
   directory: string,
   url: string,
   token: string,
-): Promise<void> {
+): Promise<Result<void>> {
   const path = join(directory, 'mcp-connection.json');
-  await writeFile(path, JSON.stringify({ url, token }), { mode: 0o600 });
-  if (process.platform !== 'win32') await chmod(path, 0o600);
+  const temporary = join(directory, `.mcp-connection.${crypto.randomUUID()}.tmp`);
+  try {
+    await writeFile(temporary, JSON.stringify({ url, token }), { mode: 0o600, flag: 'wx' });
+    if (process.platform !== 'win32') await chmod(temporary, 0o600);
+    await rename(temporary, path);
+    return { ok: true, value: undefined };
+  } catch {
+    return failure('IO_ERROR', 'MCP connection details could not be published.');
+  } finally {
+    await rm(temporary, { force: true }).catch(() => undefined);
+  }
 }

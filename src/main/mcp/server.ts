@@ -95,7 +95,11 @@ export async function startMcp(
     const address = server.address();
     if (!address || typeof address === 'string') throw new Error('Missing MCP address');
     const url = `http://127.0.0.1:${address.port.toString()}/mcp`;
-    await writeConnection(directory, url, token);
+    const published = await writeConnection(directory, url, token);
+    if (!published.ok) {
+      server.close();
+      return published;
+    }
     return {
       ok: true,
       value: {
