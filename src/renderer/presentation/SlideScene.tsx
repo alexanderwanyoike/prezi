@@ -150,14 +150,13 @@ export function SlideScene({
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-end',
           fontFamily: presentationFont(theme.monoFont),
           color: theme.muted,
           fontSize: 15,
           letterSpacing: 2,
         }}
       >
-        <span>NOTES FROM THE BUILD</span>
         <span>
           {slideNumber.toString().padStart(2, '0')} / {slideCount.toString().padStart(2, '0')}
         </span>
