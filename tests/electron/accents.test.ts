@@ -18,17 +18,14 @@ test('renders saturated accents and readable labels in every material and mode',
     const materials = ['Studio', 'Aluminium', 'Paper'];
     const modes = ['Light', 'Dark'];
     const accents = ['Sage', 'Cobalt', 'Amber', 'Plum', 'Copper'];
-    for (let materialIndex = 0; materialIndex < materials.length; materialIndex += 1) {
-      const material = materials[materialIndex];
-      if (!material) throw new Error('Expected a material');
-      await page.getByRole('button', { name: material, exact: true }).click();
-      for (let modeIndex = 0; modeIndex < modes.length; modeIndex += 1) {
-        const mode = modes[modeIndex];
-        if (!mode) throw new Error('Expected a mode');
-        await page.getByRole('button', { name: mode, exact: true }).click();
-        for (let accentIndex = 0; accentIndex < accents.length; accentIndex += 1) {
-          const accent = accents[accentIndex];
-          if (!accent) throw new Error('Expected an accent');
+    const appearances = materials.flatMap((material) =>
+      modes.flatMap((mode) => accents.map((accent) => ({ material, mode, accent }))),
+    );
+    await appearances.reduce<Promise<void>>(
+      (previous, { material, mode, accent }) =>
+        previous.then(async () => {
+          await page.getByRole('button', { name: material, exact: true }).click();
+          await page.getByRole('button', { name: mode, exact: true }).click();
           const choice = page.getByRole('button', { name: accent, exact: true });
           await choice.click();
           const primary = await page
@@ -49,9 +46,9 @@ test('renders saturated accents and readable labels in every material and mode',
             `${material} ${mode} ${accent} label contrast`,
           ).toBeGreaterThanOrEqual(4.5);
           expect(swatch, `${material} ${mode} ${accent} swatch`).toBe(primary.background);
-        }
-      }
-    }
+        }),
+      Promise.resolve(),
+    );
   } finally {
     await desktop.close();
   }
