@@ -27,7 +27,7 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 - [x] Serial, cancellable custom-source compilation with resource budgets and last-working recovery.
 - [x] Expose custom scenes, source inspection and editable properties in UI and MCP.
 - [x] Human code authoring in the Code workspace, with retained drafts and Apply diagnostics.
-- [ ] Code/media/process layouts and the animated Vibez workflow example.
+- [x] Code/media/process layouts and the animated Vibez workflow example.
 - [ ] Font import, provenance and missing-asset recovery.
 - [ ] Bounded preview capture, job status and static thumbnails.
 - [x] Update runtime: explicit download/progress, protected restart and saved-deck recovery.
