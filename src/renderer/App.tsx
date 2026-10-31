@@ -181,13 +181,13 @@ export function App(): React.JSX.Element {
         }}
       />
       <SlideCanvas
-        key={slide.id}
+        key={`canvas:${slide.id}`}
         slide={slide}
         index={selectedIndex}
         count={snapshot.project.slides.length}
       />
       <SlideInspector
-        key={slide.id}
+        key={`inspector:${slide.id}`}
         slide={slide}
         index={selectedIndex}
         count={snapshot.project.slides.length}
