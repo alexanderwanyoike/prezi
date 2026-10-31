@@ -30,12 +30,17 @@ test('moves a single .prezi file containing the deck, scene source, fonts and me
         'project.json',
         'manifest.json',
         'source/renderer/presentation/SlideScene.tsx',
+        'source/renderer/styles/tokens.css',
         'fonts/manrope/index.css',
         'fonts/manrope/LICENSE',
         'fonts/ibm-plex-mono/index.css',
         'fonts/ibm-plex-mono/LICENSE',
       ]),
     );
+    const metadata = entries.find((entry) => entry.filename === 'manifest.json');
+    if (!metadata || metadata.directory) throw new Error('Missing archive manifest');
+    const manifest: unknown = JSON.parse(await metadata.getData(new TextWriter()));
+    expect(manifest).toMatchObject({ dependencies: { remotion: '4.0.539' } });
     const scene = entries.find(
       (entry) => entry.filename === 'source/renderer/presentation/SlideScene.tsx',
     );
