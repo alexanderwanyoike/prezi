@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { sceneInstallationSchema } from '../../shared/scene-definition';
 import type { SceneInstallation } from '../../shared/scene-definition';
 import { rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -7,7 +8,7 @@ import { writeArchive } from '../archive/write-archive';
 import { AssetStore } from '../media/asset-store';
 import { readProject, writeProject } from './project-files';
 import { applyOperation } from './apply-operation';
-import { createProject, editRequestSchema } from '../../shared/project';
+import { createProject, editRequestSchema, projectSchema } from '../../shared/project';
 import type { Project, ProjectSnapshot } from '../../shared/project';
 import { failure } from '../../shared/result';
 import type { Result } from '../../shared/result';
@@ -18,8 +19,51 @@ interface HistoryEntry {
 }
 
 export class ProjectOwner {
-  installScene(_input: SceneInstallation): Result<ProjectSnapshot> {
-    return failure('INVALID_INPUT', 'Scene installation is unavailable.');
+  installScene(input: SceneInstallation): Result<ProjectSnapshot> {
+    const parsed = sceneInstallationSchema.safeParse(input);
+    if (!parsed.success) return failure('INVALID_INPUT', 'The scene definition is invalid.');
+    const request = parsed.data;
+    const fingerprint = createHash('sha256')
+      .update(JSON.stringify({ kind: 'installScene', ...request }))
+      .digest('hex');
+    const cached = this.requests.get(request.requestId);
+    if (cached)
+      return cached.fingerprint === fingerprint
+        ? { ok: true, value: structuredClone(cached.snapshot) }
+        : failure('REQUEST_REUSED', 'This request ID belongs to a different change.');
+    if (this.pendingImports.has(request.requestId))
+      return failure('REQUEST_REUSED', 'This request ID belongs to an import.');
+    if (this.restarting || request.expectedRevision !== this.revision)
+      return failure('CONFLICT', 'The project changed while compiling. Read it and apply again.');
+    if (!this.project.slides.some((slide) => slide.id === request.slideId))
+      return failure('NOT_FOUND', 'The slide no longer exists.');
+    const draft: Project = {
+      ...this.project,
+      scenes: { ...this.project.scenes, [request.definition.id]: request.definition },
+      slides: this.project.slides.map((slide) =>
+        slide.id === request.slideId
+          ? {
+              ...slide,
+              scene: { definitionId: request.definition.id, properties: request.properties },
+            }
+          : slide,
+      ),
+    };
+    if (!projectSchema.safeParse(draft).success)
+      return failure('INVALID_INPUT', 'The scene properties do not match its definition.');
+    if (Buffer.byteLength(JSON.stringify(draft, null, 2)) > 8 * 1024 * 1024)
+      return failure('INVALID_INPUT', 'The project exceeds its 8 MiB content budget.');
+    this.past.push({ project: this.project, label: request.label });
+    this.past = this.past.slice(-50);
+    this.future = [];
+    this.project = draft;
+    this.revision += 1;
+    this.listeners.forEach((listener) => {
+      listener(this.snapshot());
+    });
+    const snapshot = this.snapshot();
+    this.remember(request.requestId, fingerprint, snapshot);
+    return { ok: true, value: snapshot };
   }
 
   private restarting = false;
