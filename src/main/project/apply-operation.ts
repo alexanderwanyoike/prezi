@@ -5,7 +5,7 @@ import type { Result } from '../../shared/result';
 
 export function applyOperation(project: Project, operation: EditOperation): Result<Project> {
   if (operation.type === 'renameProject') {
-    project.name = operation.name;
+    Object.assign(project, { name: operation.name });
   } else if (operation.type === 'addSlide') {
     if (operation.index > project.slides.length)
       return failure('INVALID_INPUT', 'The insertion position is outside the deck.');
