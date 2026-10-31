@@ -99,9 +99,9 @@ test('saves the final queued text edit before closing from the keyboard', async 
       ),
     ),
   });
-  let isClosed = false;
+  const lifecycle = { closed: false };
   desktop.on('close', () => {
-    isClosed = true;
+    lifecycle.closed = true;
   });
   try {
     await desktop.evaluate(({ dialog }, filePath) => {
@@ -116,12 +116,14 @@ test('saves the final queued text edit before closing from the keyboard', async 
     await page
       .getByRole('textbox', { name: 'Canvas heading', exact: true })
       .evaluate((node, value) => {
-        [...value].forEach((character, index) => {
-          Object.assign(node, { textContent: value.slice(0, index + 1) });
-          node.dispatchEvent(
-            new InputEvent('input', { bubbles: true, inputType: 'insertText', data: character }),
-          );
-        });
+        Array.from(new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(value)).forEach(
+          ({ segment, index }) => {
+            Object.assign(node, { textContent: value.slice(0, index + segment.length) });
+            node.dispatchEvent(
+              new InputEvent('input', { bubbles: true, inputType: 'insertText', data: segment }),
+            );
+          },
+        );
       }, text);
     const closed = desktop.waitForEvent('close');
     await page.keyboard.press('Control+w').catch(() => undefined);
@@ -138,6 +140,6 @@ test('saves the final queued text edit before closing from the keyboard', async 
       await zip.close();
     }
   } finally {
-    if (!isClosed) await desktop.close();
+    if (!lifecycle.closed) await desktop.close();
   }
 });
