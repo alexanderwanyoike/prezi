@@ -83,3 +83,21 @@ it('rejects unsupported font bytes, oversized fonts and missing selected font id
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+it('keeps font identities separate from existing media identities', () => {
+  const owner = new ProjectOwner(resolve('tests/fixtures/held-video.webm'));
+  const initial = owner.snapshot();
+  const media = initial.project.slides[2]?.media;
+  if (!media) throw Error('Missing example media');
+  expect(
+    owner.edit({
+      requestId: 'duplicate-asset',
+      expectedRevision: 0,
+      label: 'Conflicting font identity',
+      operations: [
+        { type: 'addFont', font: { id: media.id, name: 'Conflicting font', extension: 'woff2' } },
+      ],
+    }).ok,
+  ).toBe(false);
+  expect(owner.snapshot()).toEqual(initial);
+});
