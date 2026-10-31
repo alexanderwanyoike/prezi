@@ -21,11 +21,12 @@ export async function compileScene(
   fields: SceneCandidate['fields'] = {},
   kind: CompilationKind = 'scene',
 ): Promise<Compilation> {
+  const subject = kind === 'transition' ? 'transition' : 'scene';
   const invalid = (message: string): Compilation => ({
     ok: false,
     error: {
       code: 'INVALID_INPUT',
-      message: 'The scene could not be compiled.',
+      message: `The ${subject} could not be compiled.`,
       diagnostics: [{ file: source.entry, line: 1, column: 1, message }],
     },
   });
@@ -37,7 +38,7 @@ export async function compileScene(
       ok: false,
       error: {
         code: 'INVALID_INPUT',
-        message: 'The scene has unsupported source.',
+        message: `The ${subject} has unsupported source.`,
         diagnostics: policy,
       },
     };
@@ -85,7 +86,7 @@ export async function compileScene(
     if (diagnostics.length)
       return {
         ok: false,
-        error: { code: 'INVALID_INPUT', message: 'The scene has type errors.', diagnostics },
+        error: { code: 'INVALID_INPUT', message: `The ${subject} has type errors.`, diagnostics },
       };
     return { ok: true, value: { code } };
   } catch (error) {
@@ -95,7 +96,7 @@ export async function compileScene(
       ok: false,
       error: {
         code: 'INVALID_INPUT',
-        message: 'The scene could not be compiled.',
+        message: `The ${subject} could not be compiled.`,
         diagnostics: parsed.data.errors.slice(0, 50).map(({ text, location }) => ({
           file: location?.file.replace(/^scene:/, '') ?? source.entry,
           line: location?.line ?? 1,

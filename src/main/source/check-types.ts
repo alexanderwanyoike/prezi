@@ -93,9 +93,23 @@ export type TransitionFunction=(input:TransitionProps)=>TransitionStyle;
     .filter((item) => item.category === ts.DiagnosticCategory.Error)
     .slice(0, 50)
     .map((item) => {
-      const point = item.file?.getLineAndCharacterOfPosition(item.start ?? 0);
+      const internal = item.file?.fileName === `${root}__prezi_contract.tsx`;
+      const target = internal ? program.getSourceFile(root + source.entry) : item.file;
+      const exported = internal
+        ? target?.statements.find(
+            (statement) =>
+              ts.isExportAssignment(statement) ||
+              (ts.canHaveModifiers(statement) &&
+                ts
+                  .getModifiers(statement)
+                  ?.some((modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword)),
+          )
+        : undefined;
+      const point = target?.getLineAndCharacterOfPosition(
+        internal ? (exported?.getStart(target) ?? 0) : (item.start ?? 0),
+      );
       return {
-        file: item.file?.fileName.replace(root, '') ?? source.entry,
+        file: target?.fileName.replace(root, '') ?? source.entry,
         line: (point?.line ?? 0) + 1,
         column: (point?.character ?? 0) + 1,
         message: ts.flattenDiagnosticMessageText(item.messageText, '\n').slice(0, 2000),
