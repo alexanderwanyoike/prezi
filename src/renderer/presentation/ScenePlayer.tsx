@@ -22,6 +22,7 @@ export function ScenePlayer({
       initialFrame={still ? 11 : 0}
       loop={false}
       controls={false}
+      numberOfSharedAudioTags={0}
       clickToPlay={false}
       doubleClickToFullscreen={false}
       spaceKeyToPlayOrPause={false}
