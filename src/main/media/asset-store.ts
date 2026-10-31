@@ -1,6 +1,9 @@
 import { copyFile, mkdir, rename, rm, stat } from 'node:fs/promises';
 import { basename, extname, join } from 'node:path';
 import { tmpdir } from 'node:os';
+import type { StoredAsset } from '../../shared/project-assets';
+import type { FontCredit, ProjectFont } from '../../shared/fonts';
+import { importFontFile } from './import-font';
 import { mediaSchema } from '../../shared/media';
 import type { MediaAsset } from '../../shared/media';
 import { failure } from '../../shared/result';
@@ -28,10 +31,17 @@ export class AssetStore {
     return this.paths.get(id);
   }
 
-  remember(path: string, assets: MediaAsset[]): void {
+  remember(path: string, assets: StoredAsset[]): void {
     assets.forEach((asset) => {
       this.paths.set(asset.id, join(`${path}.assets`, `${asset.id}.${asset.extension}`));
     });
+  }
+
+  async importFont(path: string, credit: FontCredit): Promise<Result<ProjectFont>> {
+    const result = await importFontFile(path, this.root, credit);
+    if (!result.ok) return result;
+    this.paths.set(result.value.font.id, result.value.path);
+    return { ok: true, value: result.value.font };
   }
 
   async import(path: string): Promise<Result<MediaAsset>> {
@@ -58,7 +68,7 @@ export class AssetStore {
     }
   }
 
-  async save(path: string, assets: MediaAsset[]): Promise<Result<void>> {
+  async save(path: string, assets: StoredAsset[]): Promise<Result<void>> {
     const unique = [...new Map(assets.map((asset) => [asset.id, asset])).values()];
     return unique.reduce<Promise<Result<void>>>(
       async (previous, asset) => {

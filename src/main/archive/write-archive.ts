@@ -4,6 +4,7 @@ import { open, rename, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { Writable } from 'node:stream';
 import { BlobReader, TextReader, ZipWriter } from '@zip.js/zip.js';
+import { projectAssets } from '../../shared/project-assets';
 import runtime from '../../../package.json';
 import { archiveResources } from './archive-resources';
 import { builtInSceneSources } from '../../shared/scene-sources';
@@ -43,11 +44,7 @@ export async function writeArchive(
         }),
       Promise.resolve(),
     );
-    const unique = new Map(
-      project.slides.flatMap((slide) =>
-        slide.media ? [[slide.media.id, slide.media] as const] : [],
-      ),
-    );
+    const unique = new Map(projectAssets(project).map((asset) => [asset.id, asset]));
     await [...unique.values()].reduce<Promise<void>>(
       (previous, asset) =>
         previous.then(async () => {

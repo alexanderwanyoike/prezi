@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { fontSchema, fontCreditSchema } from './fonts';
 import { presentationThemeSchema } from './presentation-theme';
 import { sceneDraftSchema } from './scene-draft';
 import {
@@ -18,6 +19,7 @@ export const slideSchema = textScenePropsSchema.extend({
 });
 export const projectSchema = z
   .object({
+    fonts: z.array(fontSchema).max(16).optional(),
     theme: presentationThemeSchema.optional(),
     drafts: z.record(z.uuid(), sceneDraftSchema).optional(),
     scenes: z
@@ -41,6 +43,18 @@ export const projectSchema = z
     slides: z.array(slideSchema).min(1).max(200),
   })
   .superRefine((project, context) => {
+    const ids = new Set(project.fonts?.map((font) => font.id));
+    if (
+      ids.size !== (project.fonts?.length ?? 0) ||
+      project.slides.some((slide) => slide.media && ids.has(slide.media.id)) ||
+      [project.theme?.bodyFont, project.theme?.monoFont].some(
+        (font) => font && !['manrope', 'plex'].includes(font) && !ids.has(font),
+      )
+    )
+      context.addIssue({
+        code: 'custom',
+        message: 'Selected fonts must be registered in this project.',
+      });
     Object.entries(project.scenes ?? {}).forEach(([id, definition]) => {
       const problem = sceneDefinitionProblem(definition);
       if (problem || id !== definition.id)
@@ -84,6 +98,12 @@ export const editRequestSchema = z.object({
   operations: z
     .array(
       z.discriminatedUnion('type', [
+        z.object({ type: z.literal('addFont'), font: fontSchema }),
+        z.object({
+          type: z.literal('updateFont'),
+          fontId: z.uuid(),
+          patch: fontCreditSchema.extend({ name: z.string().min(1).max(255).optional() }),
+        }),
         z.object({ type: z.literal('setTheme'), patch: presentationThemeSchema.partial() }),
         z.object({
           type: z.literal('setSceneDraft'),

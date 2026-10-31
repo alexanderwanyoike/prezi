@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { fontCreditSchema } from '../../shared/fonts';
+import type { FontCredit } from '../../shared/fonts';
+import { projectAssets } from '../../shared/project-assets';
 import { withoutSceneDraft } from '../../shared/scene-draft';
 import { sceneInstallationSchema } from '../../shared/scene-definition';
 import type { SceneInstallation } from '../../shared/scene-definition';
@@ -109,7 +112,7 @@ export class ProjectOwner {
   private readonly assets = new AssetStore();
 
   mediaPath(id: string): string | undefined {
-    return this.project.slides.some((slide) => slide.media?.id === id)
+    return projectAssets(this.project).some((asset) => asset.id === id)
       ? this.assets.path(id)
       : undefined;
   }
@@ -175,6 +178,60 @@ export class ProjectOwner {
       return await result;
     } finally {
       this.pendingImports.delete(id);
+    }
+  }
+
+  async importFont(
+    path: string,
+    expectedRevision: number,
+    requestId: string = crypto.randomUUID(),
+    input: FontCredit = {},
+  ): Promise<Result<ProjectSnapshot>> {
+    const parsed = fontCreditSchema.safeParse(input);
+    if (!parsed.success || !z.string().min(1).max(100).safeParse(requestId).success)
+      return failure('INVALID_INPUT', 'The font import metadata is invalid.');
+    const fingerprint = createHash('sha256')
+      .update(JSON.stringify({ kind: 'importFont', path, expectedRevision, credit: parsed.data }))
+      .digest('hex');
+    const cached = this.requests.get(requestId);
+    if (cached)
+      return cached.fingerprint === fingerprint
+        ? { ok: true, value: structuredClone(cached.snapshot) }
+        : failure('REQUEST_REUSED', 'This request ID belongs to a different change.');
+    const pending = this.pendingImports.get(requestId);
+    if (pending)
+      return pending.fingerprint === fingerprint
+        ? pending.result
+        : failure('REQUEST_REUSED', 'This request ID belongs to a different import.');
+    if (
+      this.restarting ||
+      this.fileBusy ||
+      this.pendingImports.size ||
+      expectedRevision !== this.revision
+    )
+      return failure('CONFLICT', 'The project changed or a file operation is running.');
+    if ((this.project.fonts?.length ?? 0) >= 16)
+      return failure('INVALID_INPUT', 'A project supports up to 16 imported fonts.');
+    const run = async (): Promise<Result<ProjectSnapshot>> => {
+      const imported = await this.assets.importFont(path, parsed.data);
+      if (!imported.ok) return imported;
+      const result = this.edit({
+        requestId: crypto.randomUUID(),
+        expectedRevision,
+        label: 'Import font',
+        operations: [{ type: 'addFont', font: imported.value }],
+      });
+      if (result.ok) this.remember(requestId, fingerprint, result.value);
+      return result;
+    };
+    this.fileBusy = true;
+    const result = run();
+    this.pendingImports.set(requestId, { fingerprint, result });
+    try {
+      return await result;
+    } finally {
+      this.pendingImports.delete(requestId);
+      this.fileBusy = false;
     }
   }
 
@@ -251,7 +308,7 @@ export class ProjectOwner {
     this.fileBusy = true;
     const project = structuredClone(this.project);
     try {
-      const media = project.slides.flatMap((slide) => (slide.media ? [slide.media] : []));
+      const media = projectAssets(project);
       let result: Result<void>;
       if (path.toLowerCase().endsWith('.prezi')) {
         result = await writeArchive(path, project, (id) => this.assets.path(id));
@@ -294,10 +351,7 @@ export class ProjectOwner {
         if (expectedRevision !== this.revision)
           return failure('CONFLICT', 'The project was edited while opening. Try again.');
         project = result.value;
-        this.assets.remember(
-          path,
-          project.slides.flatMap((slide) => (slide.media ? [slide.media] : [])),
-        );
+        this.assets.remember(path, projectAssets(project));
       }
       this.project = project;
       this.savedContent = JSON.stringify(this.project);

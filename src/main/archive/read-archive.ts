@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ZipReader } from '@zip.js/zip.js';
 import { z } from 'zod';
+import { projectAssets } from '../../shared/project-assets';
 import { BoundedBlobReader } from './bounded-blob-reader';
 import { readTextEntry } from './read-text-entry';
 import { projectSchema } from '../../shared/project';
@@ -58,17 +59,19 @@ export async function readArchive(path: string): Promise<Result<OpenedArchive>> 
       const withSources = projectSchema.parse({ ...project, sources });
       directory = await mkdtemp(join(tmpdir(), 'prezi-project-'));
       const target = directory;
-      const unique = new Map(
-        project.slides.flatMap((slide) =>
-          slide.media ? [[slide.media.id, slide.media] as const] : [],
-        ),
-      );
+      const unique = new Map(projectAssets(project).map((asset) => [asset.id, asset]));
       const assets = await [...unique.values()].reduce<Promise<OpenedArchive['assets']>>(
         (previous, asset) =>
           previous.then(async (current) => {
             const name = `${asset.id}.${asset.extension}`;
             const entry = files.find((file) => file.filename === `assets/${name}`);
-            if (!entry || entry.uncompressedSize > 8 * 1024 * 1024 * 1024)
+            if (
+              !entry ||
+              entry.uncompressedSize >
+                (['ttf', 'otf', 'woff', 'woff2'].includes(asset.extension)
+                  ? 16 * 1024 * 1024
+                  : 8 * 1024 * 1024 * 1024)
+            )
               throw new Error(`Missing or oversized media: ${asset.name}`);
             const destination = join(target, name);
             const output = await open(destination, 'wx', 0o600);

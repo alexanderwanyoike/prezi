@@ -9,8 +9,8 @@ export const presentationThemeSchema = z.object({
   surface: color,
   border: color,
   padding: z.number().int().min(64).max(180),
-  bodyFont: z.enum(['manrope', 'plex']),
-  monoFont: z.enum(['manrope', 'plex']),
+  bodyFont: z.union([z.enum(['manrope', 'plex']), z.uuid()]),
+  monoFont: z.union([z.enum(['manrope', 'plex']), z.uuid()]),
   animation: z.enum(['rise', 'fade', 'none']),
   transitionMs: z.number().int().min(250).max(400),
 });
@@ -32,5 +32,7 @@ export function presentationTheme(theme?: PresentationTheme): PresentationTheme 
   return theme ?? defaultPresentationTheme;
 }
 export function presentationFont(font: PresentationTheme['bodyFont']): string {
-  return font === 'plex' ? 'IBM Plex Mono, monospace' : 'Manrope Variable, sans-serif';
+  if (font === 'plex') return 'IBM Plex Mono, monospace';
+  if (font === 'manrope') return 'Manrope Variable, sans-serif';
+  return `PreziFont_${font}, sans-serif`;
 }

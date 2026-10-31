@@ -9,6 +9,19 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
   let next = project;
   if (operation.type === 'renameProject') {
     next = { ...project, name: operation.name };
+  } else if (operation.type === 'addFont') {
+    next = { ...project, fonts: [...(project.fonts ?? []), operation.font] };
+  } else if (operation.type === 'updateFont') {
+    if (!project.fonts?.some((font) => font.id === operation.fontId))
+      return failure('NOT_FOUND', 'The font no longer exists.');
+    next = {
+      ...project,
+      fonts: project.fonts.map((font) =>
+        font.id === operation.fontId
+          ? { ...font, ...operation.patch, name: operation.patch.name ?? font.name }
+          : font,
+      ),
+    };
   } else if (operation.type === 'setTheme') {
     const theme = presentationThemeSchema.safeParse({
       ...presentationTheme(project.theme),
