@@ -61,3 +61,7 @@ Electron-updater 6.8.11 and electron-builder 26.18.0 use the MIT licence; the ru
 ## Custom scene compilation
 
 esbuild 0.28.2 uses MIT; its licence is retained in [licenses/esbuild.txt](licenses/esbuild.txt). TypeScript 5.9 uses Apache-2.0. Prepared offline declarations carry their original package licences in out/compiler/THIRD_PARTY_NOTICES.txt and ship with installers. The official esbuild in-memory plugin API and TypeScript compiler-host API inform bundling and virtual-file type checking. Forgecut's source compiler and systemd worker budgets were inspected as design references; no Forgecut code was copied. Custom source is never evaluated by the compiler.
+
+## Slide preview capture
+
+Electron's documented offscreen BrowserWindow, webContents.capturePage, nativeImage.resize and JPEG APIs inform preview capture. The existing isolated scene runtime and bounded serial work queue are reused. Electron uses MIT. No upstream implementation code was copied. Reference: https://www.electronjs.org/docs/latest/api/web-contents#contentscapturepagerect-opts
