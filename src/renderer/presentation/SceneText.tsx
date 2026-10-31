@@ -1,7 +1,8 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
+import { textLayers } from '../../shared/text-scene';
+import type { TextField } from '../../shared/text-scene';
 
-export type TextField = 'title' | 'body';
 export interface SceneEditing {
   selected: TextField | null;
   select: (field: TextField) => void;
@@ -17,7 +18,8 @@ function EditableSceneText({ field, value, style, editing }: Props): React.JSX.E
   const submitted = useRef(value);
   const element = useRef<HTMLElement | null>(null);
   const Tag = field === 'title' ? 'h2' : 'p';
-  const label = field === 'title' ? 'heading' : 'body';
+  const layer = textLayers[field];
+  const label = layer.label.toLowerCase();
   useLayoutEffect(() => {
     const node = element.current;
     // Native editing owns the focused DOM so accepted snapshots preserve the caret.
@@ -44,7 +46,7 @@ function EditableSceneText({ field, value, style, editing }: Props): React.JSX.E
       onInput={(event) => {
         const node = event.currentTarget;
         const text = node.innerText;
-        const maxLength = field === 'title' ? 200 : 10000;
+        const { maxLength } = layer;
         const next = text.slice(0, maxLength);
         if (text !== next) node.textContent = next;
         if (next !== submitted.current) {

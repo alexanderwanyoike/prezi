@@ -1,12 +1,7 @@
 import { z } from 'zod';
+import { textScenePropsSchema } from './text-scene';
 
-export const slideSchema = z.object({
-  id: z.uuid(),
-  title: z.string().max(200),
-  body: z.string().max(10000),
-  layout: z.enum(['title', 'content']),
-  reveals: z.array(z.string().max(2000)).max(30),
-});
+export const slideSchema = textScenePropsSchema.extend({ id: z.uuid() });
 export const projectSchema = z.object({
   schemaVersion: z.literal(1),
   id: z.uuid(),

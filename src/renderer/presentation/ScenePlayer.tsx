@@ -1,5 +1,5 @@
 import { Player } from '@remotion/player';
-import { SlideScene } from './SlideScene';
+import { textSceneDefinition } from './text-scene-definition';
 import type { SceneProps } from './SlideScene';
 
 export const ANIMATION_MS = 400;
@@ -14,7 +14,7 @@ export function ScenePlayer({
     <div className="composition-viewport">
       <div className="composition-transform">
         <Player
-          component={SlideScene}
+          component={textSceneDefinition.Component}
           inputProps={scene}
           compositionWidth={1920}
           compositionHeight={1080}

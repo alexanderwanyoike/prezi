@@ -1,7 +1,8 @@
 import { ArrowDown, ArrowUp, Copy, Trash2 } from 'lucide-react';
 import { EditableText } from './EditableText';
 import type { Slide } from '../shared/project';
-import type { TextField } from './presentation/SceneText';
+import { textLayers } from '../shared/text-scene';
+import type { TextField } from '../shared/text-scene';
 
 interface Props {
   slide: Slide;
@@ -46,7 +47,7 @@ export function SlideInspector({
             }}
             id="slide-title"
             value={slide.title}
-            maxLength={200}
+            maxLength={textLayers.title.maxLength}
             commit={(title) => {
               update({ title });
             }}
@@ -58,7 +59,7 @@ export function SlideInspector({
             }}
             id="slide-body"
             value={slide.body}
-            maxLength={10000}
+            maxLength={textLayers.body.maxLength}
             rows={5}
             commit={(body) => {
               update({ body });

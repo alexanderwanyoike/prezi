@@ -17,7 +17,7 @@ import { SlideRail } from './SlideRail';
 import { SlideInspector } from './SlideInspector';
 import { useAppearance } from './appearance';
 import { AppearancePanel } from './AppearancePanel';
-import type { TextField } from './presentation/SceneText';
+import type { TextField } from '../shared/text-scene';
 
 export function App(): React.JSX.Element {
   const { snapshot, error, busy, edit, undo, redo, save, open, newProject } = useProject();
