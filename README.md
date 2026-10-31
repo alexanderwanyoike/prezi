@@ -28,6 +28,7 @@ There is no installer yet. Desktop packaging is part of checkpoint three.
 
 - **New presentation** creates a blank deck. The first launch includes a small Vibez text example.
 - Use the slide rail and inspector to add, duplicate, delete, reorder and edit slides. At least one slide remains in the deck.
+- Click a heading or body on the canvas to type directly. Selection follows the same text property in the inspector; Escape or Enter leaves heading editing. Body text supports line breaks.
 - Edit the presentation name in the document bar. Text edits reach the backend while the field is still focused.
 - Choose **Title / chapter** or **Text / reveals**. Enter one reveal per line, up to 30. Use the reveal buttons to preview any step or **Restart preview** to replay the initial entrance.
 - Undo and redo operate on content edits. Each accepted edit batch is one undo action; typing creates successive edits.
