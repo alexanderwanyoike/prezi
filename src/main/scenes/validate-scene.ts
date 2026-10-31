@@ -31,15 +31,18 @@ export async function validateScene(
   if (signal.aborted) return failure('CANCELLED', 'Scene validation was cancelled.');
   const window = new BrowserWindow({
     show: false,
-    width: 1920,
-    height: 1080,
+    width: 960,
+    height: 540,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
       backgroundThrottling: false,
+      offscreen: true,
     },
   });
+  window.webContents.setZoomFactor(0.5);
+  window.webContents.setFrameRate(60);
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', (event) => {
     event.preventDefault();
