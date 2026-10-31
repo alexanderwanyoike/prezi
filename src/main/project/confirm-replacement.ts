@@ -14,6 +14,11 @@ export async function confirmReplacement(
   if (choice === 0) {
     const result = await save();
     if (!result.ok) return result;
+    if (owner.snapshot().dirty)
+      return failure(
+        'CONFLICT',
+        'The presentation changed while saving. Save again before closing.',
+      );
   }
   return { ok: true, value: undefined };
 }
