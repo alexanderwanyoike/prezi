@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, Copy, Trash2 } from 'lucide-react';
+import { MediaInspector } from './MediaInspector';
 import { EditableText } from './EditableText';
 import type { Slide } from '../shared/project';
 import { textLayers } from '../shared/text-scene';
@@ -82,6 +83,14 @@ export function SlideInspector({
             <option value="content">Text / reveals</option>
           </select>
         </div>
+        {slide.media && (
+          <MediaInspector
+            media={slide.media}
+            remove={() => {
+              update({ media: null });
+            }}
+          />
+        )}
         <div className="inspector-section">
           <span className="eyebrow">PROGRESSION</span>
           <p className="muted small">
