@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { connectDesktopMcp } from './mcp-client';
 import { fileCommand } from './file-command';
 
 test('imports a decoded font, edits its credits and keeps it working after portable save and reopen', async () => {
@@ -91,6 +92,46 @@ test('imports a decoded font, edits its credits and keeps it working after porta
         },
       },
     });
+
+    const client = await connectDesktopMcp(test.info().outputPath('profile'));
+    try {
+      expect(
+        (await client.callTool({ name: 'read_project', arguments: {} })).structuredContent,
+      ).toMatchObject({ result: { ok: true, value: { project: { fonts: [{ id: font.id }] } } } });
+      expect(
+        (await client.callTool({ name: 'read_font', arguments: { fontId: font.id } }))
+          .structuredContent,
+      ).toMatchObject({
+        result: {
+          ok: true,
+          value: { license: 'Original fixture notice retained in this portable project.' },
+        },
+      });
+      if (!reopened.ok) throw Error('Project did not reopen');
+      const request = {
+        requestId: 'agent-font-import',
+        expectedRevision: reopened.value.revision,
+        path: resolve(
+          'node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2',
+        ),
+        credit: { provenance: 'Agent supplied copy', license: 'Supplied notice' },
+      };
+      const imported = await client.callTool({ name: 'import_font', arguments: request });
+      expect(imported.structuredContent).toMatchObject({ result: { ok: true } });
+      expect(
+        (await client.callTool({ name: 'import_font', arguments: request })).structuredContent,
+      ).toEqual(imported.structuredContent);
+      const after = await page.evaluate(() => window.prezi.snapshot());
+      expect(after).toMatchObject({
+        ok: true,
+        value: { project: { fonts: [{ id: font.id }, { provenance: 'Agent supplied copy' }] } },
+      });
+      await expect(page.getByRole('textbox', { name: 'Canvas heading', exact: true })).toHaveText(
+        'Vibez / how I built it',
+      );
+    } finally {
+      await client.close();
+    }
   } finally {
     await desktop.close();
   }
