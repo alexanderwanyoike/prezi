@@ -96,13 +96,14 @@ export class SceneJobs {
   }
 
   private async execute(request: SceneJobRequest, signal: AbortSignal): Promise<Outcome> {
+    const cancelled = (): boolean => signal.aborted;
     const compiled = await this.compile(request, signal);
-    if (Boolean(signal.aborted)) return failure('CANCELLED', 'Scene compilation was cancelled.');
+    if (cancelled()) return failure('CANCELLED', 'Scene compilation was cancelled.');
     if (!compiled.ok) return compiled;
     const record = this.records.get(request.requestId);
     if (record) record.job.state = 'validating';
     const validated = await this.validate(request, compiled.value.code, signal);
-    if (Boolean(signal.aborted)) return failure('CANCELLED', 'Scene validation was cancelled.');
+    if (cancelled()) return failure('CANCELLED', 'Scene validation was cancelled.');
     if (!validated.ok) return validated;
     const installed = this.owner.installScene({
       requestId: request.requestId,
