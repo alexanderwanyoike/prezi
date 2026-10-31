@@ -68,6 +68,7 @@ export function SlideScene({
           style={{
             fontSize: headingSize,
             lineHeight: 1.15,
+            minHeight: '1.15em',
             fontWeight: 550,
             letterSpacing: -3,
             whiteSpace: 'pre-wrap',
