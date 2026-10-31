@@ -44,6 +44,8 @@ export function App(): React.JSX.Element {
         }}
       />
     );
+  const selectionPending =
+    busy && selectedId !== null && !snapshot.project.slides.some((item) => item.id === selectedId);
   const selectedIndex = snapshot.project.slides.findIndex((item) => item.id === slide.id);
   let status = snapshot.filePath ? 'Saved on this computer' : 'Not saved yet';
   if (snapshot.dirty) status = 'Unsaved changes';
@@ -183,6 +185,7 @@ export function App(): React.JSX.Element {
         }}
       />
       <SlideCanvas
+        pending={selectionPending}
         editing={{
           selected: selectedField,
           select: setSelectedField,
@@ -199,6 +202,7 @@ export function App(): React.JSX.Element {
         count={snapshot.project.slides.length}
       />
       <SlideInspector
+        pending={selectionPending}
         selectedField={selectedField}
         selectField={setSelectedField}
         key={`inspector:${slide.id}`}

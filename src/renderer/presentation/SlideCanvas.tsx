@@ -6,11 +6,12 @@ import type { SceneEditing } from './SceneText';
 
 interface Props {
   slide: Slide;
+  pending: boolean;
   index: number;
   count: number;
   editing: SceneEditing;
 }
-export function SlideCanvas({ slide, index, count, editing }: Props): React.JSX.Element {
+export function SlideCanvas({ slide, index, count, editing, pending }: Props): React.JSX.Element {
   const [reveal, setReveal] = useState(0);
   const [run, setRun] = useState(0);
   const step = Math.min(reveal, slide.reveals.length);
@@ -18,6 +19,12 @@ export function SlideCanvas({ slide, index, count, editing }: Props): React.JSX.
     setReveal(next);
     setRun(run + 1);
   }
+  if (pending)
+    return (
+      <main className="workspace" role="status">
+        Opening the selected slide…
+      </main>
+    );
   return (
     <main className="workspace">
       <div className="canvas-heading">

@@ -6,6 +6,7 @@ import type { TextField } from '../shared/text-scene';
 
 interface Props {
   slide: Slide;
+  pending: boolean;
   selectedField: TextField | null;
   selectField: (field: TextField) => void;
   index: number;
@@ -17,6 +18,7 @@ interface Props {
 }
 export function SlideInspector({
   slide,
+  pending,
   selectedField,
   selectField,
   index,
@@ -27,6 +29,8 @@ export function SlideInspector({
   remove,
   move,
 }: Props): React.JSX.Element {
+  if (pending)
+    return <aside className="inspector" aria-label="Slide properties" aria-busy="true" />;
   return (
     <aside className="inspector" aria-label="Slide properties">
       <div className="panel-heading">
