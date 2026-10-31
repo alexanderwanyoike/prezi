@@ -41,3 +41,7 @@ The bundled font licences are retained in [licenses/manrope.txt](licenses/manrop
 ## zip.js
 
 Portable `.prezi` files use @zip.js/zip.js 2.24.0 under the BSD 3-Clause licence. Its streaming reader/writer APIs and documented lazily read file Blob pattern inform the project container. The licence is preserved in [licenses/zipjs.txt](licenses/zipjs.txt). No dependency source is copied or modified.
+
+## CodeMirror and Lezer
+
+Read-only source inspection uses CodeMirror 6 and Lezer language highlighting under their MIT licences. The official focusable read-only example informs EditorState.readOnly, EditorView.editable and keyboard focus. One view is mounted only while Code view is open and is destroyed on replacement or exit. Licences are preserved in [licenses/codemirror.txt](licenses/codemirror.txt) and [licenses/lezer-highlight.txt](licenses/lezer-highlight.txt).

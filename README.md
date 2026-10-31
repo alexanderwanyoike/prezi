@@ -32,6 +32,7 @@ There is no installer yet. Desktop packaging is part of checkpoint three.
 - Edit the presentation name in the document bar. Text edits reach the backend while the field is still focused.
 - Choose **Title / chapter** or **Text / reveals**. Enter one reveal per line, up to 30. Use the reveal buttons to preview any step or **Restart preview** to replay the initial entrance.
 - Undo and redo operate on content edits. Each accepted edit batch is one undo action; typing creates successive edits.
+- **Code** opens a read-only browser for Remotion components, schemas and presentation styles. **Slide properties** shows live instance values; use the inspector to change them. Custom source editing and compilation follow in phases 9-10.
 - **Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Video playback settings follow in the next slice.
 - Default saves create a single `.prezi` file containing deck content, scene source, local media, built-in fonts and their licences. Move that file on its own. Legacy JSON projects still use an adjacent `<project path>.assets` directory.
 - **Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.
