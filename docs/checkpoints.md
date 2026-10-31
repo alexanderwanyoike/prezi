@@ -14,6 +14,7 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 
 - [x] Additional editor slice: direct canvas heading/body editing with shared properties, selection and undo.
 
+- [x] Additional application slice: styled File/Edit/View menus, desktop shortcuts and Canvas/Code workspace tabs.
 - [x] Additional source slice: read-only Remotion Code view and live instance properties.
 - [x] Additional persistence slice: a self-contained `.prezi` archive with source, assets and built-in fonts/licences.
 - [x] Import local images/video and persist asset references; stream media with range requests.

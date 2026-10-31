@@ -1,6 +1,6 @@
 # Scene Code view
 
-Use Code in the header to inspect the scene's TS/TSX, property schemas and presentation styles. A new deck shows bundled application source. Reopened `.prezi` projects show their stored source files. Slide properties shows the selected instance's live JSON values while the inspector stays usable. Source inspection does not create content revisions; Undo still applies only to actual deck edits.
+Use the Code workspace tab to inspect the scene's TS/TSX, property schemas and presentation styles. A new deck shows bundled application source. Reopened `.prezi` projects show their stored source files. Slide properties shows the selected instance's live JSON values while the inspector stays usable. Source inspection does not create content revisions; Undo still applies only to actual deck edits.
 
 The viewer is read-only in this slice. Editing/compiling custom source is planned for phases 9-10. CodeMirror is loaded only when opened; it replaces the preview and mounts one view at a time, destroying that view on file replacement or exit. No background Player is mounted behind the code browser.
 

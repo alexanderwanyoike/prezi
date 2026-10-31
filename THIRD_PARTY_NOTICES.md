@@ -45,3 +45,7 @@ Portable `.prezi` files use @zip.js/zip.js 2.24.0 under the BSD 3-Clause licence
 ## CodeMirror and Lezer
 
 Read-only source inspection uses CodeMirror 6 and Lezer language highlighting under their MIT licences. The official focusable read-only example informs EditorState.readOnly, EditorView.editable and keyboard focus. One view is mounted only while Code view is open and is destroyed on replacement or exit. Licences are preserved in [licenses/codemirror.txt](licenses/codemirror.txt) and [licenses/lezer-highlight.txt](licenses/lezer-highlight.txt).
+
+## Application commands
+
+The styled application menu uses Electron's documented `before-input-event` and `webContents` editing APIs, the WAI-ARIA APG menubar keyboard pattern, and CodeMirror's public keymap/selectAll commands. These inform command routing, focus and selection; no reference application's source or styling was copied. Electron and CodeMirror are MIT licensed. The APG reference is used as design guidance; no example code was copied.

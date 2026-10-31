@@ -26,18 +26,34 @@ There is no installer yet. Desktop packaging is part of checkpoint three.
 
 ## Work on a deck
 
-- **New presentation** creates a blank deck. The first launch includes a small Vibez text example.
+- Use the styled **File / Edit / View** application menu for document commands, editing and workspace views. The menus follow the selected theme; file pickers and save prompts use desktop dialogs.
+- **File > New presentation** creates a blank deck. The first launch includes a small Vibez text example.
 - Use the slide rail and inspector to add, duplicate, delete, reorder and edit slides. At least one slide remains in the deck.
 - Click a heading or body on the canvas to type directly. Selection follows the same text property in the inspector; Escape or Enter leaves heading editing. Body text supports line breaks.
 - Edit the presentation name in the document bar. Text edits reach the backend while the field is still focused.
 - Choose **Title / chapter** or **Text / reveals**. Enter one reveal per line, up to 30. Use the reveal buttons to preview any step or **Restart preview** to replay the initial entrance.
 - Undo and redo operate on content edits. Each accepted edit batch is one undo action; typing creates successive edits.
-- **Code** opens a read-only browser for Remotion components, schemas and presentation styles. **Slide properties** shows live instance values; use the inspector to change them. Custom source editing and compilation follow in phases 9-10.
-- **Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Use the inspector to position/resize media and choose contain or cover. Video has autoplay, looping, mute and volume settings; hover it for play/pause/restart controls.
+- The **Canvas / Code** tabs switch the workspace view. **Code** opens a read-only browser for Remotion components, schemas and presentation styles. **Slide properties** shows live instance values; use the inspector to change them. Custom source editing and compilation follow in phases 9-10.
+- **File > Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Use the inspector to position/resize media and choose contain or cover. Video has autoplay, looping, mute and volume settings; hover it for play/pause/restart controls.
 - Default saves create a single `.prezi` file containing deck content, scene source, local media, built-in fonts and their licences. Move that file on its own. Legacy JSON projects still use an adjacent `<project path>.assets` directory.
-- **Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.
+- **File > Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.
 - The app asks whether to save, discard or cancel before replacing or closing a changed deck. Failed saves and invalid imports leave the current deck open.
 - Appearance has Studio, Aluminium and Paper materials, light/dark modes and five accents. These preferences persist locally and do not change the deck's near-black/green visual theme.
+
+## Application shortcuts
+
+Use Ctrl on Linux/Windows and Command on macOS. Shortcuts are local to the application window.
+
+| Shortcut              | Action                      |
+| --------------------- | --------------------------- |
+| Ctrl+N / Ctrl+O       | New / open presentation     |
+| Ctrl+S / Ctrl+Shift+S | Save / save as              |
+| Ctrl+I / Ctrl+W       | Import media / close window |
+| Ctrl+1 / Ctrl+2       | Canvas / Code tab           |
+| Ctrl+Z / Ctrl+Shift+Z | Undo / redo                 |
+| Ctrl+, / F5           | Appearance / Present        |
+
+Cut, copy, paste and select all use the focused editor. Alt+F, Alt+E and Alt+V open menus; arrow keys navigate, Escape dismisses and Tab returns to the workspace.
 
 ## Present
 
