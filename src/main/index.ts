@@ -1,5 +1,9 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { RenderWork } from './source/render-work';
+import { PreviewJobs } from './previews/preview-jobs';
+import { captureSlide } from './previews/capture-slide';
+import { registerPreviewIpc } from './previews/register-preview-ipc';
 import { registerSceneIpc } from './source/register-scene-ipc';
 import { SceneJobs } from './source/scene-jobs';
 import { runCompiler } from './source/run-compiler';
@@ -45,6 +49,7 @@ const owner = new ProjectOwner(join(import.meta.dirname, '../../resources/exampl
 const workspace = new WorkspaceOwner(owner);
 let mcp: McpConnection | undefined;
 let sceneJobs: SceneJobs | undefined;
+let previewJobs: PreviewJobs | undefined;
 let installedUpdates: ReturnType<typeof createInstalledUpdates> | undefined;
 
 async function openWindow(): Promise<void> {
@@ -63,6 +68,11 @@ async function openWindow(): Promise<void> {
     },
   });
   registerSceneRuntime(window);
+  const renderWork = new RenderWork();
+  previewJobs = new PreviewJobs(owner, renderWork, (project, id, reveal, signal) =>
+    captureSlide(project, id, reveal, signal, window.webContents.mainFrame.osProcessId),
+  );
+  registerPreviewIpc(window, previewJobs);
   sceneJobs = new SceneJobs(
     owner,
     (request, signal) =>
@@ -87,13 +97,21 @@ async function openWindow(): Promise<void> {
           )
         : Promise.resolve(failure('NOT_FOUND', 'The slide no longer exists.'));
     },
+    renderWork,
   );
   registerSceneIpc(window, sceneJobs);
   window.on('closed', () => {
     sceneJobs?.dispose();
+    previewJobs?.dispose();
     app.quit();
   });
-  const connected = await startMcp(owner, app.getPath('userData'), workspace, sceneJobs);
+  const connected = await startMcp(
+    owner,
+    app.getPath('userData'),
+    workspace,
+    sceneJobs,
+    previewJobs,
+  );
   if (connected.ok) mcp = connected.value;
   else process.stderr.write(`${connected.error.message}\n`);
   registerConnectionIpc(window, connected);
@@ -141,6 +159,7 @@ app.on('window-all-closed', () => {
 app.on('will-quit', () => {
   installedUpdates?.stop();
   sceneJobs?.dispose();
+  previewJobs?.dispose();
   void mcp?.close();
   void owner.dispose();
 });

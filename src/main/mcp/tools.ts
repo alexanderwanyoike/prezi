@@ -4,6 +4,8 @@ import { isAbsolute } from 'node:path';
 import { assetCreditSchema } from '../../shared/asset-credit';
 import { registerFontTools } from './font-tools';
 import { registerSceneTools } from './scene-tools';
+import { registerPreviewTools } from './preview-tools';
+import type { PreviewJobs } from '../previews/preview-jobs';
 import type { SceneJobs } from '../source/scene-jobs';
 import { presentationTheme } from '../../shared/presentation-theme';
 import { projectSources } from '../../shared/project-sources';
@@ -62,6 +64,7 @@ export function createToolServer(
   owner: ProjectOwner,
   workspace: WorkspaceOwner,
   jobs?: SceneJobs,
+  previews?: PreviewJobs,
 ): McpServer {
   const server = new McpServer(
     { name: 'prezi', version: '0.1.0' },
@@ -223,6 +226,7 @@ export function createToolServer(
       (input) => changed(owner[direction](input.expectedRevision, input.requestId)),
     );
   });
-  if (jobs) registerSceneTools(server, jobs);
+  if (previews) registerPreviewTools(server, previews);
+  if (jobs) registerSceneTools(server, jobs, previews);
   return server;
 }

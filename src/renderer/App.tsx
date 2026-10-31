@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
 import { editPendingContext } from './edit-pending';
+import { usePreviews } from './usePreviews';
 import { useProjectFonts } from './useProjectFonts';
 import { PresentationThemeDialog } from './PresentationThemeDialog';
 import { PresentationView } from './presentation/PresentationView';
@@ -26,6 +27,7 @@ const CodeView = lazy(async () => {
 
 export function App(): React.JSX.Element {
   const project = useProject();
+  const previews = usePreviews();
   const updates = useUpdates(project.flush);
   const [updatesOpen, setUpdatesOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
@@ -207,6 +209,16 @@ export function App(): React.JSX.Element {
         </div>
       </div>
       <SlideRail
+        project={snapshot.project}
+        previews={previews}
+        capture={() => {
+          previews.capture({
+            requestId: `preview:${crypto.randomUUID()}`,
+            slideId: slide.id,
+            expectedRevision: snapshot.revision,
+            reveal: slide.reveals.length,
+          });
+        }}
         slides={snapshot.project.slides}
         selectedId={slide.id}
         select={setSelectedId}

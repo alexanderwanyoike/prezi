@@ -6,15 +6,13 @@ import type { Result } from '../../shared/result';
 import { failure } from '../../shared/result';
 import type { ProjectOwner } from '../project/project-owner';
 import type { Compilation } from '../../shared/custom-scene';
-import { WorkQueue } from './work-queue';
+import { RenderWork } from './render-work';
 
 type Outcome = Result<{ revision: number; resources: SceneJob['resources'] }>;
 export class SceneJobs {
   private records = new Map<string, { fingerprint: string; job: SceneJob }>();
 
   private controllers = new Map<string, AbortController>();
-
-  private queue: WorkQueue<SceneJobRequest, Outcome>;
 
   constructor(
     private readonly owner: ProjectOwner,
@@ -24,18 +22,16 @@ export class SceneJobs {
       code: string,
       signal: AbortSignal,
     ) => Promise<Result<void>>,
-  ) {
-    this.queue = new WorkQueue(
-      (request, signal) => this.execute(request, signal),
-      (message) => failure('CANCELLED', message),
-    );
-  }
+    private readonly work = new RenderWork(),
+  ) {}
 
   submit(input: unknown): Result<SceneJob> {
     const parsed = sceneJobRequestSchema.safeParse(input);
     if (!parsed.success)
       return failure('INVALID_INPUT', 'The scene compilation request is invalid.');
     const request = parsed.data;
+    if (request.requestId.startsWith('preview:'))
+      return failure('INVALID_INPUT', 'That request ID prefix is reserved for preview jobs.');
     const problem = sceneDefinitionProblem(request.candidate);
     if (problem) return failure('INVALID_INPUT', problem);
     const fingerprint = createHash('sha256').update(JSON.stringify(request)).digest('hex');
@@ -64,10 +60,14 @@ export class SceneJobs {
     this.records.set(job.id, { fingerprint, job });
     const controller = new AbortController();
     this.controllers.set(job.id, controller);
-    void this.queue
-      .enqueue(request, controller.signal, () => {
-        job.state = 'compiling';
-      })
+    void this.work
+      .run(
+        () => this.execute(request, controller.signal),
+        controller.signal,
+        () => {
+          job.state = 'compiling';
+        },
+      )
       .then((result) => {
         this.controllers.delete(job.id);
         if (controller.signal.aborted) job.state = 'cancelled';

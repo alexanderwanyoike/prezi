@@ -3,6 +3,7 @@ import { presentationThemeSchema } from './presentation-theme';
 import { sceneCandidateSchema, sceneValuesSchema } from './scene-definition';
 import { fontSchema } from './fonts';
 import { mediaSchema } from './media';
+import { slideSchema } from './project';
 
 export const runtimeDefinitionSchema = sceneCandidateSchema.pick({
   id: true,
@@ -29,6 +30,13 @@ export const runtimeStateSchema = z.object({
   selectedLayer: z.string().nullable(),
 });
 export const runtimeMessageSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('prezi:preset'),
+    slide: slideSchema,
+    slideNumber: z.number().int().min(1).max(200),
+    slideCount: z.number().int().min(1).max(200),
+    state: runtimeStateSchema,
+  }),
   z.object({
     type: z.literal('prezi:load'),
     code: z.string().max(2 * 1024 * 1024),

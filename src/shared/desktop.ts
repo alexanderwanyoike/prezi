@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { SceneJob, SceneJobRequest } from './scene-jobs';
+import type { PreviewJob, PreviewRequest } from './preview';
 import { projectSchema } from './project';
 import type { DesktopCommand, NativeEditCommand } from './desktop-commands';
 import type { UpdateCommand, UpdateSnapshot } from './updates';
@@ -36,6 +37,10 @@ export const snapshotResultSchema = z.union([
 ]);
 export interface DesktopBridge {
   platform: NodeJS.Platform;
+  capturePreview: (request: PreviewRequest) => Promise<Result<PreviewJob>>;
+  cancelPreview: (id: string) => Promise<Result<PreviewJob>>;
+  previews: () => Promise<Result<PreviewJob[]>>;
+  subscribePreviews: (listener: (job: PreviewJob) => void) => () => void;
   submitScene: (request: SceneJobRequest) => Promise<Result<SceneJob>>;
   sceneJob: (id: string) => Promise<Result<SceneJob>>;
   cancelSceneJob: (id: string) => Promise<Result<SceneJob>>;

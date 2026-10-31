@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import type { SceneJobs } from '../source/scene-jobs';
+import type { PreviewJobs } from '../previews/preview-jobs';
 import { sceneJobRequestSchema } from '../../shared/scene-jobs';
 import type { Result } from '../../shared/result';
 
@@ -11,7 +12,11 @@ function respond(result: Result<unknown>) {
     isError: !result.ok,
   };
 }
-export function registerSceneTools(server: McpServer, jobs: SceneJobs): void {
+export function registerSceneTools(
+  server: McpServer,
+  jobs: SceneJobs,
+  previews?: PreviewJobs,
+): void {
   server.registerTool(
     'compile_scene',
     {
@@ -31,11 +36,16 @@ export function registerSceneTools(server: McpServer, jobs: SceneJobs): void {
     'read_job',
     {
       description:
-        'Read a bounded scene job status, diagnostics and compilation resource measurements. Completed jobs report their accepted project revision.',
+        'Read a bounded scene or preview job status, diagnostics and compilation resource measurements. Scene jobs report accepted revisions; previews report captured revisions.',
       inputSchema: z.object({ jobId: z.string().min(1).max(100) }),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    (input) => respond(jobs.read(input.jobId)),
+    (input) =>
+      respond(
+        input.jobId.startsWith('preview:') && previews
+          ? previews.read(input.jobId)
+          : jobs.read(input.jobId),
+      ),
   );
   server.registerTool(
     'cancel_job',
@@ -50,6 +60,11 @@ export function registerSceneTools(server: McpServer, jobs: SceneJobs): void {
         openWorldHint: false,
       },
     },
-    (input) => respond(jobs.cancel(input.jobId)),
+    (input) =>
+      respond(
+        input.jobId.startsWith('preview:') && previews
+          ? previews.cancel(input.jobId)
+          : jobs.cancel(input.jobId),
+      ),
   );
 }

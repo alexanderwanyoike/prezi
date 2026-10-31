@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { sceneJobResultSchema } from '../shared/scene-jobs';
+import { previewResultSchema, previewListResultSchema, previewJobSchema } from '../shared/preview';
 import { fullscreenResultSchema, snapshotResultSchema, snapshotSchema } from '../shared/desktop';
 import type { DesktopBridge } from '../shared/desktop';
 import { updateResultSchema, updateSnapshotSchema } from '../shared/updates';
@@ -41,6 +42,47 @@ async function sceneRequest(command: 'submit' | 'read' | 'cancel', input: unknow
 }
 const bridge: DesktopBridge = {
   platform: process.platform,
+  async capturePreview(input) {
+    try {
+      const result: unknown = await ipcRenderer.invoke('previews:submit', input);
+      const parsed = previewResultSchema.safeParse(result);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The preview response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'Preview capture could not start.');
+    }
+  },
+  async cancelPreview(id) {
+    try {
+      const result: unknown = await ipcRenderer.invoke('previews:cancel', id);
+      const parsed = previewResultSchema.safeParse(result);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The preview response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'Preview cancellation could not finish.');
+    }
+  },
+  async previews() {
+    try {
+      const result: unknown = await ipcRenderer.invoke('previews:list');
+      const parsed = previewListResultSchema.safeParse(result);
+      return parsed.success ? parsed.data : failure('IO_ERROR', 'The preview list was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'The preview list could not be read.');
+    }
+  },
+  subscribePreviews(listener) {
+    const receive = (_event: Electron.IpcRendererEvent, input: unknown): void => {
+      const parsed = previewJobSchema.safeParse(input);
+      if (parsed.success) listener(parsed.data);
+    };
+    ipcRenderer.on('previews:changed', receive);
+    return () => {
+      ipcRenderer.removeListener('previews:changed', receive);
+    };
+  },
   submitScene: (input) => sceneRequest('submit', input),
   sceneJob: (id) => sceneRequest('read', id),
   cancelSceneJob: (id) => sceneRequest('cancel', id),

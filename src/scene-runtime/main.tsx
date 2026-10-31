@@ -4,6 +4,8 @@ import type { ComponentType } from 'react';
 import { Player } from '@remotion/player';
 import type { PlayerRef } from '@remotion/player';
 import { z } from 'zod';
+import { SlideScene } from '../renderer/presentation/SlideScene';
+import type { Slide } from '../shared/project';
 import type { PresentationTheme } from '../shared/presentation-theme';
 import { presentationFont, presentationTheme } from '../shared/presentation-theme';
 import { useProjectFonts } from '../renderer/useProjectFonts';
@@ -14,6 +16,7 @@ import { SceneBoundary } from './SceneBoundary';
 import '@fontsource-variable/manrope';
 import '@fontsource/ibm-plex-mono/400.css';
 import './runtime.css';
+import '../renderer/styles/presentation.css';
 
 interface SceneProps extends Record<string, unknown> {
   theme: PresentationTheme & { fontFamily: string; monoFamily: string };
@@ -37,6 +40,31 @@ function sceneError({ error }: { error: Error }): React.JSX.Element {
   failed(error.message);
   return <p role="alert">{error.message}</p>;
 }
+function presetComponent(
+  slide: Slide,
+  slideNumber: number,
+  slideCount: number,
+): ComponentType<SceneProps> {
+  return function Preset({
+    theme,
+    reveal,
+  }: {
+    theme: PresentationTheme;
+    reveal: number;
+  }): React.JSX.Element {
+    return (
+      <SlideScene
+        slide={slide}
+        theme={theme}
+        reveal={reveal}
+        slideNumber={slideNumber}
+        slideCount={slideCount}
+        mediaActive={false}
+        mediaAutoplay={false}
+      />
+    );
+  };
+}
 function Runtime(): React.JSX.Element | null {
   const [loaded, setLoaded] = useState<{
     Component: ComponentType<SceneProps>;
@@ -56,6 +84,17 @@ function Runtime(): React.JSX.Element | null {
       if (!parsed.success) return;
       const message = parsed.data;
       setState(message.state);
+      if (message.type === 'prezi:preset') {
+        setLoaded({
+          Component: presetComponent(message.slide, message.slideNumber, message.slideCount),
+          definition: {
+            id: message.slide.id,
+            name: message.slide.title || 'Untitled slide',
+            fields: {},
+            layers: [],
+          },
+        });
+      }
       if (message.type === 'prezi:load') {
         const url = URL.createObjectURL(new Blob([message.code], { type: 'text/javascript' }));
         void import(/* @vite-ignore */ url)
