@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { presentationThemeSchema } from './presentation-theme';
 import { sceneCandidateSchema, sceneValuesSchema } from './scene-definition';
 import { mediaSchema } from './media';
 
@@ -9,6 +10,7 @@ export const runtimeDefinitionSchema = sceneCandidateSchema.pick({
   layers: true,
 });
 export const runtimeStateSchema = z.object({
+  theme: presentationThemeSchema.optional(),
   title: z.string().max(200),
   body: z.string().max(10000),
   reveal: z.number().int().min(0).max(30),

@@ -27,9 +27,9 @@ export function createSceneDraft(
 import {Layer, Text} from 'prezi';
 import type {SceneProps} from 'prezi';
 
-export default function Scene({reveal, props}: SceneProps) {
+export default function Scene({reveal, props, theme}: SceneProps) {
   const opacity = interpolate(useCurrentFrame(), [0, 10], [0, 1], {extrapolateRight: 'clamp'});
-  return <AbsoluteFill style={{background:'#101513', color:props.ink, fontFamily:'Manrope Variable'}}>
+  return <AbsoluteFill style={{background:theme.background, color:props.ink, fontFamily:theme.fontFamily}}>
     <div style={{position:'absolute', left:128, top:120, fontSize:18, letterSpacing:4, color:'#9bbb9f'}}>THE 0SMOSYS SHOW</div>
     <Layer id="heading" style={{position:'absolute',left:128,top:360,width:1600,opacity,fontSize:props.size,lineHeight:1.15,letterSpacing:-3}}><Text property="heading"/></Layer>
     <Layer id="body" style={{position:'absolute',left:128,top:590,width:1600,fontSize:34,color:'#a5b2a8'}}><Text property="body"/></Layer>

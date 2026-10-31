@@ -27,6 +27,7 @@ export function CustomScenePlayer({
   const [prepared, setPrepared] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const state: RuntimeState = {
+    theme: scene.theme,
     title: scene.slide.title,
     body: scene.slide.body,
     reveal: scene.reveal,

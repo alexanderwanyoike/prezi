@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import { posix } from 'node:path';
+import { defaultPresentationTheme } from '../../shared/presentation-theme';
 import type { SceneCandidate } from '../../shared/scene-definition';
 import type { SceneSource, SourceDiagnostic } from '../../shared/custom-scene';
 
@@ -25,10 +26,13 @@ export default component;`,
         `${JSON.stringify(name)}: ${{ number: 'number', boolean: 'boolean', text: 'string', color: 'string' }[field.type]};`,
     )
     .join('\n');
+  const themeType = Object.entries(defaultPresentationTheme)
+    .map(([name, value]) => `${name}: ${typeof value};`)
+    .join('');
   files.set(
     '/prezi/node_modules/prezi/index.d.ts',
     `import type {ComponentType, CSSProperties, ReactNode} from 'react';
-export interface SceneProps { title:string; body:string; reveal:number; props:{${propertyTypes}}; }
+export interface SceneProps {theme:{${themeType}fontFamily:string;monoFamily:string;}; title:string; body:string; reveal:number; props:{${propertyTypes}}; }
 export const Text:ComponentType<{property:keyof SceneProps['props'];layer?:string;style?:CSSProperties}>;
 export const Layer:ComponentType<{id:string;children?:ReactNode;style?:CSSProperties}>;
 `,

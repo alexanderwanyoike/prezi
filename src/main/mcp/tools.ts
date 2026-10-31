@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { isAbsolute } from 'node:path';
 import { registerSceneTools } from './scene-tools';
 import type { SceneJobs } from '../source/scene-jobs';
+import { presentationTheme } from '../../shared/presentation-theme';
 import { projectSources } from '../../shared/project-sources';
 import { failure } from '../../shared/result';
 import { selectionSchema } from '../../shared/workspace';
@@ -21,6 +22,7 @@ function summary(snapshot: ProjectSnapshot) {
     project: {
       id: snapshot.project.id,
       name: snapshot.project.name,
+      theme: presentationTheme(snapshot.project.theme),
       sourceFiles: Object.entries(projectSources(snapshot.project)).map(([path, source]) => ({
         path,
         length: source.length,

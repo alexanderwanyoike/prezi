@@ -4,6 +4,8 @@ import type { ComponentType } from 'react';
 import { Player } from '@remotion/player';
 import type { PlayerRef } from '@remotion/player';
 import { z } from 'zod';
+import type { PresentationTheme } from '../shared/presentation-theme';
+import { presentationFont, presentationTheme } from '../shared/presentation-theme';
 import { runtimeMessageSchema } from '../shared/scene-runtime';
 import type { RuntimeState, RuntimeDefinition, RuntimeEvent } from '../shared/scene-runtime';
 import { sceneContext } from './context';
@@ -13,6 +15,7 @@ import '@fontsource/ibm-plex-mono/400.css';
 import './runtime.css';
 
 interface SceneProps extends Record<string, unknown> {
+  theme: PresentationTheme & { fontFamily: string; monoFamily: string };
   title: string;
   body: string;
   reveal: number;
@@ -163,6 +166,11 @@ function Runtime(): React.JSX.Element | null {
           component={Scene}
           errorFallback={sceneError}
           inputProps={{
+            theme: {
+              ...presentationTheme(state.theme),
+              fontFamily: presentationFont(presentationTheme(state.theme).bodyFont),
+              monoFamily: presentationFont(presentationTheme(state.theme).monoFont),
+            },
             title: state.title,
             body: state.body,
             reveal: state.reveal,
