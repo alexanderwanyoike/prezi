@@ -132,6 +132,31 @@ test('shares revisioned MCP edits and retry-safe undo with the live Electron edi
     const current = summarySchema.parse(
       (await client.callTool({ name: 'read_project', arguments: {} })).structuredContent,
     ).result.value;
+    const readSlide = await client.callTool({
+      name: 'read_slide',
+      arguments: { slideId: before.project.slides[0]?.id },
+    });
+    expect(readSlide.structuredContent).toMatchObject({
+      result: { ok: true, value: { slide: { title: 'A manual opening' } } },
+    });
+    const source = await client.callTool({
+      name: 'read_source',
+      arguments: { path: 'renderer/presentation/SlideScene.tsx', offset: 0, length: 200 },
+    });
+    const sourceData = z
+      .object({
+        result: z.object({
+          ok: z.literal(true),
+          value: z.object({ text: z.string(), totalLength: z.number() }),
+        }),
+      })
+      .parse(source.structuredContent).result.value;
+    expect(sourceData.text).toHaveLength(200);
+    expect(sourceData.totalLength).toBeGreaterThan(200);
+    expect(
+      (await client.callTool({ name: 'read_source', arguments: { path: '../../etc/passwd' } }))
+        .structuredContent,
+    ).toMatchObject({ result: { ok: false, error: { code: 'NOT_FOUND' } } });
     const slideId = before.project.slides[0]?.id;
     if (!slideId) throw new Error('Missing opening slide');
     const request = {
