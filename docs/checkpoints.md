@@ -12,6 +12,7 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 
 ## Checkpoint 2: phases 6-8
 
+- [x] Additional recovery slice: labelled undo/redo history and retry-safe history requests for agent batches.
 - [x] Additional editor slice: direct canvas heading/body editing with shared properties, selection and undo.
 
 - [x] Additional application slice: styled File/Edit/View menus, desktop shortcuts and Canvas/Code workspace tabs.
@@ -28,6 +29,7 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 - [ ] Code/media/process layouts and the animated Vibez workflow example.
 - [ ] Font import, provenance and missing-asset recovery.
 - [ ] Bounded preview capture, job status and static thumbnails.
+- [ ] Desktop updates: release feeds, explicit download/restart, unsaved-change protection and platform installer/update metadata.
 - [ ] Desktop packaging, memory/CPU verification and an OBS or ClipForge recording rehearsal.
 
 Each checkpoint needs focused delivery, explicit dependencies if stacking becomes necessary, actual rendered screenshots in its PR and a user decision before any code review.
