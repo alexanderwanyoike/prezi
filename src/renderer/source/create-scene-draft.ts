@@ -1,3 +1,5 @@
+import { presentationTheme } from '../../shared/presentation-theme';
+import type { PresentationTheme } from '../../shared/presentation-theme';
 import type { Slide } from '../../shared/project';
 import type { CustomSceneDefinition } from '../../shared/scene-definition';
 import type { SceneDraft } from '../../shared/scene-draft';
@@ -5,6 +7,7 @@ import type { SceneDraft } from '../../shared/scene-draft';
 export function createSceneDraft(
   slide: Slide,
   definition: CustomSceneDefinition | undefined,
+  theme?: PresentationTheme,
 ): SceneDraft {
   if (definition)
     return {
@@ -44,7 +47,7 @@ export default function Scene({reveal, props, theme}: SceneProps) {
           heading: { type: 'text', label: 'Heading', default: slide.title },
           body: { type: 'text', label: 'Body', default: slide.body, multiline: true },
           size: { type: 'number', label: 'Type size', default: 96, min: 20, max: 160 },
-          ink: { type: 'color', label: 'Text colour', default: '#edf2ec' },
+          ink: { type: 'color', label: 'Text colour', default: presentationTheme(theme).foreground },
         },
         layers: [
           { id: 'heading', label: 'Heading', property: 'heading' },

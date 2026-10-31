@@ -110,7 +110,7 @@ export function useSceneDraft(
     active,
     conflict,
     create: (): SceneDraft => {
-      const next = createSceneDraft(slide, definition);
+      const next = createSceneDraft(slide, definition, project.theme);
       commit(next, 'Create scene draft');
       return next;
     },
