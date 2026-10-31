@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { isAbsolute } from 'node:path';
+import { assetCreditSchema } from '../../shared/asset-credit';
 import { registerFontTools } from './font-tools';
 import { registerSceneTools } from './scene-tools';
 import type { SceneJobs } from '../source/scene-jobs';
@@ -174,12 +175,14 @@ export function createToolServer(
     'import_media',
     {
       description:
-        'Copy a local image or browser-playable MP4/WebM into a slide. Use an absolute path and current revision. Successful registration is one reversible batch. Retry with the same requestId and payload.',
+        'Copy a local image or browser-playable MP4/WebM into a slide. Use an absolute path and current revision. Set replace to retain existing placement/playback/credits while locating a replacement of the same kind. Optional credit metadata is retained. Successful registration is one reversible batch. Retry with the same requestId and payload.',
       inputSchema: z.object({
         requestId: z.string().min(1).max(100),
         expectedRevision: z.number().int().nonnegative(),
         slideId: z.uuid(),
         path: z.string().min(1).max(4096).refine(isAbsolute),
+        credit: assetCreditSchema.optional(),
+        replace: z.boolean().optional(),
       }),
       annotations: {
         readOnlyHint: false,
@@ -190,7 +193,14 @@ export function createToolServer(
     },
     async (input) =>
       changed(
-        await owner.importMedia(input.path, input.slideId, input.expectedRevision, input.requestId),
+        await owner.importMedia(
+          input.path,
+          input.slideId,
+          input.expectedRevision,
+          input.requestId,
+          input.credit,
+          input.replace,
+        ),
       ),
   );
   const historySchema = z.object({

@@ -35,12 +35,13 @@ export function registerFontTools(server: McpServer, owner: ProjectOwner): void 
     'import_font',
     {
       description:
-        'Copy a local TTF/OTF/WOFF/WOFF2 font into the shared project with optional supplied provenance and licence notice. Requires the current revision and retry-safe requestId. Select the returned font ID with setTheme in a separate edit batch.',
+        'Copy a local TTF/OTF/WOFF/WOFF2 font into the shared project with optional supplied provenance and licence notice. Requires the current revision and retry-safe requestId. Select the returned font ID with setTheme in a separate edit batch. Set replaceFontId to locate a missing registered font while retaining credits and updating its theme references.',
       inputSchema: z.object({
         requestId: z.string().min(1).max(100),
         expectedRevision: z.number().int().nonnegative(),
         path: z.string().min(1).max(4096).refine(isAbsolute),
         credit: fontCreditSchema.optional(),
+        replaceFontId: z.uuid().optional(),
       }),
       annotations: {
         readOnlyHint: false,
@@ -55,6 +56,7 @@ export function registerFontTools(server: McpServer, owner: ProjectOwner): void 
         input.expectedRevision,
         input.requestId,
         input.credit,
+        input.replaceFontId,
       );
       return response(
         result.ok
