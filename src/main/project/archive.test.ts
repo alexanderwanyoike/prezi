@@ -30,6 +30,8 @@ test('moves a single .prezi file containing the deck, scene source, fonts and me
         'project.json',
         'manifest.json',
         'source/renderer/presentation/SlideScene.tsx',
+        'source/renderer/presentation/SceneVideo.tsx',
+        'source/renderer/presentation/play-video.ts',
         'source/renderer/styles/tokens.css',
         'fonts/manrope/index.css',
         'fonts/manrope/LICENSE',
