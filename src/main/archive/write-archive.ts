@@ -69,7 +69,7 @@ export async function writeArchive(
       Promise.resolve(),
     );
     await writer.close();
-    const file = await open(temporary, 'r');
+    const file = await open(temporary, 'r+');
     try {
       await file.sync();
     } finally {
