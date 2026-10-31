@@ -78,6 +78,11 @@ export const editRequestSchema = z.object({
     .array(
       z.discriminatedUnion('type', [
         z.object({
+          type: z.literal('setSceneDraft'),
+          slideId: z.uuid(),
+          draft: sceneDraftSchema.nullable(),
+        }),
+        z.object({
           type: z.literal('updateSceneProperties'),
           slideId: z.uuid(),
           patch: sceneValuesSchema,

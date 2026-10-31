@@ -1,3 +1,4 @@
+import { withoutSceneDraft } from '../../shared/scene-draft';
 import { projectSchema, slideSchema } from '../../shared/project';
 import type { EditOperation, Project } from '../../shared/project';
 import { failure } from '../../shared/result';
@@ -18,7 +19,14 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
     const slide = project.slides[index];
     if (!slide) return failure('NOT_FOUND', 'The slide no longer exists.');
     const slides = [...project.slides];
+    const { drafts: initialDrafts } = project;
+    let drafts = initialDrafts;
     switch (operation.type) {
+      case 'setSceneDraft':
+        drafts = operation.draft
+          ? { ...drafts, [slide.id]: operation.draft }
+          : withoutSceneDraft(drafts, slide.id);
+        break;
       case 'updateSceneProperties':
         if (!slide.scene) return failure('NOT_FOUND', 'This slide has no custom scene.');
         slides[index] = {
@@ -41,6 +49,7 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
         break;
       case 'deleteSlide':
         slides.splice(index, 1);
+        drafts = withoutSceneDraft(drafts, slide.id);
         break;
       case 'moveSlide': {
         if (operation.index >= slides.length)
@@ -52,7 +61,7 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
       default:
         break;
     }
-    next = { ...project, slides };
+    next = { ...project, slides, drafts };
   }
   if (
     !projectSchema.safeParse(next).success ||
