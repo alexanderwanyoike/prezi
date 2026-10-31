@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   FilePlus2,
+  Code2,
   ImagePlus,
   FolderOpen,
   LayoutPanelTop,
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 import { PresentationView } from './presentation/PresentationView';
 import { SlideCanvas } from './presentation/SlideCanvas';
+import { CodeView } from './source/CodeView';
 import { ProjectName } from './ProjectName';
 import { useProject } from './useProject';
 import { SlideRail } from './SlideRail';
@@ -24,6 +26,7 @@ export function App(): React.JSX.Element {
   const { snapshot, error, busy, edit, undo, redo, save, open, newProject, importMedia } =
     useProject();
   const [selectedField, setSelectedField] = useState<TextField | null>(null);
+  const [codeVisible, setCodeVisible] = useState(false);
   const [presenting, setPresenting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
@@ -108,6 +111,16 @@ export function App(): React.JSX.Element {
           >
             <ImagePlus size={15} />
             Import media
+          </button>
+          <button
+            type="button"
+            aria-pressed={codeVisible}
+            onClick={() => {
+              setCodeVisible(!codeVisible);
+            }}
+          >
+            <Code2 size={15} />
+            Code
           </button>
           <span className="toolbar-divider" />
           <button
@@ -196,23 +209,27 @@ export function App(): React.JSX.Element {
           setSelectedId(id);
         }}
       />
-      <SlideCanvas
-        pending={selectionPending}
-        editing={{
-          selected: selectedField,
-          select: setSelectedField,
-          update: (field, value) => {
-            edit(
-              [{ type: 'updateSlide', slideId: slide.id, patch: { [field]: value } }],
-              'Edit scene text',
-            );
-          },
-        }}
-        key={`canvas:${slide.id}`}
-        slide={slide}
-        index={selectedIndex}
-        count={snapshot.project.slides.length}
-      />
+      {codeVisible ? (
+        <CodeView project={snapshot.project} slide={slide} />
+      ) : (
+        <SlideCanvas
+          pending={selectionPending}
+          editing={{
+            selected: selectedField,
+            select: setSelectedField,
+            update: (field, value) => {
+              edit(
+                [{ type: 'updateSlide', slideId: slide.id, patch: { [field]: value } }],
+                'Edit scene text',
+              );
+            },
+          }}
+          key={`canvas:${slide.id}`}
+          slide={slide}
+          index={selectedIndex}
+          count={snapshot.project.slides.length}
+        />
+      )}
       <SlideInspector
         pending={selectionPending}
         selectedField={selectedField}
