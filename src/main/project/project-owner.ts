@@ -29,26 +29,59 @@ export class ProjectOwner {
     await this.assets.dispose();
   }
 
+  private pendingImports = new Map<
+    string,
+    { fingerprint: string; result: Promise<Result<ProjectSnapshot>> }
+  >();
+
   async importMedia(
     path: string,
     slideId: string,
     expectedRevision: number,
+    requestId?: string,
   ): Promise<Result<ProjectSnapshot>> {
-    if (this.fileBusy || expectedRevision !== this.revision)
+    const id = requestId ?? crypto.randomUUID();
+    if (!z.string().min(1).max(100).safeParse(id).success)
+      return failure('INVALID_INPUT', 'A valid import request ID is required.');
+    const fingerprint = createHash('sha256')
+      .update(JSON.stringify({ kind: 'importMedia', path, slideId, expectedRevision }))
+      .digest('hex');
+    const cached = this.requests.get(id);
+    if (cached)
+      return cached.fingerprint === fingerprint
+        ? { ok: true, value: structuredClone(cached.snapshot) }
+        : failure('REQUEST_REUSED', 'This request ID already belongs to a different edit.');
+    const pending = this.pendingImports.get(id);
+    if (pending)
+      return pending.fingerprint === fingerprint
+        ? pending.result
+        : failure('REQUEST_REUSED', 'This request ID already belongs to a different import.');
+    if (this.fileBusy || this.pendingImports.size > 0 || expectedRevision !== this.revision)
       return failure('CONFLICT', 'The project changed or a file operation is running.');
     if (
       !z.uuid().safeParse(slideId).success ||
       !this.project.slides.some((slide) => slide.id === slideId)
     )
       return failure('NOT_FOUND', 'The slide no longer exists.');
-    const imported = await this.assets.import(path);
-    if (!imported.ok) return imported;
-    return this.edit({
-      requestId: crypto.randomUUID(),
-      expectedRevision,
-      label: 'Import media',
-      operations: [{ type: 'updateSlide', slideId, patch: { media: imported.value } }],
-    });
+    const run = async (): Promise<Result<ProjectSnapshot>> => {
+      const imported = await this.assets.import(path);
+      if (!imported.ok) return imported;
+      const result = this.edit({
+        requestId: crypto.randomUUID(),
+        expectedRevision,
+        label: requestId ? 'Agent: Import media' : 'Import media',
+        operations: [{ type: 'updateSlide', slideId, patch: { media: imported.value } }],
+      });
+      if (result.ok) this.remember(id, fingerprint, result.value);
+      return result;
+    };
+    const result = run();
+    this.pendingImports.set(id, { fingerprint, result });
+    try {
+      return await result;
+    } finally {
+      this.pendingImports.delete(id);
+    }
   }
 
   private project: Project = createProject();
