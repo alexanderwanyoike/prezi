@@ -2,6 +2,30 @@ import { describe, expect, it } from 'vitest';
 import { ProjectOwner } from './project-owner';
 
 describe('project editing', () => {
+  it('keeps retry results private when a caller changes an accepted response', () => {
+    const owner = new ProjectOwner();
+    const request = {
+      requestId: 'private-retry',
+      expectedRevision: 0,
+      label: 'Rename',
+      operations: [{ type: 'renameProject', name: 'Accepted name' }],
+    };
+    const result = owner.edit(request);
+    if (!result.ok) throw new Error('Expected accepted edit');
+    result.value.project.name = 'Caller mutation';
+    expect(owner.edit(request)).toMatchObject({
+      ok: true,
+      value: { project: { name: 'Accepted name' }, revision: 1 },
+    });
+    const undone = owner.undo(1, 'private-undo');
+    if (!undone.ok) throw new Error('Expected undo');
+    undone.value.project.name = 'Another caller mutation';
+    expect(owner.undo(1, 'private-undo')).toMatchObject({
+      ok: true,
+      value: { project: { name: 'Vibez / how I built it' }, revision: 2 },
+    });
+    expect(owner.snapshot().project.name).toBe('Vibez / how I built it');
+  });
   it('labels history and retries an undo or redo without restoring a second batch', () => {
     const owner = new ProjectOwner();
     const initial = owner.snapshot();
