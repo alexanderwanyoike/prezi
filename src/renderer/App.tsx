@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import {
   FilePlus2,
   Code2,
@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { PresentationView } from './presentation/PresentationView';
 import { SlideCanvas } from './presentation/SlideCanvas';
-import { CodeView } from './source/CodeView';
 import { ProjectName } from './ProjectName';
 import { useProject } from './useProject';
 import { SlideRail } from './SlideRail';
@@ -21,6 +20,11 @@ import { SlideInspector } from './SlideInspector';
 import { useAppearance } from './appearance';
 import { AppearancePanel } from './AppearancePanel';
 import type { TextField } from '../shared/text-scene';
+
+const CodeView = lazy(async () => {
+  const module = await import('./source/CodeView');
+  return { default: module.CodeView };
+});
 
 export function App(): React.JSX.Element {
   const { snapshot, error, busy, edit, undo, redo, save, open, newProject, importMedia } =
@@ -210,7 +214,15 @@ export function App(): React.JSX.Element {
         }}
       />
       {codeVisible ? (
-        <CodeView project={snapshot.project} slide={slide} />
+        <Suspense
+          fallback={
+            <main className="workspace" role="status">
+              Opening scene source…
+            </main>
+          }
+        >
+          <CodeView project={snapshot.project} slide={slide} />
+        </Suspense>
       ) : (
         <SlideCanvas
           pending={selectionPending}
