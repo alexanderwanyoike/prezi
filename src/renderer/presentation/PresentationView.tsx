@@ -12,7 +12,7 @@ interface Props {
   exit: () => void;
 }
 export function PresentationView({ project, exit }: Props): React.JSX.Element {
-  const {transitionMs} = presentationTheme(project.theme);
+  const { transitionMs } = presentationTheme(project.theme);
   const [position, setPosition] = useState(() => startPosition(project));
   const [outgoing, setOutgoing] = useState<SceneProps | null>(null);
   const [busy, setBusy] = useState(true);

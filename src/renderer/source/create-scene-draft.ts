@@ -47,7 +47,11 @@ export default function Scene({reveal, props, theme}: SceneProps) {
           heading: { type: 'text', label: 'Heading', default: slide.title },
           body: { type: 'text', label: 'Body', default: slide.body, multiline: true },
           size: { type: 'number', label: 'Type size', default: 96, min: 20, max: 160 },
-          ink: { type: 'color', label: 'Text colour', default: presentationTheme(theme).foreground },
+          ink: {
+            type: 'color',
+            label: 'Text colour',
+            default: presentationTheme(theme).foreground,
+          },
         },
         layers: [
           { id: 'heading', label: 'Heading', property: 'heading' },
