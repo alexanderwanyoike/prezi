@@ -1,6 +1,7 @@
 import { app, dialog, ipcMain } from 'electron';
 import type { BrowserWindow } from 'electron';
 import { join } from 'node:path';
+import { confirmReplacement as confirmContentReplacement } from './confirm-replacement';
 import type { ProjectOwner } from './project-owner';
 import type { ProjectSnapshot } from '../../shared/project';
 import { failure } from '../../shared/result';
@@ -34,22 +35,22 @@ async function confirmReplacement(
   window: BrowserWindow,
   owner: ProjectOwner,
 ): Promise<Result<void>> {
-  if (!owner.snapshot().dirty) return { ok: true, value: undefined };
-  const choice = await dialog.showMessageBox(window, {
-    type: 'question',
-    title: 'Save your changes?',
-    message: 'Your presentation has unsaved changes.',
-    detail: 'Save the current deck before leaving it.',
-    buttons: ['Save', 'Discard', 'Cancel'],
-    defaultId: 0,
-    cancelId: 2,
-  });
-  if (choice.response === 2) return failure('CANCELLED', 'The current presentation remains open.');
-  if (choice.response === 0) {
-    const result = await save(window, owner);
-    if (!result.ok) return result;
-  }
-  return { ok: true, value: undefined };
+  return confirmContentReplacement(
+    owner,
+    async () => {
+      const choice = await dialog.showMessageBox(window, {
+        type: 'question',
+        title: 'Save your changes?',
+        message: 'Your presentation has unsaved changes.',
+        detail: 'Save the current deck before leaving it.',
+        buttons: ['Save', 'Discard', 'Cancel'],
+        defaultId: 0,
+        cancelId: 2,
+      });
+      return choice.response;
+    },
+    () => save(window, owner),
+  );
 }
 
 export function registerFileIpc(window: BrowserWindow, owner: ProjectOwner): void {
