@@ -29,6 +29,10 @@ function failed(message: string): void {
   document.documentElement.dataset.error = message.slice(0, 2000);
   emit({ type: 'prezi:status', state: 'error', message: message.slice(0, 2000) });
 }
+function sceneError({ error }: { error: Error }): React.JSX.Element {
+  failed(error.message);
+  return <p role="alert">{error.message}</p>;
+}
 function Runtime(): React.JSX.Element | null {
   const [loaded, setLoaded] = useState<{
     Component: ComponentType<SceneProps>;
@@ -119,6 +123,7 @@ function Runtime(): React.JSX.Element | null {
         <Player
           ref={player}
           component={Scene}
+          errorFallback={sceneError}
           inputProps={{
             title: state.title,
             body: state.body,

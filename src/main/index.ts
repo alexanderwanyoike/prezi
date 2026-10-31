@@ -1,6 +1,10 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { SceneJobs } from './source/scene-jobs';
+import { runCompiler } from './source/run-compiler';
+import { validateScene } from './scenes/validate-scene';
 import { registerSceneRuntime } from './scenes/register-runtime';
+import { failure } from '../shared/result';
 import { consumeResume } from './updates/resume-project';
 import { createInstalledUpdates } from './updates/runtime';
 import { registerUpdateIpc } from './updates/register-ipc';
@@ -38,6 +42,7 @@ protocol.registerSchemesAsPrivileged([
 const owner = new ProjectOwner();
 const workspace = new WorkspaceOwner(owner);
 let mcp: McpConnection | undefined;
+let sceneJobs: SceneJobs | undefined;
 let installedUpdates: ReturnType<typeof createInstalledUpdates> | undefined;
 
 async function openWindow(): Promise<void> {
@@ -55,7 +60,24 @@ async function openWindow(): Promise<void> {
       nodeIntegration: false,
     },
   });
-  const connected = await startMcp(owner, app.getPath('userData'), workspace);
+  registerSceneRuntime(window);
+  sceneJobs = new SceneJobs(
+    owner,
+    (request, signal) =>
+      runCompiler(
+        request.candidate.source,
+        signal,
+        join(import.meta.dirname, '../compiler'),
+        request.candidate.fields,
+      ),
+    (request, code, signal) => {
+      const slide = owner.snapshot().project.slides.find((item) => item.id === request.slideId);
+      return slide
+        ? validateScene(request, code, slide, signal, window.webContents.mainFrame.osProcessId)
+        : Promise.resolve(failure('NOT_FOUND', 'The slide no longer exists.'));
+    },
+  );
+  const connected = await startMcp(owner, app.getPath('userData'), workspace, sceneJobs);
   if (connected.ok) mcp = connected.value;
   else process.stderr.write(`${connected.error.message}\n`);
   registerConnectionIpc(window, connected);
@@ -63,7 +85,6 @@ async function openWindow(): Promise<void> {
   registerProjectIpc(window, owner);
   registerDesktopIpc(window);
   registerMedia(window, owner);
-  registerSceneRuntime(window);
   const files = registerFileIpc(window, owner);
   installedUpdates = createInstalledUpdates(() => owner.snapshot().filePath);
   registerUpdateIpc(window, installedUpdates.updates, files.prepareRestart);
@@ -102,6 +123,7 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   installedUpdates?.stop();
+  sceneJobs?.dispose();
   void mcp?.close();
   void owner.dispose();
 });

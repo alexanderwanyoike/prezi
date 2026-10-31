@@ -5,7 +5,7 @@ import { compilationSchema } from './custom-scene';
 export const sceneJobRequestSchema = z.object({
   requestId: z.string().min(1).max(100),
   expectedRevision: z.number().int().nonnegative(),
-  label: z.string().min(1).max(90),
+  label: z.string().min(1).max(100),
   slideId: z.uuid(),
   candidate: sceneCandidateSchema,
   properties: sceneValuesSchema,

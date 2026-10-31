@@ -6,6 +6,7 @@ import {
   NodeStreamableHTTPServerTransport,
 } from '@modelcontextprotocol/node';
 import { z } from 'zod';
+import type { SceneJobs } from '../source/scene-jobs';
 import type { WorkspaceOwner } from './workspace-owner';
 import type { ProjectOwner } from '../project/project-owner';
 import { createToolServer } from './tools';
@@ -23,6 +24,7 @@ export async function startMcp(
   owner: ProjectOwner,
   directory: string,
   workspace: WorkspaceOwner,
+  jobs?: SceneJobs,
 ): Promise<Result<McpConnection>> {
   const credentials = await readToken(directory);
   if (!credentials.ok) return credentials;
@@ -55,7 +57,7 @@ export async function startMcp(
           response.writeHead(400).end(body.error.message);
           return;
         }
-        const mcp = createToolServer(owner, workspace);
+        const mcp = createToolServer(owner, workspace, jobs);
         const transport = new NodeStreamableHTTPServerTransport({
           sessionIdGenerator: undefined,
           enableJsonResponse: true,

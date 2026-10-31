@@ -1,6 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { isAbsolute } from 'node:path';
+import { registerSceneTools } from './scene-tools';
+import type { SceneJobs } from '../source/scene-jobs';
 import { builtInSceneSources } from '../../shared/scene-sources';
 import { failure } from '../../shared/result';
 import { selectionSchema } from '../../shared/workspace';
@@ -44,7 +46,11 @@ function toolResult(result: Result<unknown>) {
 function changed(result: Result<ProjectSnapshot>) {
   return toolResult(result.ok ? { ok: true, value: summary(result.value) } : result);
 }
-export function createToolServer(owner: ProjectOwner, workspace: WorkspaceOwner): McpServer {
+export function createToolServer(
+  owner: ProjectOwner,
+  workspace: WorkspaceOwner,
+  jobs?: SceneJobs,
+): McpServer {
   const server = new McpServer(
     { name: 'prezi', version: '0.1.0' },
     {
@@ -195,5 +201,6 @@ export function createToolServer(owner: ProjectOwner, workspace: WorkspaceOwner)
       (input) => changed(owner[direction](input.expectedRevision, input.requestId)),
     );
   });
+  if (jobs) registerSceneTools(server, jobs);
   return server;
 }
