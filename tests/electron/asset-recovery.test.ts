@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { copyFile, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { connectDesktopMcp } from './mcp-client';
 import { fileCommand } from './file-command';
 import { defaultPresentationTheme } from '../../src/shared/presentation-theme';
 
@@ -41,7 +42,7 @@ test('locates missing media and a selected font, retains settings and notices, t
               name: 'Missing image',
               kind: 'image',
               extension: 'png',
-              frame: { x: 1000, y: 220, width: 792, height: 640 },
+              frame: { x: 950, y: 260, width: 840, height: 560 },
               fit: 'cover',
               provenance: 'Original image attribution',
               license: 'Original media notice',
@@ -98,7 +99,7 @@ test('locates missing media and a selected font, retains settings and notices, t
           .evaluate((node) => (node instanceof HTMLImageElement ? node.naturalWidth : 0)),
       )
       .toBeGreaterThan(0);
-    await expect(page.getByLabel('Media X', { exact: true })).toHaveValue('1000');
+    await expect(page.getByLabel('Media X', { exact: true })).toHaveValue('950');
     await expect(page.getByLabel('Media fit', { exact: true })).toHaveValue('cover');
     await expect(page.getByLabel('Media source / attribution', { exact: true })).toHaveValue(
       'Original image attribution',
@@ -145,6 +146,57 @@ test('locates missing media and a selected font, retains settings and notices, t
         ),
       )
       .toBe(1);
+    const client = await connectDesktopMcp(test.info().outputPath('profile'));
+    try {
+      const snapshot = await page.evaluate(() => window.prezi.snapshot());
+      if (!snapshot.ok) throw Error('No project');
+      const slide = snapshot.value.project.slides[0];
+      if (!slide?.media) throw Error('No repaired media');
+      const request = {
+        requestId: 'agent-media-repair',
+        expectedRevision: snapshot.value.revision,
+        slideId: slide.id,
+        path: replacement,
+        replace: true,
+        credit: { provenance: 'Agent supplied image attribution' },
+      };
+      const result = await client.callTool({ name: 'import_media', arguments: request });
+      expect(result.structuredContent).toMatchObject({ result: { ok: true } });
+      expect(
+        (await client.callTool({ name: 'import_media', arguments: request })).structuredContent,
+      ).toEqual(result.structuredContent);
+      await expect(page.getByLabel('Media source / attribution', { exact: true })).toHaveValue(
+        'Agent supplied image attribution',
+      );
+      await expect(page.getByLabel('Media X', { exact: true })).toHaveValue('950');
+      const current = await page.evaluate(() => window.prezi.snapshot());
+      if (!current.ok) throw Error('No project');
+      const font = current.value.project.fonts?.[0];
+      if (!font) throw Error('No font');
+      expect(
+        (
+          await client.callTool({
+            name: 'import_font',
+            arguments: {
+              requestId: 'agent-font-repair',
+              expectedRevision: current.value.revision,
+              path: resolve(
+                'node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2',
+              ),
+              replaceFontId: font.id,
+            },
+          })
+        ).structuredContent,
+      ).toMatchObject({ result: { ok: true } });
+      const replaced = await page.evaluate(() => window.prezi.snapshot());
+      expect(replaced).toMatchObject({ ok: true });
+      if (!replaced.ok) throw Error('No project');
+      expect(replaced.value.project.fonts).toHaveLength(1);
+      expect(replaced.value.project.theme?.bodyFont).not.toBe(font.id);
+      expect(replaced.value.project.fonts?.[0]?.license).toBe(font.license);
+    } finally {
+      await client.close();
+    }
   } finally {
     await desktop.close();
   }
