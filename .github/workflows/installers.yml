@@ -82,6 +82,9 @@ jobs:
           corepack enable
           corepack prepare yarn@1.22.22 --activate
       - run: yarn install --frozen-lockfile
+      - name: Prepare the Linux worker resource boundary
+        if: matrix.target == 'linux-x64'
+        run: bash .github/scripts/prepare-worker-session.sh
       - run: yarn package:make ${{ matrix.flags }}
       - name: Exercise the packaged Linux editor
         if: matrix.target == 'linux-x64'

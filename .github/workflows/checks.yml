@@ -12,5 +12,6 @@ jobs:
           node-version: 22
           cache: yarn
       - run: yarn install --frozen-lockfile
+      - run: bash .github/scripts/prepare-worker-session.sh
       - run: yarn verify
       - run: xvfb-run --auto-servernum yarn test:electron
