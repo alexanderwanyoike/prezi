@@ -1,5 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
+import { builtInSceneSources } from '../../shared/scene-sources';
+import { failure } from '../../shared/result';
 import { selectionSchema } from '../../shared/workspace';
 import type { WorkspaceOwner } from './workspace-owner';
 import { editRequestSchema } from '../../shared/project';
@@ -16,6 +18,9 @@ function summary(snapshot: ProjectSnapshot) {
     project: {
       id: snapshot.project.id,
       name: snapshot.project.name,
+      sourceFiles: Object.entries(snapshot.project.sources ?? builtInSceneSources).map(
+        ([path, source]) => ({ path, length: source.length }),
+      ),
       slides: snapshot.project.slides.map((slide) => ({
         id: slide.id,
         title: slide.title,
@@ -70,6 +75,56 @@ export function createToolServer(owner: ProjectOwner, workspace: WorkspaceOwner)
       },
     },
     (input) => toolResult(workspace.publish({ selection: input }, true)),
+  );
+  server.registerTool(
+    'read_slide',
+    {
+      description:
+        'Read full slide properties and reveal steps at the current revision. Stable text element IDs are slideId:heading and slideId:body; media uses slideId:media.',
+      inputSchema: z.object({ slideId: z.uuid() }),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    ({ slideId }) => {
+      const snapshot = owner.snapshot();
+      const slide = snapshot.project.slides.find((item) => item.id === slideId);
+      return toolResult(
+        slide
+          ? { ok: true, value: { revision: snapshot.revision, slide } }
+          : failure('NOT_FOUND', 'The slide no longer exists.'),
+      );
+    },
+  );
+  server.registerTool(
+    'read_source',
+    {
+      description:
+        'Read a bounded chunk of a stored project source file. Paths come from read_project.sourceFiles. This reads project content only and never arbitrary filesystem paths.',
+      inputSchema: z.object({
+        path: z.string().min(1).max(250),
+        offset: z.number().int().min(0).default(0),
+        length: z.number().int().min(1).max(64000).default(16000),
+      }),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    ({ path, offset, length }) => {
+      const snapshot = owner.snapshot();
+      const sources = snapshot.project.sources ?? builtInSceneSources;
+      const source = Object.hasOwn(sources, path) ? sources[path] : undefined;
+      return toolResult(
+        source === undefined
+          ? failure('NOT_FOUND', 'The project source file does not exist.')
+          : {
+              ok: true,
+              value: {
+                revision: snapshot.revision,
+                path,
+                offset,
+                totalLength: source.length,
+                text: source.slice(offset, offset + length),
+              },
+            },
+      );
+    },
   );
   server.registerTool(
     'read_project',
