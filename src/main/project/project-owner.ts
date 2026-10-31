@@ -1,3 +1,4 @@
+import { readProject, writeProject } from './project-files';
 import { createHash } from 'node:crypto';
 import { applyOperation } from './apply-operation';
 import { createProject, editRequestSchema } from '../../shared/project';
@@ -14,7 +15,9 @@ export class ProjectOwner {
 
   private future: Project[] = [];
 
-  private dirty = false;
+  private savedContent = JSON.stringify(this.project);
+  private filePath: string | null = null;
+  private fileBusy = false;
 
   private requests = new Map<string, { fingerprint: string; snapshot: ProjectSnapshot }>();
 
@@ -24,10 +27,10 @@ export class ProjectOwner {
     return {
       project: structuredClone(this.project),
       revision: this.revision,
-      dirty: this.dirty,
+      dirty: JSON.stringify(this.project) !== this.savedContent,
       canUndo: this.past.length > 0,
       canRedo: this.future.length > 0,
-      filePath: null,
+      filePath: this.filePath,
     };
   }
 
@@ -36,6 +39,49 @@ export class ProjectOwner {
     return () => {
       this.listeners.delete(listener);
     };
+  }
+
+  async save(path: string): Promise<Result<ProjectSnapshot>> {
+    if (this.fileBusy) return failure('CONFLICT', 'Another file operation is still running.');
+    this.fileBusy = true;
+    const project = structuredClone(this.project);
+    try {
+      const result = await writeProject(path, project);
+      if (!result.ok) return result;
+      this.savedContent = JSON.stringify(project);
+      this.filePath = path;
+      this.listeners.forEach((listener) => {
+        listener(this.snapshot());
+      });
+      return { ok: true, value: this.snapshot() };
+    } finally {
+      this.fileBusy = false;
+    }
+  }
+
+  async open(path: string, expectedRevision: number): Promise<Result<ProjectSnapshot>> {
+    if (this.fileBusy || expectedRevision !== this.revision)
+      return failure('CONFLICT', 'The project changed or another file operation is running.');
+    this.fileBusy = true;
+    try {
+      const result = await readProject(path);
+      if (!result.ok) return result;
+      if (expectedRevision !== this.revision)
+        return failure('CONFLICT', 'The project was edited while opening. Try again.');
+      this.project = result.value;
+      this.savedContent = JSON.stringify(this.project);
+      this.filePath = path;
+      this.revision += 1;
+      this.past = [];
+      this.future = [];
+      this.requests.clear();
+      this.listeners.forEach((listener) => {
+        listener(this.snapshot());
+      });
+      return { ok: true, value: this.snapshot() };
+    } finally {
+      this.fileBusy = false;
+    }
   }
 
   undo(expectedRevision: number): Result<ProjectSnapshot> {
@@ -58,7 +104,6 @@ export class ProjectOwner {
     to.push(this.project);
     this.project = previous;
     this.revision += 1;
-    this.dirty = true;
     this.listeners.forEach((listener) => {
       listener(this.snapshot());
     });
@@ -88,7 +133,6 @@ export class ProjectOwner {
     this.future = [];
     this.project = draft;
     this.revision += 1;
-    this.dirty = true;
     this.listeners.forEach((listener) => {
       listener(this.snapshot());
     });
