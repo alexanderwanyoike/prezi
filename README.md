@@ -22,7 +22,7 @@ yarn build
 yarn start
 ```
 
-There is no installer yet. Desktop packaging is part of checkpoint three.
+Build native installers with `yarn package:make --linux --x64`, `--win --x64` or `--mac --arm64` / `--mac --x64` on the matching platform. Output is written to `release/`. Linux uses AppImage, Windows uses a per-user NSIS installer and macOS uses a DMG. Preview Windows installers are unsigned; Mac bundles are ad-hoc signed and not notarized. See [installer verification and release workflow](docs/verification/desktop-installers.md).
 
 ## Work on a deck
 
@@ -78,7 +78,7 @@ Choose **View > Agent connection** to copy a private Streamable HTTP configurati
 
 ## Desktop updates
 
-Choose **View > Application updates**. Installed Windows/Linux builds offer explicit download, verification and restart; the app protects unsaved work and reopens the saved deck afterward. Other installed formats use the stable release page. Development builds explain that updates require installation. Installer/feed delivery follows separately; see [runtime verification and current limits](docs/verification/desktop-updates.md).
+Choose **View > Application updates**. Installed Windows/Linux builds offer explicit download, verification and restart; the app protects unsaved work and reopens the saved deck afterward. Other installed formats use the stable release page. Development builds explain that updates require installation. Releases require reviewed promotion to main, an annotated version tag and a draft release; no release has been published by this implementation. See [runtime verification](docs/verification/desktop-updates.md) and [installer verification](docs/verification/desktop-installers.md).
 
 ## Checks
 
