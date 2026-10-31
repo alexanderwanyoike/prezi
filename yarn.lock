@@ -405,6 +405,13 @@
   dependencies:
     playwright "1.64.1"
 
+"@remotion/player@4.0.539":
+  version "4.0.539"
+  resolved "https://registry.yarnpkg.com/@remotion/player/-/player-4.0.539.tgz#fbf051e24606235e334fe04c299898abd1a100eb"
+  integrity sha512-ww8vwLgLfXD7FzOmrzO8uLMnTQWWv9LIiSmm4zQ2GRkc/9/1k6Xe708dhjMAJYo5DrQF+LHCAbh5paUuJPWGXg==
+  dependencies:
+    remotion "4.0.539"
+
 "@rolldown/binding-android-arm-eabi@1.2.16":
   version "1.2.16"
   resolved "https://registry.yarnpkg.com/@rolldown/binding-android-arm-eabi/-/binding-android-arm-eabi-1.2.16.tgz#abc3e1d5aacd1983d32a490c3a8793770da3bd1a"
@@ -2822,6 +2829,11 @@ regexp.prototype.flags@^1.5.4:
     get-proto "^1.0.1"
     gopd "^1.2.0"
     set-function-name "^2.0.2"
+
+remotion@4.0.539:
+  version "4.0.539"
+  resolved "https://registry.yarnpkg.com/remotion/-/remotion-4.0.539.tgz#453d87e92e764f7849813c37336cf6580dea101c"
+  integrity sha512-CC97/XczqcJDJq0za0lU/kc7XnOocs8L9ADHFPWPMEXLm2aOxzdy3E0qnNNwqcW6q98JoKovtxc6YHQGZsZY/Q==
 
 require-from-string@^2.0.2:
   version "2.0.2"
