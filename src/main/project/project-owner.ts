@@ -17,6 +17,20 @@ interface HistoryEntry {
 }
 
 export class ProjectOwner {
+  private restarting = false;
+
+  beginRestart(): Result<() => void> {
+    if (this.restarting || this.fileBusy || this.pendingImports.size > 0)
+      return failure('CONFLICT', 'Wait for the current operation before restarting.');
+    this.restarting = true;
+    return {
+      ok: true,
+      value: () => {
+        this.restarting = false;
+      },
+    };
+  }
+
   private readonly assets = new AssetStore();
 
   mediaPath(id: string): string | undefined {
@@ -56,7 +70,12 @@ export class ProjectOwner {
       return pending.fingerprint === fingerprint
         ? pending.result
         : failure('REQUEST_REUSED', 'This request ID already belongs to a different import.');
-    if (this.fileBusy || this.pendingImports.size > 0 || expectedRevision !== this.revision)
+    if (
+      this.restarting ||
+      this.fileBusy ||
+      this.pendingImports.size > 0 ||
+      expectedRevision !== this.revision
+    )
       return failure('CONFLICT', 'The project changed or a file operation is running.');
     if (
       !z.uuid().safeParse(slideId).success ||
@@ -123,7 +142,7 @@ export class ProjectOwner {
   }
 
   reset(expectedRevision: number): Result<ProjectSnapshot> {
-    if (this.fileBusy || expectedRevision !== this.revision)
+    if (this.restarting || this.fileBusy || expectedRevision !== this.revision)
       return failure('CONFLICT', 'The project changed or a file operation is running.');
     this.project = {
       schemaVersion: 1,
@@ -152,7 +171,8 @@ export class ProjectOwner {
   }
 
   async save(path: string): Promise<Result<ProjectSnapshot>> {
-    if (this.fileBusy) return failure('CONFLICT', 'Another file operation is still running.');
+    if (this.restarting || this.fileBusy)
+      return failure('CONFLICT', 'Another file operation or restart is still running.');
     this.fileBusy = true;
     const project = structuredClone(this.project);
     try {
@@ -179,7 +199,7 @@ export class ProjectOwner {
   }
 
   async open(path: string, expectedRevision: number): Promise<Result<ProjectSnapshot>> {
-    if (this.fileBusy || expectedRevision !== this.revision)
+    if (this.restarting || this.fileBusy || expectedRevision !== this.revision)
       return failure('CONFLICT', 'The project changed or another file operation is running.');
     this.fileBusy = true;
     try {
@@ -196,7 +216,7 @@ export class ProjectOwner {
       } else {
         const result = await readProject(path);
         if (!result.ok) return result;
-        if (expectedRevision !== this.revision)
+        if (this.restarting || expectedRevision !== this.revision)
           return failure('CONFLICT', 'The project was edited while opening. Try again.');
         project = result.value;
         this.assets.remember(
@@ -246,7 +266,7 @@ export class ProjectOwner {
         return failure('REQUEST_REUSED', 'This request ID already belongs to a different edit.');
       return { ok: true, value: structuredClone(cached.snapshot) };
     }
-    if (expectedRevision !== this.revision)
+    if (this.restarting || expectedRevision !== this.revision)
       return failure('CONFLICT', 'The project changed. Read its latest revision and retry.');
     const previous = from.pop();
     if (!previous) return failure('INVALID_INPUT', 'There is no history in that direction.');
@@ -273,7 +293,7 @@ export class ProjectOwner {
         return failure('REQUEST_REUSED', 'This request ID already belongs to a different edit.');
       return { ok: true, value: structuredClone(cached.snapshot) };
     }
-    if (parsed.data.expectedRevision !== this.revision)
+    if (this.restarting || parsed.data.expectedRevision !== this.revision)
       return failure('CONFLICT', 'The project changed. Read its latest revision and retry.');
     const draft = structuredClone(this.project);
     const problem = parsed.data.operations.reduce<Result<Project>>(
