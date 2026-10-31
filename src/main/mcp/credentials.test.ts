@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it, vi } from 'vitest';
@@ -44,7 +44,25 @@ it('publishes only complete private connection files during startup and replacem
       url: 'http://127.0.0.1:2000/mcp',
       token: 'second',
     });
-    if (process.platform !== 'win32') expect((await stat(path)).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect((await stat(path)).mode % 0o1000).toBe(0o600);
+  } finally {
+    hook.duringWrite = () => Promise.resolve();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it('retains the previous connection and removes temporary bytes after a failed replacement', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-connection-'));
+  const path = join(directory, 'mcp-connection.json');
+  try {
+    await writeConnection(directory, 'http://127.0.0.1:1000/mcp', 'previous');
+    const previous = await readFile(path, 'utf8');
+    hook.duringWrite = () => Promise.reject(Error('Interrupted write'));
+    expect(
+      await writeConnection(directory, 'http://127.0.0.1:2000/mcp', 'replacement'),
+    ).toMatchObject({ ok: false, error: { code: 'IO_ERROR' } });
+    expect(await readFile(path, 'utf8')).toBe(previous);
+    expect(await readdir(directory)).toEqual(['mcp-connection.json']);
   } finally {
     hook.duringWrite = () => Promise.resolve();
     await rm(directory, { recursive: true, force: true });
