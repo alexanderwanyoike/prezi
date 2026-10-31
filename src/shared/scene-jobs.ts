@@ -3,6 +3,7 @@ import { sceneCandidateSchema, sceneValuesSchema } from './scene-definition';
 import { compilationSchema } from './custom-scene';
 
 export const sceneJobRequestSchema = z.object({
+  consumeDraft: z.boolean().optional(),
   expectedDefinitionVersion: z.uuid().nullable().optional(),
   requestId: z.string().min(1).max(100),
   expectedRevision: z.number().int().nonnegative(),

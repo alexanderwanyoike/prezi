@@ -60,6 +60,7 @@ export const sceneInstanceSchema = z.object({
   properties: sceneValuesSchema,
 });
 export const sceneInstallationSchema = z.object({
+  consumeDraft: z.boolean().optional(),
   requestId: z.string().min(1).max(100),
   expectedRevision: z.number().int().nonnegative(),
   label: z.string().min(1).max(100),
