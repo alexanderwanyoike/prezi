@@ -4,10 +4,8 @@ import { PresentationView } from './presentation/PresentationView';
 import { SlideCanvas } from './presentation/SlideCanvas';
 import { MenuBar } from './menu/MenuBar';
 import { WorkspaceTabs } from './WorkspaceTabs';
-import { useDesktopCommands } from './useDesktopCommands';
-import type { DesktopActions } from './useDesktopCommands';
-import type { Result } from '../shared/result';
 import { ProjectName } from './ProjectName';
+import { useApplicationActions } from './useApplicationActions';
 import { useProject } from './useProject';
 import { SlideRail } from './SlideRail';
 import { SlideInspector } from './SlideInspector';
@@ -21,80 +19,21 @@ const CodeView = lazy(async () => {
 });
 
 export function App(): React.JSX.Element {
-  const { snapshot, error, busy, edit, undo, redo, save, open, newProject, importMedia } =
-    useProject();
+  const project = useProject();
+  const { snapshot, error, busy, edit, undo, redo } = project;
   const [selectedField, setSelectedField] = useState<TextField | null>(null);
   const [codeVisible, setCodeVisible] = useState(false);
   const [presenting, setPresenting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const { appearance, change, error: appearanceError } = useAppearance();
-  const [desktopError, setDesktopError] = useState<string | null>(null);
-  function handleDesktop(result: Promise<Result<boolean>>): void {
-    void result.then((response) => {
-      setDesktopError(response.ok ? null : response.error.message);
-    });
-  }
-  function editor(code?: boolean): void {
-    setPresenting(false);
-    if (code !== undefined) setCodeVisible(code);
-    handleDesktop(window.prezi.fullscreen(false));
-  }
-  const actions: DesktopActions = {
-    newProject: () => {
-      editor();
-      newProject();
-    },
-    open: () => {
-      editor();
-      open();
-    },
-    save: () => {
-      save();
-    },
-    saveAs: () => {
-      save(true);
-    },
-    importMedia: () => {
-      editor();
-      const id =
-        snapshot?.project.slides.find((item) => item.id === selectedId)?.id ??
-        snapshot?.project.slides[0]?.id;
-      if (id) importMedia(id);
-    },
-    close: () => {
-      handleDesktop(window.prezi.close());
-    },
-    undo,
-    redo,
-    cut: () => {
-      handleDesktop(window.prezi.nativeEdit('cut'));
-    },
-    copy: () => {
-      handleDesktop(window.prezi.nativeEdit('copy'));
-    },
-    paste: () => {
-      handleDesktop(window.prezi.nativeEdit('paste'));
-    },
-    selectAll: () => {
-      handleDesktop(window.prezi.nativeEdit('selectAll'));
-    },
-    canvas: () => {
-      editor(false);
-    },
-    code: () => {
-      editor(true);
-    },
-    present: () => {
-      setAppearanceOpen(false);
-      setPresenting(true);
-    },
-    appearance: () => {
-      editor();
-      setAppearanceOpen(true);
-    },
-  };
-  useDesktopCommands(actions);
+  const { actions, error: desktopError } = useApplicationActions({
+    project,
+    selectedId,
+    setPresenting,
+    setCodeVisible,
+    setAppearanceOpen,
+  });
   if (!snapshot)
     return (
       <main className="loading" role="status">
