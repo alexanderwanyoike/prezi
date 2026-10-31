@@ -1,9 +1,11 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { connectDesktopMcp } from './mcp-client';
 import { fileCommand } from './file-command';
 
 test('imports a decoded font, edits its credits and keeps it working after portable save and reopen', async () => {
+  const notice = await readFile('licenses/ibm-plex-mono.txt', 'utf8');
   const desktop = await electron.launch({
     args: [resolve('.'), '--mute-audio', `--user-data-dir=${test.info().outputPath('profile')}`],
     env: {
@@ -55,9 +57,19 @@ test('imports a decoded font, edits its credits and keeps it working after porta
     await credit
       .getByLabel('Source / attribution', { exact: true })
       .fill('IBM Plex / local verification fixture');
-    await credit
-      .getByLabel('Licence notice', { exact: true })
-      .fill('Original fixture notice retained in this portable project.');
+    await credit.getByLabel('Licence notice', { exact: true }).fill(notice);
+    await expect
+      .poll(() =>
+        theme
+          .getByRole('button', { name: 'Close presentation theme', exact: true })
+          .evaluate((node) => {
+            const box = node.getBoundingClientRect();
+            return node.contains(
+              document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2),
+            );
+          }),
+      )
+      .toBe(true);
     await theme.getByRole('button', { name: 'Close presentation theme', exact: true }).click();
     const loaded = () =>
       page.evaluate(
@@ -86,7 +98,7 @@ test('imports a decoded font, edits its credits and keeps it working after porta
             {
               id: font.id,
               provenance: 'IBM Plex / local verification fixture',
-              license: 'Original fixture notice retained in this portable project.',
+              license: notice,
             },
           ],
         },
@@ -104,7 +116,7 @@ test('imports a decoded font, edits its credits and keeps it working after porta
       ).toMatchObject({
         result: {
           ok: true,
-          value: { license: 'Original fixture notice retained in this portable project.' },
+          value: { license: notice },
         },
       });
       if (!reopened.ok) throw Error('Project did not reopen');
