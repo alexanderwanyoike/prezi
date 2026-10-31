@@ -74,19 +74,22 @@ function Runtime(): React.JSX.Element | null {
     };
   }, []);
   const reveal = state?.reveal;
+  const probeFrame = state?.probeFrame;
   useLayoutEffect(() => {
     if (!loaded) return;
     player.current?.pause();
-    player.current?.seekTo(0);
-    player.current?.play();
-  }, [loaded, reveal]);
+    player.current?.seekTo(probeFrame ?? 0);
+    if (probeFrame === undefined) player.current?.play();
+  }, [loaded, reveal, probeFrame]);
   useEffect(() => {
     if (!loaded || !state) return undefined;
-    const timer = requestAnimationFrame(() => {
-      if (document.documentElement.dataset.state !== 'error') {
-        document.documentElement.dataset.state = 'ready';
-        emit({ type: 'prezi:status', state: 'ready' });
-      }
+    let timer = requestAnimationFrame(() => {
+      timer = requestAnimationFrame(() => {
+        if (document.documentElement.dataset.state !== 'error') {
+          document.documentElement.dataset.state = 'ready';
+          emit({ type: 'prezi:status', state: 'ready' });
+        }
+      });
     });
     return () => {
       cancelAnimationFrame(timer);
@@ -134,7 +137,8 @@ function Runtime(): React.JSX.Element | null {
           compositionHeight={1080}
           durationInFrames={12}
           fps={30}
-          autoPlay
+          autoPlay={probeFrame === undefined}
+          initialFrame={probeFrame ?? 0}
           moveToBeginningWhenEnded={false}
           controls={false}
           numberOfSharedAudioTags={0}

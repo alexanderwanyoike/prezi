@@ -58,12 +58,12 @@ export async function validateScene(
         signal.aborted ? 'CANCELLED' : 'INVALID_INPUT',
         signal.aborted
           ? 'Scene validation was cancelled.'
-          : 'The scene exceeded its 8-second validation limit.',
+          : 'The scene exceeded its 20-second validation limit.',
       ),
     );
   };
   signal.addEventListener('abort', stop, { once: true });
-  const timer = setTimeout(stop, 8000);
+  const timer = setTimeout(stop, 20000);
   const work = async (): Promise<Result<void>> => {
     try {
       await window.loadURL(`prezi-scene://${crypto.randomUUID()}/index.html`);
@@ -73,6 +73,7 @@ export async function validateScene(
         title: slide.title,
         body: slide.body,
         reveal: 0,
+        probeFrame: 0,
         properties: request.properties,
         media: slide.media ?? null,
         editing: false,
@@ -84,7 +85,19 @@ export async function validateScene(
       await window.webContents.executeJavaScript(
         `document.documentElement.dataset.state='waiting';window.postMessage(${JSON.stringify({ type: 'prezi:load', code, definition: { id: request.candidate.id, name: request.candidate.name, fields: request.candidate.fields, layers: request.candidate.layers }, state })},'*');`,
       );
-      return await waitForScene(window);
+      const initial = await waitForScene(window);
+      if (!initial.ok) return initial;
+      const probe = async (reveal: number, frame: number): Promise<Result<void>> => {
+        await window.webContents.executeJavaScript(
+          `document.documentElement.dataset.state='waiting';window.postMessage(${JSON.stringify({ type: 'prezi:update', state: { ...state, reveal, probeFrame: frame } })},'*');`,
+        );
+        const checked = await waitForScene(window);
+        if (!checked.ok) return checked;
+        if (frame < 11) return probe(reveal, frame + 1);
+        if (reveal < slide.reveals.length) return probe(reveal + 1, 0);
+        return { ok: true, value: undefined };
+      };
+      return await probe(0, 1);
     } catch {
       return failure('INVALID_INPUT', 'The scene renderer could not complete validation.');
     }
