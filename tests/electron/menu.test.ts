@@ -30,6 +30,11 @@ test('uses application menus, desktop shortcuts and Canvas/Code workspace tabs',
     await page
       .getByRole('textbox', { name: 'Canvas heading', exact: true })
       .fill('An application workspace');
+    await page.getByRole('menubar').getByRole('menuitem', { name: 'Edit', exact: true }).click();
+    await expect(
+      page.getByRole('menuitem', { name: 'Undo: Edit scene text', exact: true }),
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
     await page.keyboard.press('Control+s');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     await page.keyboard.press('Control+2');
