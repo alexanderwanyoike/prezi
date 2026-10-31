@@ -50,6 +50,19 @@ test('opens the isolated desktop with an editor ready for a local presentation',
     ).toBeVisible();
     await page.getByRole('button', { name: 'Add slide', exact: true }).click();
     await expect(title).toHaveValue('Untitled slide');
+    await title.fill('An edit still in focus');
+    await expect
+      .poll(
+        async () => {
+          const current = await page.evaluate(() => window.prezi.snapshot());
+          return current.ok
+            ? current.value.project.slides.find((slide) => slide.title === 'An edit still in focus')
+                ?.title
+            : null;
+        },
+        { timeout: 1000 },
+      )
+      .toBe('An edit still in focus');
     expect(await page.evaluate(() => 'require' in window || 'process' in window)).toBe(false);
   } finally {
     await desktop.evaluate(({ dialog }) => {
