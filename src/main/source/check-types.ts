@@ -9,6 +9,13 @@ export function checkSceneTypes(
   const root = '/prezi/scenes/';
   const files = new Map(Object.entries(libraries));
   Object.entries(source.files).forEach(([name, text]) => files.set(`${root}${name}`, text));
+  files.set(
+    `${root}__prezi_contract.tsx`,
+    `import type {ComponentType} from 'react';
+import Scene from './${source.entry.replace(/\.tsx$/, '')}';
+const component: ComponentType<{title:string;body:string;reveal:number;props:Record<string,string|number|boolean>}> = Scene;
+export default component;`,
+  );
   const directories = new Set<string>();
   files.forEach((_text, name) => {
     let directory = posix.dirname(name);
@@ -34,7 +41,7 @@ export function checkSceneTypes(
     writeFile: () => undefined,
   };
   const program = ts.createProgram({
-    rootNames: Object.keys(source.files)
+    rootNames: [...Object.keys(source.files), '__prezi_contract.tsx']
       .filter((name) => /\.tsx?$/.test(name))
       .map((name) => root + name),
     options: {

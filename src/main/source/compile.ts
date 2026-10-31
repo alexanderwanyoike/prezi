@@ -2,6 +2,7 @@ import { posix } from 'node:path';
 import { build } from 'esbuild';
 import { z } from 'zod';
 import { checkSceneTypes } from './check-types';
+import { sourcePolicy } from './source-policy';
 import { sceneSourceSchema } from '../../shared/custom-scene';
 import type { Compilation, SceneSource } from '../../shared/custom-scene';
 
@@ -27,6 +28,16 @@ export async function compileScene(
   });
   if (!sceneSourceSchema.safeParse(source).success || !source.entry.endsWith('.tsx'))
     return invalid('Use a TSX entry with at most 32 files and 1 MB of source.');
+  const policy = sourcePolicy(source);
+  if (policy.length)
+    return {
+      ok: false,
+      error: {
+        code: 'INVALID_INPUT',
+        message: 'The scene has unsupported source.',
+        diagnostics: policy,
+      },
+    };
   try {
     const output = await build({
       entryPoints: [source.entry],
