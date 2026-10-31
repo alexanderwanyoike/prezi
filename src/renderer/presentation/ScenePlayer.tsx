@@ -24,7 +24,11 @@ export function ScenePlayer({
       <div className="composition-transform">
         {scene.definition && scene.slide.scene ? (
           <CustomScenePlayer
-            key={scene.definition.code}
+            key={JSON.stringify([
+              scene.definition.code,
+              scene.definition.fields,
+              scene.definition.layers,
+            ])}
             scene={scene}
             definition={scene.definition}
             still={still}
