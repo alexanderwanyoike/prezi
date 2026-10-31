@@ -3,6 +3,27 @@ import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { compileScene } from './compile';
 
+it('requires a default component and rejects dynamic module loading', async () => {
+  const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
+  const libraries = z.record(z.string(), z.string()).parse(input);
+  const missing = await compileScene(
+    { entry: 'Scene.tsx', files: { 'Scene.tsx': 'export const message = "No component";' } },
+    libraries,
+  );
+  expect(missing.ok).toBe(false);
+  const dynamic = await compileScene(
+    {
+      entry: 'Scene.tsx',
+      files: {
+        'Scene.tsx':
+          'const path = "react"; import(path); export default function Scene() { return <div/>; }',
+      },
+    },
+    libraries,
+  );
+  expect(dynamic.ok).toBe(false);
+});
+
 it('rejects type errors and unapproved imports with useful diagnostics', async () => {
   const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
   const libraries = z.record(z.string(), z.string()).parse(input);
