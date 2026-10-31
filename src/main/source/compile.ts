@@ -12,7 +12,10 @@ const buildErrorSchema = z.object({
     }),
   ),
 });
-export async function compileScene(source: SceneSource): Promise<Compilation> {
+export async function compileScene(
+  source: SceneSource,
+  _libraries?: Record<string, string>,
+): Promise<Compilation> {
   const invalid = (message: string): Compilation => ({
     ok: false,
     error: {
