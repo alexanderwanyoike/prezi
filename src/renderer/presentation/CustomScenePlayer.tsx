@@ -41,6 +41,7 @@ export function CustomScenePlayer({
     ...(still ? { probeFrame: 11 } : {}),
   };
   const content = JSON.stringify({
+    theme: state.theme,
     properties: state.properties,
     title: state.title,
     body: state.body,
@@ -82,12 +83,12 @@ export function CustomScenePlayer({
     }
   }, [error, content]);
   useEffect(() => {
-    if (prepared)
+    if (prepared && !error)
       iframe.current?.contentWindow?.postMessage(
         { type: 'prezi:update', state: latest.current },
         '*',
       );
-  }, [prepared, message]);
+  }, [prepared, message, error]);
   return (
     <div style={{ width: 1920, height: 1080, position: 'relative' }}>
       <iframe
