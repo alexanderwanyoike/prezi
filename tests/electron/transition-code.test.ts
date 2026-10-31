@@ -30,6 +30,9 @@ test('authors transition code and properties while retaining bad drafts in porta
     await page.getByRole('tab', { name: 'Code', exact: true }).click();
     await page.getByRole('tab', { name: 'Transition code', exact: true }).click();
     await page.getByRole('button', { name: 'Create transition code', exact: true }).click();
+    await expect(
+      page.getByRole('complementary', { name: 'Transition properties' }),
+    ).not.toContainText('TRANSITION / Transition');
     await page.getByLabel('Distance (%)', { exact: true }).fill('9');
     await page.getByLabel('Transition duration (ms)', { exact: true }).fill('350');
     await page.getByRole('button', { name: 'Apply transition code', exact: true }).click();
@@ -46,7 +49,9 @@ test('authors transition code and properties while retaining bad drafts in porta
     if (!accepted.ok) throw Error(accepted.error.message);
     expect(accepted.value.project.theme?.transitionMs).toBe(350);
     expect(accepted.value.project.transitionDraft).toBeUndefined();
+    await expect(page.locator('.source-feedback')).toHaveText('Source applied.');
     await page.getByRole('button', { name: 'Edit transition code', exact: true }).click();
+    await expect(page.locator('.source-feedback')).toHaveCount(0);
     const editor = page.locator('.cm-content[contenteditable="true"]');
     const bad = 'export default function transition(){return {opacity:"bad"};}';
     await editor.fill(bad);
