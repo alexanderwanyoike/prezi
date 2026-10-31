@@ -28,7 +28,7 @@ test('compiles and validates shared scene source before atomically publishing it
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     const initial = await page.evaluate(() => window.prezi.snapshot());
     if (!initial.ok) throw Error(initial.error.message);
-    const slide = initial.value.project.slides[0];
+    const slide = initial.value.project.slides[1];
     if (!slide) throw Error('No slide');
     const request = {
       requestId: 'create-custom',
@@ -88,7 +88,7 @@ test('compiles and validates shared scene source before atomically publishing it
           entry: 'Scene.tsx',
           files: {
             'Scene.tsx':
-              'export default function Scene(){ throw new Error("Broken runtime"); return <div/>; }',
+              'export default function Scene({reveal}:{reveal:number}){ if(reveal>0)throw new Error("Broken reveal"); return <div/>; }',
           },
         },
       },
