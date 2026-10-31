@@ -65,12 +65,12 @@ export async function readArchive(path: string): Promise<Result<OpenedArchive>> 
           previous.then(async (current) => {
             const name = `${asset.id}.${asset.extension}`;
             const entry = files.find((file) => file.filename === `assets/${name}`);
+            if (!entry) return [...current, { id: asset.id, path: join(target, name) }];
             if (
-              !entry ||
               entry.uncompressedSize >
-                (['ttf', 'otf', 'woff', 'woff2'].includes(asset.extension)
-                  ? 16 * 1024 * 1024
-                  : 8 * 1024 * 1024 * 1024)
+              (['ttf', 'otf', 'woff', 'woff2'].includes(asset.extension)
+                ? 16 * 1024 * 1024
+                : 8 * 1024 * 1024 * 1024)
             )
               throw new Error(`Missing or oversized media: ${asset.name}`);
             const destination = join(target, name);

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { assetCreditSchema } from '../../shared/asset-credit';
+import type { AssetCredit } from '../../shared/asset-credit';
 import { fontCreditSchema } from '../../shared/fonts';
 import type { FontCredit } from '../../shared/fonts';
 import { projectAssets } from '../../shared/project-assets';
@@ -131,12 +133,25 @@ export class ProjectOwner {
     slideId: string,
     expectedRevision: number,
     requestId?: string,
+    credit: AssetCredit = {},
+    replace = false,
   ): Promise<Result<ProjectSnapshot>> {
+    const metadata = assetCreditSchema.safeParse(credit);
+    if (!metadata.success) return failure('INVALID_INPUT', 'The media credits are invalid.');
     const id = requestId ?? crypto.randomUUID();
     if (!z.string().min(1).max(100).safeParse(id).success)
       return failure('INVALID_INPUT', 'A valid import request ID is required.');
     const fingerprint = createHash('sha256')
-      .update(JSON.stringify({ kind: 'importMedia', path, slideId, expectedRevision }))
+      .update(
+        JSON.stringify({
+          kind: 'importMedia',
+          path,
+          slideId,
+          expectedRevision,
+          credit: metadata.data,
+          replace,
+        }),
+      )
       .digest('hex');
     const cached = this.requests.get(id);
     if (cached)
@@ -160,14 +175,19 @@ export class ProjectOwner {
       !this.project.slides.some((slide) => slide.id === slideId)
     )
       return failure('NOT_FOUND', 'The slide no longer exists.');
+    const previous = this.project.slides.find((slide) => slide.id === slideId)?.media;
+    if (replace && !previous) return failure('NOT_FOUND', 'This slide has no media to replace.');
     const run = async (): Promise<Result<ProjectSnapshot>> => {
       const imported = await this.assets.import(path);
       if (!imported.ok) return imported;
+      if (replace && previous && previous.kind !== imported.value.kind)
+        return failure('INVALID_INPUT', `Choose a replacement ${previous.kind} file.`);
+      const media = { ...(replace ? previous : {}), ...imported.value, ...metadata.data };
       const result = this.edit({
         requestId: crypto.randomUUID(),
         expectedRevision,
-        label: requestId ? 'Agent: Import media' : 'Import media',
-        operations: [{ type: 'updateSlide', slideId, patch: { media: imported.value } }],
+        label: `${requestId ? 'Agent: ' : ''}${replace ? 'Locate media' : 'Import media'}`,
+        operations: [{ type: 'updateSlide', slideId, patch: { media } }],
       });
       if (result.ok) this.remember(id, fingerprint, result.value);
       return result;
@@ -186,12 +206,21 @@ export class ProjectOwner {
     expectedRevision: number,
     requestId: string = crypto.randomUUID(),
     input: FontCredit = {},
+    replaceFontId: string | null = null,
   ): Promise<Result<ProjectSnapshot>> {
     const parsed = fontCreditSchema.safeParse(input);
     if (!parsed.success || !z.string().min(1).max(100).safeParse(requestId).success)
       return failure('INVALID_INPUT', 'The font import metadata is invalid.');
     const fingerprint = createHash('sha256')
-      .update(JSON.stringify({ kind: 'importFont', path, expectedRevision, credit: parsed.data }))
+      .update(
+        JSON.stringify({
+          kind: 'importFont',
+          path,
+          expectedRevision,
+          credit: parsed.data,
+          replaceFontId,
+        }),
+      )
       .digest('hex');
     const cached = this.requests.get(requestId);
     if (cached)
@@ -210,16 +239,26 @@ export class ProjectOwner {
       expectedRevision !== this.revision
     )
       return failure('CONFLICT', 'The project changed or a file operation is running.');
-    if ((this.project.fonts?.length ?? 0) >= 16)
+    const previous = this.project.fonts?.find((font) => font.id === replaceFontId);
+    if (replaceFontId !== null && !previous)
+      return failure('NOT_FOUND', 'The font no longer exists.');
+    if (!previous && (this.project.fonts?.length ?? 0) >= 16)
       return failure('INVALID_INPUT', 'A project supports up to 16 imported fonts.');
     const run = async (): Promise<Result<ProjectSnapshot>> => {
-      const imported = await this.assets.importFont(path, parsed.data);
+      const imported = await this.assets.importFont(
+        path,
+        fontCreditSchema.parse({ ...previous, ...parsed.data }),
+      );
       if (!imported.ok) return imported;
       const result = this.edit({
         requestId: crypto.randomUUID(),
         expectedRevision,
-        label: 'Import font',
-        operations: [{ type: 'addFont', font: imported.value }],
+        label: previous ? 'Locate font' : 'Import font',
+        operations: [
+          previous
+            ? { type: 'replaceFont', fontId: previous.id, font: imported.value }
+            : { type: 'addFont', font: imported.value },
+        ],
       });
       if (result.ok) this.remember(requestId, fingerprint, result.value);
       return result;

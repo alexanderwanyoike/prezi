@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { assetCreditSchema } from './asset-credit';
 
 export const mediaFrameSchema = z
   .object({
@@ -8,7 +9,7 @@ export const mediaFrameSchema = z
     height: z.number().min(64).max(1080),
   })
   .refine((frame) => frame.x + frame.width <= 1920 && frame.y + frame.height <= 1080);
-export const mediaPropertiesSchema = z.object({
+export const mediaPropertiesSchema = assetCreditSchema.extend({
   frame: mediaFrameSchema.optional(),
   fit: z.enum(['contain', 'cover']).optional(),
   autoplay: z.boolean().optional(),

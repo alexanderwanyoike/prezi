@@ -11,6 +11,30 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
     next = { ...project, name: operation.name };
   } else if (operation.type === 'addFont') {
     next = { ...project, fonts: [...(project.fonts ?? []), operation.font] };
+  } else if (operation.type === 'replaceFont') {
+    if (!project.fonts?.some((font) => font.id === operation.fontId))
+      return failure('NOT_FOUND', 'The font no longer exists.');
+    if (operation.font.id === operation.fontId)
+      return failure('INVALID_INPUT', 'Replacement fonts need a new resource identity.');
+    next = {
+      ...project,
+      fonts: project.fonts.map((font) => (font.id === operation.fontId ? operation.font : font)),
+      ...(project.theme
+        ? {
+            theme: {
+              ...project.theme,
+              bodyFont:
+                project.theme.bodyFont === operation.fontId
+                  ? operation.font.id
+                  : project.theme.bodyFont,
+              monoFont:
+                project.theme.monoFont === operation.fontId
+                  ? operation.font.id
+                  : project.theme.monoFont,
+            },
+          }
+        : {}),
+    };
   } else if (operation.type === 'updateFont') {
     if (!project.fonts?.some((font) => font.id === operation.fontId))
       return failure('NOT_FOUND', 'The font no longer exists.');

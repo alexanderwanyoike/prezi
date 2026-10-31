@@ -99,6 +99,7 @@ export const editRequestSchema = z.object({
     .array(
       z.discriminatedUnion('type', [
         z.object({ type: z.literal('addFont'), font: fontSchema }),
+        z.object({ type: z.literal('replaceFont'), fontId: z.uuid(), font: fontSchema }),
         z.object({
           type: z.literal('updateFont'),
           fontId: z.uuid(),
