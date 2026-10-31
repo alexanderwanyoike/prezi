@@ -2,6 +2,39 @@ import { describe, expect, it } from 'vitest';
 import { ProjectOwner } from './project-owner';
 
 describe('project editing', () => {
+  it('undoes a labelled batch as one action and clears redo after a new edit', () => {
+    const owner = new ProjectOwner();
+    const before = owner.snapshot();
+    const slide = before.project.slides[0];
+    if (!slide) throw new Error('Expected an initial slide');
+    owner.edit({
+      requestId: 'batch',
+      expectedRevision: 0,
+      label: 'Opening text',
+      operations: [
+        { type: 'updateSlide', slideId: slide.id, patch: { title: 'Changed title' } },
+        { type: 'updateSlide', slideId: slide.id, patch: { body: 'Changed body' } },
+      ],
+    });
+    expect(owner.undo(owner.snapshot().revision).ok).toBe(true);
+    expect(owner.snapshot().project).toEqual(before.project);
+    expect(owner.snapshot().canRedo).toBe(true);
+    expect(owner.redo(owner.snapshot().revision).ok).toBe(true);
+    expect(owner.snapshot().project.slides[0]).toMatchObject({
+      title: 'Changed title',
+      body: 'Changed body',
+    });
+    owner.undo(owner.snapshot().revision);
+    owner.edit({
+      requestId: 'different',
+      expectedRevision: owner.snapshot().revision,
+      label: 'Another title',
+      operations: [{ type: 'updateSlide', slideId: slide.id, patch: { title: 'Different' } }],
+    });
+    expect(owner.snapshot().canRedo).toBe(false);
+    expect(owner.undo(0)).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+    expect(owner.snapshot().revision).toBe(5);
+  });
   it('applies a batch once and leaves content unchanged after stale or invalid requests', () => {
     const owner = new ProjectOwner();
     const before = owner.snapshot();
