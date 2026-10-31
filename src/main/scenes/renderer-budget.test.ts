@@ -10,6 +10,7 @@ it('places an owned renderer process behind a hard Linux memory and swap boundar
     const boundary = await bindRendererBudget(child.pid);
     expect(boundary.ok).toBe(true);
     if (!boundary.ok) throw Error(boundary.error.message);
+    expect(await bindRendererBudget(child.pid)).toEqual(boundary);
     if (process.platform === 'linux') {
       expect(boundary.value.memoryLimitBytes).toBe(512 * 1024 * 1024);
       expect(boundary.value.swapLimitBytes).toBe(0);
