@@ -2,19 +2,25 @@ import ts from 'typescript';
 import { posix } from 'node:path';
 import { defaultPresentationTheme } from '../../shared/presentation-theme';
 import type { SceneCandidate } from '../../shared/scene-definition';
-import type { SceneSource, SourceDiagnostic } from '../../shared/custom-scene';
+import type { CompilationKind, SceneSource, SourceDiagnostic } from '../../shared/custom-scene';
 
 export function checkSceneTypes(
   source: SceneSource,
   libraries: Record<string, string>,
   fields: SceneCandidate['fields'] = {},
+  kind: CompilationKind = 'scene',
 ): SourceDiagnostic[] {
   const root = '/prezi/scenes/';
   const files = new Map(Object.entries(libraries));
   Object.entries(source.files).forEach(([name, text]) => files.set(`${root}${name}`, text));
   files.set(
     `${root}__prezi_contract.tsx`,
-    `import type {ComponentType} from 'react';
+    kind === 'transition'
+      ? `import type {TransitionFunction} from 'prezi';
+import transition from './${source.entry.replace(/\.tsx$/, '')}';
+const accepted: TransitionFunction = transition;
+export default accepted;`
+      : `import type {ComponentType} from 'react';
 import type {SceneProps} from 'prezi';
 import Scene from './${source.entry.replace(/\.tsx$/, '')}';
 const component: ComponentType<SceneProps> = Scene;
@@ -35,6 +41,9 @@ export default component;`,
 export interface SceneProps {theme:{${themeType}fontFamily:string;monoFamily:string;}; title:string; body:string; reveal:number; props:{${propertyTypes}}; }
 export const Text:ComponentType<{property:keyof SceneProps['props'];layer?:string;style?:CSSProperties}>;
 export const Layer:ComponentType<{id:string;children?:ReactNode;style?:CSSProperties}>;
+export interface TransitionStyle {opacity?:number;x?:number;y?:number;scale?:number;rotate?:number;blur?:number;clipTop?:number;clipRight?:number;clipBottom?:number;clipLeft?:number;}
+export interface TransitionProps {progress:number;direction:'entering'|'exiting';navigation:'advance'|'back';props:SceneProps['props'];}
+export type TransitionFunction=(input:TransitionProps)=>TransitionStyle;
 `,
   );
   const directories = new Set<string>();

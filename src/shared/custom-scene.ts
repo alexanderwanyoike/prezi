@@ -19,6 +19,7 @@ export const sceneSourceSchema = z.object({
     ),
 });
 export type SceneSource = z.infer<typeof sceneSourceSchema>;
+export type CompilationKind = 'scene' | 'transition';
 export interface SourceDiagnostic {
   file: string;
   line: number;

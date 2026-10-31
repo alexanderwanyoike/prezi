@@ -2,13 +2,14 @@ import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import type { SceneCandidate } from '../../shared/scene-definition';
 import { compilationSchema, sceneSourceSchema } from '../../shared/custom-scene';
-import type { Compilation, SceneSource } from '../../shared/custom-scene';
+import type { Compilation, CompilationKind, SceneSource } from '../../shared/custom-scene';
 
 export async function runCompiler(
   source: SceneSource,
   signal: AbortSignal,
   directory = join(process.cwd(), 'out/compiler'),
   fields: SceneCandidate['fields'] = {},
+  kind: CompilationKind = 'scene',
 ): Promise<Compilation> {
   const failed = (message: string): Compilation => ({
     ok: false,
@@ -108,7 +109,7 @@ export async function runCompiler(
         );
       }
     });
-    child.stdin.end(JSON.stringify({ ...source, fields }));
+    child.stdin.end(JSON.stringify({ ...source, fields, kind }));
     if (signal.aborted) abort();
   });
 }

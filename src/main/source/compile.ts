@@ -5,7 +5,7 @@ import { checkSceneTypes } from './check-types';
 import { sourcePolicy } from './source-policy';
 import type { SceneCandidate } from '../../shared/scene-definition';
 import { sceneSourceSchema } from '../../shared/custom-scene';
-import type { Compilation, SceneSource } from '../../shared/custom-scene';
+import type { Compilation, CompilationKind, SceneSource } from '../../shared/custom-scene';
 
 const buildErrorSchema = z.object({
   errors: z.array(
@@ -19,6 +19,7 @@ export async function compileScene(
   source: SceneSource,
   libraries?: Record<string, string>,
   fields: SceneCandidate['fields'] = {},
+  kind: CompilationKind = 'scene',
 ): Promise<Compilation> {
   const invalid = (message: string): Compilation => ({
     ok: false,
@@ -80,7 +81,7 @@ export async function compileScene(
     const code = output.outputFiles[0]?.text;
     if (!code || Buffer.byteLength(code) > 2 * 1024 * 1024)
       return invalid('The compiled scene must be smaller than 2 MiB.');
-    const diagnostics = libraries ? checkSceneTypes(source, libraries, fields) : [];
+    const diagnostics = libraries ? checkSceneTypes(source, libraries, fields, kind) : [];
     if (diagnostics.length)
       return {
         ok: false,
