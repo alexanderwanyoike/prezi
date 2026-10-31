@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { SceneInstallation } from '../../shared/scene-definition';
 import { rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { readArchive } from '../archive/read-archive';
@@ -17,6 +18,10 @@ interface HistoryEntry {
 }
 
 export class ProjectOwner {
+  installScene(_input: SceneInstallation): Result<ProjectSnapshot> {
+    return failure('INVALID_INPUT', 'Scene installation is unavailable.');
+  }
+
   private restarting = false;
 
   beginRestart(): Result<() => void> {

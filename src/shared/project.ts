@@ -1,28 +1,46 @@
 import { z } from 'zod';
+import { sceneDefinitionSchema, sceneInstanceSchema, validSceneValues } from './scene-definition';
 import { textScenePropsSchema } from './text-scene';
 import { mediaPropertiesSchema, mediaSchema } from './media';
 
 export const slideSchema = textScenePropsSchema.extend({
   id: z.uuid(),
+  scene: sceneInstanceSchema.nullable().optional(),
   media: mediaSchema.nullable().optional(),
 });
-export const projectSchema = z.object({
-  sources: z
-    .record(
-      z.string().regex(/^(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:tsx?|css|json)$/),
-      z.string().max(250000),
-    )
-    .refine(
-      (sources) =>
-        Object.keys(sources).length <= 128 &&
-        Object.values(sources).reduce((sum, source) => sum + source.length, 0) <= 1000000,
-    )
-    .optional(),
-  schemaVersion: z.literal(1),
-  id: z.uuid(),
-  name: z.string().min(1).max(200),
-  slides: z.array(slideSchema).min(1).max(200),
-});
+export const projectSchema = z
+  .object({
+    scenes: z
+      .record(z.uuid(), sceneDefinitionSchema)
+      .refine((scenes) => Object.keys(scenes).length <= 32)
+      .optional(),
+    sources: z
+      .record(
+        z.string().regex(/^(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:tsx?|css|json)$/),
+        z.string().max(250000),
+      )
+      .refine(
+        (sources) =>
+          Object.keys(sources).length <= 128 &&
+          Object.values(sources).reduce((sum, source) => sum + source.length, 0) <= 1000000,
+      )
+      .optional(),
+    schemaVersion: z.literal(1),
+    id: z.uuid(),
+    name: z.string().min(1).max(200),
+    slides: z.array(slideSchema).min(1).max(200),
+  })
+  .superRefine((project, context) => {
+    project.slides.forEach((slide) => {
+      if (!slide.scene) return;
+      const definition = project.scenes?.[slide.scene.definitionId];
+      if (!definition || !validSceneValues(definition, slide.scene.properties))
+        context.addIssue({
+          code: 'custom',
+          message: 'A custom scene needs a registered definition and valid properties.',
+        });
+    });
+  });
 export type Slide = z.infer<typeof slideSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export interface ProjectSnapshot {
