@@ -42,3 +42,20 @@ export default function transition({progress,direction,navigation,props}:Transit
     expect.arrayContaining([expect.objectContaining({ file: 'Transition.tsx', line: 5 })]),
   );
 });
+
+it('points inferred transition contract errors at the authored entry rather than an internal file', async () => {
+  const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
+  const libraries = z.record(z.string(), z.string()).parse(input);
+  const result = await compileScene(
+    {
+      entry: 'Transition.tsx',
+      files: { 'Transition.tsx': 'export default function transition(){return {opacity:"bad"};}' },
+    },
+    libraries,
+    {},
+    'transition',
+  );
+  expect(result.ok).toBe(false);
+  if (result.ok) throw Error('Expected a transition type error');
+  expect(result.error.diagnostics[0]).toMatchObject({ file: 'Transition.tsx', line: 1, column: 1 });
+});
