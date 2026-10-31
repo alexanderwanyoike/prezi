@@ -37,4 +37,14 @@ For an edit, first read the latest project revision. Supply a unique request ID,
 
 If a response is uncertain, retry the exact request ID and payload. Successful edits and history operations are remembered in a bounded cache. Concurrent identical media registrations share their result. A reused ID with a different payload is rejected. Read current state after an old retry response; its revision describes the original operation. Request bodies are limited to 1 MiB and edit batches to 100 operations.
 
-Source reads access the project's stored source map, falling back to bundled scene source for a new deck. They cannot read arbitrary filesystem paths. Custom source updates/compilation, preview capture and asynchronous job tools are introduced in later slices; they are not advertised by this adapter yet.
+Source reads access the project's stored source map, falling back to bundled scene source for a new deck. They cannot read arbitrary filesystem paths. Custom source jobs are described below. Bounded preview-image retrieval follows separately.
+
+## Custom Remotion scenes
+
+`compile_scene` accepts requestId, expectedRevision, slideId, label, candidate and properties. The candidate contains a stable UUID id, name, source `{entry, files}`, fields and layers. Use a TSX entry and static imports from local source files, react, remotion or prezi. Source is limited to 32 files and 1 MB. Editable fields support text (optional multiline), number (optional min/max), color and boolean, each with a label and default. Layers declare stable id/label, an optional property and optional frame mapping `{x, y, width, height}` to numeric field names.
+
+A component default-exports a React scene. Import SceneProps from prezi for exact generated property types; it exposes title, body, reveal and props. Import Text and Layer for viewer editing. For example, `Text property="headline"` binds a declared text field. Layer's id matches a layer declaration. Remotion's useCurrentFrame controls the current 12-frame entrance/reveal animation; reveal is manually controlled and independent of video time.
+
+Read `read_job` with the returned job ID until complete, failed or cancelled. Compilation and preview validation run serially, with at most three waiting jobs and 32 retained status records. Completed jobs report the accepted revision and compiler resource measurements. An uncertain retry uses the original requestId and payload. A changed candidate needs a new requestId. Cancel pending work with cancel_job; reverse accepted work through shared Undo.
+
+The source is accepted only after type checking and isolated render validation. Failed/stale/cancelled jobs preserve the working version. `updateSceneProperties` in edit_project merges a property patch into one scene instance and validates its types/limits. Named custom element IDs are `<slide UUID>:<layer id>`. Source paths returned by read_project include `scenes/<definition UUID>/source/<file>` and `scenes/<definition UUID>/definition.json`; read_source remains bounded and never reads arbitrary disk paths. Successful custom source and instance properties persist inside portable projects.
