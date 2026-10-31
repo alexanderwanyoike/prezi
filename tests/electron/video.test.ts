@@ -21,6 +21,22 @@ test('keeps video independent of held reveal frames and stops inactive slide med
     const page = await desktop.firstWindow();
     await page.getByRole('button', { name: 'Import media', exact: true }).click();
     await page.getByLabel('Reveal text', { exact: false }).fill('First thought\nSecond thought');
+    const previewVideo = page.locator('.workspace video');
+    await page.getByRole('button', { name: 'Play video', exact: true }).click();
+    await expect
+      .poll(() => previewVideo.evaluate((node: HTMLVideoElement) => node.currentTime))
+      .toBeGreaterThan(0.3);
+    const previewHandle = await previewVideo.elementHandle();
+    await page.getByRole('button', { name: '01 First thought', exact: true }).click();
+    expect(
+      await previewHandle.evaluate((node: HTMLVideoElement) => node.isConnected && !node.paused),
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Restart preview', exact: true }).click();
+    await expect
+      .poll(() =>
+        previewVideo.evaluate((node: HTMLVideoElement) => node.paused && node.currentTime === 0),
+      )
+      .toBe(true);
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     const stage = page.getByRole('region', { name: 'Presentation stage' });
     const video = stage.locator('video');
