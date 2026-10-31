@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Player } from '@remotion/player';
 import type { PlayerRef } from '@remotion/player';
+import { CustomScenePlayer } from './CustomScenePlayer';
 import { textSceneDefinition } from './text-scene-definition';
 import type { SceneProps } from './SlideScene';
 
@@ -21,25 +22,34 @@ export function ScenePlayer({
   return (
     <div className="composition-viewport">
       <div className="composition-transform">
-        <Player
-          ref={player}
-          component={textSceneDefinition.Component}
-          inputProps={{ ...scene, mediaActive: !still, mediaAutoplay: !still && !scene.editing }}
-          compositionWidth={1920}
-          compositionHeight={1080}
-          durationInFrames={12}
-          fps={30}
-          autoPlay={!still}
-          initialFrame={still ? 11 : 0}
-          loop={false}
-          controls={false}
-          numberOfSharedAudioTags={0}
-          clickToPlay={false}
-          doubleClickToFullscreen={false}
-          spaceKeyToPlayOrPause={false}
-          moveToBeginningWhenEnded={false}
-          style={{ width: 1920, height: 1080 }}
-        />
+        {scene.definition && scene.slide.scene ? (
+          <CustomScenePlayer
+            key={scene.definition.code}
+            scene={scene}
+            definition={scene.definition}
+            still={still}
+          />
+        ) : (
+          <Player
+            ref={player}
+            component={textSceneDefinition.Component}
+            inputProps={{ ...scene, mediaActive: !still, mediaAutoplay: !still && !scene.editing }}
+            compositionWidth={1920}
+            compositionHeight={1080}
+            durationInFrames={12}
+            fps={30}
+            autoPlay={!still}
+            initialFrame={still ? 11 : 0}
+            loop={false}
+            controls={false}
+            numberOfSharedAudioTags={0}
+            clickToPlay={false}
+            doubleClickToFullscreen={false}
+            spaceKeyToPlayOrPause={false}
+            moveToBeginningWhenEnded={false}
+            style={{ width: 1920, height: 1080 }}
+          />
+        )}
       </div>
     </div>
   );

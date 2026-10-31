@@ -1,18 +1,9 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
-import type { Slide } from '../../shared/project';
 import { SceneMedia } from './SceneMedia';
 import { SceneText } from './SceneText';
-import type { SceneEditing } from './SceneText';
+import type { SceneProps } from './scene-props';
 
-export interface SceneProps extends Record<string, unknown> {
-  slide: Slide;
-  reveal: number;
-  slideNumber: number;
-  slideCount: number;
-  editing?: SceneEditing;
-  mediaActive?: boolean;
-  mediaAutoplay?: boolean;
-}
+export type { SceneProps };
 export function SlideScene({
   slide,
   reveal,

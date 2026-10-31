@@ -1,4 +1,6 @@
 import { ArrowDown, ArrowUp, Copy, Trash2 } from 'lucide-react';
+import { CustomSceneInspector } from './CustomSceneInspector';
+import type { CustomSceneDefinition, SceneValues } from '../shared/scene-definition';
 import { MediaInspector } from './MediaInspector';
 import { EditableText } from './EditableText';
 import type { MediaProperties } from '../shared/media';
@@ -10,7 +12,9 @@ interface Props {
   slide: Slide;
   pending: boolean;
   updateMedia: (patch: MediaProperties) => void;
-  selectedField: TextField | null;
+  selectedField: string | null;
+  definition?: CustomSceneDefinition | undefined;
+  updateCustom: (property: string, value: SceneValues[string]) => void;
   selectField: (field: TextField) => void;
   index: number;
   count: number;
@@ -23,6 +27,8 @@ export function SlideInspector({
   slide,
   pending,
   selectedField,
+  definition,
+  updateCustom,
   selectField,
   index,
   count,
@@ -33,6 +39,10 @@ export function SlideInspector({
   remove,
   move,
 }: Props): React.JSX.Element {
+  let sectionLabel = 'CONTENT';
+  if (definition) sectionLabel = 'CUSTOM SCENE';
+  else if (selectedField)
+    sectionLabel = `SELECTED / ${selectedField === 'title' ? 'HEADING' : 'BODY'}`;
   if (pending)
     return <aside className="inspector" aria-label="Slide properties" aria-busy="true" />;
   return (
@@ -43,45 +53,56 @@ export function SlideInspector({
       </div>
       <div className="inspector-body">
         <div className="inspector-section">
-          <span className="eyebrow">
-            {selectedField === null
-              ? 'CONTENT'
-              : `SELECTED / ${selectedField === 'title' ? 'HEADING' : 'BODY'}`}
-          </span>
-          <label htmlFor="slide-title">Heading</label>
-          <EditableText
-            onFocus={() => {
-              selectField('title');
-            }}
-            id="slide-title"
-            value={slide.title}
-            maxLength={textLayers.title.maxLength}
-            commit={(title) => {
-              update({ title });
-            }}
-          />
-          <label htmlFor="slide-body">Body</label>
-          <EditableText
-            onFocus={() => {
-              selectField('body');
-            }}
-            id="slide-body"
-            value={slide.body}
-            maxLength={textLayers.body.maxLength}
-            rows={5}
-            commit={(body) => {
-              update({ body });
-            }}
-          />
+          <span className="eyebrow">{sectionLabel}</span>
+          {definition && slide.scene ? (
+            <CustomSceneInspector
+              definition={definition}
+              properties={slide.scene.properties}
+              update={updateCustom}
+            />
+          ) : (
+            <>
+              <label htmlFor="slide-title">Heading</label>
+              <EditableText
+                onFocus={() => {
+                  selectField('title');
+                }}
+                id="slide-title"
+                value={slide.title}
+                maxLength={textLayers.title.maxLength}
+                commit={(title) => {
+                  update({ title });
+                }}
+              />
+              <label htmlFor="slide-body">Body</label>
+              <EditableText
+                onFocus={() => {
+                  selectField('body');
+                }}
+                id="slide-body"
+                value={slide.body}
+                maxLength={textLayers.body.maxLength}
+                rows={5}
+                commit={(body) => {
+                  update({ body });
+                }}
+              />
+            </>
+          )}
           <label htmlFor="slide-layout">Layout</label>
           <select
             id="slide-layout"
-            value={slide.layout}
+            value={definition ? 'custom' : slide.layout}
 
             onChange={(event) => {
-              update({ layout: event.target.value === 'title' ? 'title' : 'content' });
+              if (event.target.value !== 'custom')
+                update({
+                  layout: event.target.value === 'title' ? 'title' : 'content',
+                  scene: null,
+                });
             }}
           >
+            {definition && <option value="custom">Custom / {definition.name}</option>}
             <option value="title">Title / chapter</option>
             <option value="content">Text / reveals</option>
           </select>

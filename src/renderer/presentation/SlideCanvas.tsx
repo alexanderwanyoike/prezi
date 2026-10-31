@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
+import type { CustomSceneDefinition } from '../../shared/scene-definition';
+import type { CustomSceneEditing } from './CustomScenePlayer';
 import type { Slide } from '../../shared/project';
 import { ScenePlayer } from './ScenePlayer';
 import type { SceneEditing } from './SceneText';
@@ -10,8 +12,18 @@ interface Props {
   index: number;
   count: number;
   editing: SceneEditing;
+  definition?: CustomSceneDefinition | undefined;
+  customEditing?: CustomSceneEditing | undefined;
 }
-export function SlideCanvas({ slide, index, count, editing, pending }: Props): React.JSX.Element {
+export function SlideCanvas({
+  slide,
+  index,
+  count,
+  editing,
+  pending,
+  definition,
+  customEditing,
+}: Props): React.JSX.Element {
   const [reveal, setReveal] = useState(0);
   const [run, setRun] = useState(0);
   const step = Math.min(reveal, slide.reveals.length);
@@ -36,7 +48,15 @@ export function SlideCanvas({ slide, index, count, editing, pending }: Props): R
         <div className="scene-player">
           <ScenePlayer
             key={`${slide.id}:${run.toString()}`}
-            scene={{ slide, reveal: step, slideNumber: index + 1, slideCount: count, editing }}
+            scene={{
+              slide,
+              reveal: step,
+              slideNumber: index + 1,
+              slideCount: count,
+              editing,
+              definition,
+              customEditing,
+            }}
           />
         </div>
       </div>

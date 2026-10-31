@@ -60,7 +60,13 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
       const next = navigate(project, position, direction);
       if (next.slideId === position.slideId && next.reveal === position.reveal) return;
       if (next.slideId !== position.slideId && slide)
-        setOutgoing({ slide, reveal, slideNumber: index + 1, slideCount: project.slides.length });
+        setOutgoing({
+          slide,
+          reveal,
+          slideNumber: index + 1,
+          slideCount: project.slides.length,
+          definition: project.scenes?.[slide.scene?.definitionId ?? ''],
+        });
       lockedUntil.current = performance.now() + ANIMATION_MS;
       setBusy(true);
       setPosition(next);
@@ -100,6 +106,7 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
     reveal,
     slideNumber: index + 1,
     slideCount: project.slides.length,
+    definition: project.scenes?.[slide.scene?.definitionId ?? ''],
   };
   return (
     <main className={`presenting ${fullscreen ? 'is-fullscreen' : ''}`}>

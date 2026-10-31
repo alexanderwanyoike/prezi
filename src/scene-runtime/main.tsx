@@ -97,17 +97,52 @@ function Runtime(): React.JSX.Element | null {
   }, [loaded, state]);
   useEffect(() => {
     if (!state?.editing) return undefined;
-    const select = (event: PointerEvent): void => {
+    const select = (event: PointerEvent | FocusEvent): void => {
       const element =
         event.target instanceof Element ? event.target.closest<HTMLElement>('[data-layer]') : null;
       const layer = element?.dataset.layer;
       if (layer) emit({ type: 'prezi:select', layer });
     };
     window.addEventListener('pointerdown', select);
+    window.addEventListener('focusin', select);
     return () => {
       window.removeEventListener('pointerdown', select);
+      window.removeEventListener('focusin', select);
     };
   }, [state?.editing]);
+  const editing = state?.editing;
+  useEffect(() => {
+    if (editing !== false) return undefined;
+    const keydown = (event: KeyboardEvent): void => {
+      if (
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        ![' ', 'ArrowLeft', 'ArrowRight', 'Escape'].includes(event.key)
+      )
+        return;
+      if (
+        event.target instanceof Element &&
+        event.target.closest('input,textarea,select,[contenteditable="true"]')
+      )
+        return;
+      if (
+        event.key !== 'Escape' &&
+        event.target instanceof Element &&
+        event.target.closest('video,[data-media-controls]')
+      )
+        return;
+      const { key } = event;
+      if (key === ' ' || key === 'ArrowLeft' || key === 'ArrowRight' || key === 'Escape') {
+        event.preventDefault();
+        emit({ type: 'prezi:key', key, repeat: event.repeat });
+      }
+    };
+    window.addEventListener('keydown', keydown);
+    return () => {
+      window.removeEventListener('keydown', keydown);
+    };
+  }, [editing]);
   const context = useMemo(
     () => (loaded && state ? { definition: loaded.definition, state, emit } : null),
     [loaded, state],

@@ -15,7 +15,6 @@ import { SlideRail } from './SlideRail';
 import { SlideInspector } from './SlideInspector';
 import { useAppearance } from './appearance';
 import { AppearancePanel } from './AppearancePanel';
-import type { TextField } from '../shared/text-scene';
 
 const CodeView = lazy(async () => {
   const module = await import('./source/CodeView');
@@ -27,7 +26,7 @@ export function App(): React.JSX.Element {
   const updates = useUpdates(project.flush);
   const [updatesOpen, setUpdatesOpen] = useState(false);
   const { snapshot, error, busy, edit, undo, redo } = project;
-  const [selectedField, setSelectedField] = useState<TextField | null>(null);
+  const [selectedField, setSelectedField] = useState<string | null>(null);
   const [codeVisible, setCodeVisible] = useState(false);
   const [presenting, setPresenting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -220,9 +219,30 @@ export function App(): React.JSX.Element {
             </Suspense>
           ) : (
             <SlideCanvas
+              definition={snapshot.project.scenes?.[slide.scene?.definitionId ?? '']}
+              customEditing={{
+                selected: selectedField?.startsWith('layer/') ? selectedField.slice(6) : null,
+                pending: busy,
+                select: (id) => {
+                  setSelectedField(`layer/${id}`);
+                },
+                update: (property, value) => {
+                  edit(
+                    [
+                      {
+                        type: 'updateSceneProperties',
+                        slideId: slide.id,
+                        patch: { [property]: value },
+                      },
+                    ],
+                    'Edit scene text',
+                  );
+                },
+              }}
               pending={selectionPending}
               editing={{
-                selected: selectedField,
+                selected:
+                  selectedField === 'title' || selectedField === 'body' ? selectedField : null,
                 select: setSelectedField,
                 update: (field, value) => {
                   edit(
@@ -240,6 +260,13 @@ export function App(): React.JSX.Element {
         </div>
       </section>
       <SlideInspector
+        definition={snapshot.project.scenes?.[slide.scene?.definitionId ?? '']}
+        updateCustom={(property, value) => {
+          edit(
+            [{ type: 'updateSceneProperties', slideId: slide.id, patch: { [property]: value } }],
+            'Edit scene properties',
+          );
+        }}
         pending={selectionPending}
         updateMedia={(patch) => {
           edit([{ type: 'updateMedia', slideId: slide.id, patch }], 'Configure media');

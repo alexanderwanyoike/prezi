@@ -1,3 +1,4 @@
+import { slideElementIds } from '../../shared/slide-elements';
 import { workspacePatchSchema } from '../../shared/workspace';
 import type { Selection, Workspace } from '../../shared/workspace';
 import { failure } from '../../shared/result';
@@ -17,7 +18,8 @@ export class WorkspaceOwner {
   }
 
   snapshot(): Workspace {
-    const { slides } = this.project.snapshot().project;
+    const { project } = this.project.snapshot();
+    const { slides } = project;
     const selected = slides.find((slide) => slide.id === this.state.selection.slideId) ?? slides[0];
     const selection =
       selected?.id === this.state.selection.slideId
@@ -25,7 +27,14 @@ export class WorkspaceOwner {
         : { slideId: selected?.id ?? '', elementId: null };
     const presenting = slides.find((slide) => slide.id === this.state.presentation?.slideId);
     return {
-      selection: structuredClone(selection),
+      selection: {
+        ...selection,
+        elementId:
+          selection.elementId &&
+          slideElementIds(project, selection.slideId).includes(selection.elementId)
+            ? selection.elementId
+            : null,
+      },
       presentation:
         presenting && this.state.presentation
           ? {
@@ -39,15 +48,12 @@ export class WorkspaceOwner {
   publish(input: unknown, external = false): Result<boolean> {
     const parsed = workspacePatchSchema.safeParse(input);
     if (!parsed.success) return failure('INVALID_INPUT', 'The workspace state is invalid.');
-    const { slides } = this.project.snapshot().project;
+    const { project } = this.project.snapshot();
+    const { slides } = project;
     const { selection, presentation } = parsed.data;
     if (selection) {
       const slide = slides.find((item) => item.id === selection.slideId);
-      const elements = [
-        `${selection.slideId}:heading`,
-        `${selection.slideId}:body`,
-        ...(slide?.media ? [`${selection.slideId}:media`] : []),
-      ];
+      const elements = slideElementIds(project, selection.slideId);
       if (!slide || (selection.elementId !== null && !elements.includes(selection.elementId)))
         return failure('NOT_FOUND', 'The selected slide or element no longer exists.');
     }

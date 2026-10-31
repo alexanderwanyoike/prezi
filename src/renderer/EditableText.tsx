@@ -5,7 +5,7 @@ interface Props {
   onFocus?: () => void;
   value: string;
   commit: (value: string) => void;
-  rows?: number;
+  rows?: number | undefined;
   maxLength?: number;
   label?: string;
   className?: string;
