@@ -23,6 +23,13 @@ test('inspects scene source and live instance properties without changing the de
     const code = page.getByRole('textbox', { name: 'Scene source code', exact: true });
     await expect(code).toContainText('useCurrentFrame');
     await expect(code).toHaveAttribute('aria-readonly', 'true');
+    const firstLine = await page.locator('.cm-content .cm-line').first().boundingBox();
+    const firstNumber = await page
+      .locator('.cm-lineNumbers .cm-gutterElement')
+      .filter({ hasText: /^1$/ })
+      .boundingBox();
+    if (!firstLine || !firstNumber) throw new Error('Missing source line or its number');
+    expect(Math.abs(firstLine.y - firstNumber.y)).toBeLessThan(1);
     await page
       .getByRole('button', { name: 'renderer/presentation/SceneMedia.tsx', exact: true })
       .click();
