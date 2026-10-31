@@ -1,12 +1,14 @@
 # Third-party notices
 
-## Auto Digger
+## Auto Digger and Muzo
 
-Tooling configuration adapted from https://github.com/alexanderwanyoike/auto-digger.
+Tooling configuration adapted from https://github.com/alexanderwanyoike/auto-digger. Appearance tokens adapted from https://github.com/alexanderwanyoike/muzo. The following MIT licence applies to both portions.
 
 MIT License
 
 Copyright (c) 2026 Alexander Wanyoike
+
+Copyright (c) 2026 Muzo contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,3 +31,9 @@ SOFTWARE.
 ## Fonts
 
 Manrope and IBM Plex Mono are provided through their Fontsource packages with their bundled SIL Open Font License notices.
+
+## Remotion
+
+`remotion` and `@remotion/player` are pinned to 4.0.539. Remotion is source-available under its own free/company licence, not MIT. The exact installed licence is retained at [licenses/remotion-4.0.539.md](licenses/remotion-4.0.539.md). Its free eligibility includes individuals; distribution or changed organisational use must be assessed against those exact terms.
+
+The bundled font licences are retained in [licenses/manrope.txt](licenses/manrope.txt) and [licenses/ibm-plex-mono.txt](licenses/ibm-plex-mono.txt).
