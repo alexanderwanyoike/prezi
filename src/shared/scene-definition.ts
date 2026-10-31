@@ -73,7 +73,10 @@ export type CustomSceneDefinition = z.infer<typeof sceneDefinitionSchema>;
 export type SceneValues = z.infer<typeof sceneValuesSchema>;
 export type SceneInstallation = z.infer<typeof sceneInstallationSchema>;
 
-export function validSceneValues(definition: CustomSceneDefinition, values: SceneValues): boolean {
+export function validSceneValues(
+  definition: Pick<CustomSceneDefinition, 'fields'>,
+  values: SceneValues,
+): boolean {
   return Object.entries(values).every(([key, value]) => {
     const field = definition.fields[key];
     if (!field) return false;

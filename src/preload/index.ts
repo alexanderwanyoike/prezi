@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { sceneJobResultSchema } from '../shared/scene-jobs';
 import { fullscreenResultSchema, snapshotResultSchema, snapshotSchema } from '../shared/desktop';
 import type { DesktopBridge } from '../shared/desktop';
 import { updateResultSchema, updateSnapshotSchema } from '../shared/updates';
@@ -27,8 +28,22 @@ async function updateRequest(command: 'status' | UpdateCommand) {
     return failure('IO_ERROR', 'The update service could not be reached.');
   }
 }
+async function sceneRequest(command: 'submit' | 'read' | 'cancel', input: unknown) {
+  try {
+    const result: unknown = await ipcRenderer.invoke(`scenes:${command}`, input);
+    const parsed = sceneJobResultSchema.safeParse(result);
+    return parsed.success
+      ? parsed.data
+      : failure('IO_ERROR', 'The scene job response was invalid.');
+  } catch {
+    return failure('IO_ERROR', 'The scene job service could not be reached.');
+  }
+}
 const bridge: DesktopBridge = {
   platform: process.platform,
+  submitScene: (input) => sceneRequest('submit', input),
+  sceneJob: (id) => sceneRequest('read', id),
+  cancelSceneJob: (id) => sceneRequest('cancel', id),
   async prepareScene(instance) {
     try {
       const input: unknown = await ipcRenderer.invoke('scenes:prepare', instance);

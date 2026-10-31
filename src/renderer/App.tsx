@@ -219,6 +219,9 @@ export function App(): React.JSX.Element {
                 key={slide.scene?.definitionId ?? 'built-in'}
                 project={snapshot.project}
                 slide={slide}
+                pending={busy}
+                edit={edit}
+                flush={project.flush}
               />
             </Suspense>
           ) : (

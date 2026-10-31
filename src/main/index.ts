@@ -1,5 +1,6 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { registerSceneIpc } from './source/register-scene-ipc';
 import { SceneJobs } from './source/scene-jobs';
 import { runCompiler } from './source/run-compiler';
 import { validateScene } from './scenes/validate-scene';
@@ -77,6 +78,7 @@ async function openWindow(): Promise<void> {
         : Promise.resolve(failure('NOT_FOUND', 'The slide no longer exists.'));
     },
   );
+  registerSceneIpc(window, sceneJobs);
   window.on('closed', () => {
     sceneJobs?.dispose();
     app.quit();

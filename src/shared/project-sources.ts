@@ -25,5 +25,18 @@ export function projectSources(project: Project): Record<string, string> {
       ]),
     ],
   );
-  return { ...(project.sources ?? builtInSceneSources), ...Object.fromEntries(custom) };
+  const drafts = Object.entries(project.drafts ?? {}).flatMap<readonly [string, string]>(
+    ([slideId, draft]) => [
+      [`drafts/${slideId}/definition.json`, draft.metadata],
+      ...Object.entries(draft.files).map<readonly [string, string]>(([name, text]) => [
+        `drafts/${slideId}/source/${name}`,
+        text,
+      ]),
+    ],
+  );
+  return {
+    ...(project.sources ?? builtInSceneSources),
+    ...Object.fromEntries(custom),
+    ...Object.fromEntries(drafts),
+  };
 }

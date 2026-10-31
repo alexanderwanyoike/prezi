@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { SceneJob, SceneJobRequest } from './scene-jobs';
 import { projectSchema } from './project';
 import type { DesktopCommand, NativeEditCommand } from './desktop-commands';
 import type { UpdateCommand, UpdateSnapshot } from './updates';
@@ -35,6 +36,9 @@ export const snapshotResultSchema = z.union([
 ]);
 export interface DesktopBridge {
   platform: NodeJS.Platform;
+  submitScene: (request: SceneJobRequest) => Promise<Result<SceneJob>>;
+  sceneJob: (id: string) => Promise<Result<SceneJob>>;
+  cancelSceneJob: (id: string) => Promise<Result<SceneJob>>;
   prepareScene: (instance: string) => Promise<Result<boolean>>;
   updateStatus: () => Promise<Result<UpdateSnapshot>>;
   updateAction: (command: UpdateCommand) => Promise<Result<UpdateSnapshot>>;
