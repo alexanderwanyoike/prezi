@@ -17,6 +17,7 @@ export function UpdateDialog({
   let message = 'Reading update status…';
   if (state?.stage === 'disabled') message = state.reason;
   if (state?.stage === 'idle') message = 'You can check for a newer stable release.';
+  if (state?.stage === 'current') message = 'No newer stable release is available.';
   if (state?.stage === 'checking') message = 'Checking for updates…';
   if (state?.stage === 'available') message = `Prezi ${state.version} is available.`;
   if (state?.stage === 'downloading') message = `Downloading Prezi ${state.version}…`;
@@ -55,7 +56,7 @@ export function UpdateDialog({
         </p>
       )}
       {updates.error && <p role="alert">{updates.error}</p>}
-      {state?.stage === 'idle' && (
+      {(state?.stage === 'idle' || state?.stage === 'current') && (
         <button
           type="button"
           className="primary"

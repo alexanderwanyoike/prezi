@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const updateStateSchema = z.discriminatedUnion('stage', [
   z.object({ stage: z.literal('disabled'), reason: z.string() }),
   z.object({ stage: z.literal('idle') }),
+  z.object({ stage: z.literal('current') }),
   z.object({ stage: z.literal('checking') }),
   z.object({ stage: z.literal('available'), version: z.string(), automatic: z.boolean() }),
   z.object({

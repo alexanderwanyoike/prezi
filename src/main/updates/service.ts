@@ -52,7 +52,7 @@ export function createUpdateService(backend?: UpdateBackend) {
       publish(
         result.value
           ? { stage: 'available', version: result.value, automatic: backend.automatic }
-          : { stage: 'idle' },
+          : { stage: 'current' },
       );
       return current();
     },
