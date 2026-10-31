@@ -43,7 +43,7 @@ test('edits scene text on the canvas through the same properties and undo histor
     await body.fill('');
     await body.press('Tab');
     await expect(page.getByLabel('Body', { exact: true })).toHaveValue('');
-    const headingPosition = async (): Promise<number> => {
+    const textPosition = async (selector: string): Promise<number> => {
       await expect
         .poll(() =>
           page
@@ -53,15 +53,25 @@ test('edits scene text on the canvas through the same properties and undo histor
             ),
         )
         .toBe('1');
-      return page.locator('.slide-scene h2').evaluate((node) => {
+      return page.locator(selector).evaluate((node) => {
         const scene = node.closest('.slide-scene')?.getBoundingClientRect();
         if (!scene) throw new Error('The scene is missing');
         return (node.getBoundingClientRect().top - scene.top) / scene.height;
       });
     };
+    const headingPosition = (): Promise<number> => textPosition('.slide-scene h2');
     const editorPosition = await headingPosition();
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     await expect.poll(headingPosition).toBeCloseTo(editorPosition, 3);
+    await page.keyboard.press('Escape');
+    await body.fill('Body beneath an empty heading');
+    await heading.fill('');
+    await heading.press('Tab');
+    await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('');
+    const bodyPosition = (): Promise<number> => textPosition('.slide-scene p');
+    const editorBodyPosition = await bodyPosition();
+    await page.getByRole('button', { name: 'Present', exact: true }).click();
+    await expect.poll(bodyPosition).toBeCloseTo(editorBodyPosition, 3);
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Add slide', exact: true }).click();
     await page
