@@ -9,6 +9,8 @@ import {
   Save,
   Undo2,
 } from 'lucide-react';
+import { PresentationView } from './presentation/PresentationView';
+import { SlideCanvas } from './presentation/SlideCanvas';
 import { ProjectName } from './ProjectName';
 import { useProject } from './useProject';
 import { SlideRail } from './SlideRail';
@@ -18,6 +20,7 @@ import { AppearancePanel } from './AppearancePanel';
 
 export function App(): React.JSX.Element {
   const { snapshot, error, busy, edit, undo, redo, save, open, newProject } = useProject();
+  const [presenting, setPresenting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const { appearance, change, error: appearanceError } = useAppearance();
@@ -30,6 +33,15 @@ export function App(): React.JSX.Element {
   const slide =
     snapshot.project.slides.find((item) => item.id === selectedId) ?? snapshot.project.slides[0];
   if (!slide) return <main role="alert">The deck has no slides.</main>;
+  if (presenting)
+    return (
+      <PresentationView
+        project={snapshot.project}
+        exit={() => {
+          setPresenting(false);
+        }}
+      />
+    );
   const selectedIndex = snapshot.project.slides.findIndex((item) => item.id === slide.id);
   let status = snapshot.filePath ? 'Saved on this computer' : 'Not saved yet';
   if (snapshot.dirty) status = 'Unsaved changes';
@@ -94,7 +106,14 @@ export function App(): React.JSX.Element {
           >
             <Palette size={17} />
           </button>
-          <button type="button" className="primary" disabled>
+          <button
+            type="button"
+            className="primary"
+            onClick={() => {
+              setAppearanceOpen(false);
+              setPresenting(true);
+            }}
+          >
             <Play size={14} fill="currentColor" />
             Present
           </button>
@@ -161,53 +180,12 @@ export function App(): React.JSX.Element {
           setSelectedId(id);
         }}
       />
-      <main className="workspace">
-        <div className="canvas-heading">
-          <span>SLIDE {(selectedIndex + 1).toString().padStart(2, '0')}</span>
-          <span>
-            1920 × 1080 <span className="muted">/</span> 16:9
-          </span>
-        </div>
-        <div className="canvas-wrap">
-          <article className={`slide-preview layout-${slide.layout}`} aria-label="Slide preview">
-            <div className="scene-kicker">
-              <span />
-              THE 0SMOSYS SHOW
-            </div>
-            <div className="scene-text">
-              <h2>{slide.title}</h2>
-              <p>{slide.body}</p>
-            </div>
-            <div className="scene-footer">
-              <span>NOTES FROM THE BUILD</span>
-              <span>
-                {(selectedIndex + 1).toString().padStart(2, '0')} /{' '}
-                {snapshot.project.slides.length.toString().padStart(2, '0')}
-              </span>
-            </div>
-          </article>
-        </div>
-        <div className="canvas-toolbar">
-          <span className="muted small">Your canvas. Room to think.</span>
-          <span className="zoom-label">FIT</span>
-        </div>
-        <section className="reveal-strip" aria-label="Reveal overview">
-          <div>
-            <span className="eyebrow">REVEAL STEPS</span>
-            <p>One thought at a time.</p>
-          </div>
-          <div className="reveal-chips">
-            <span className="reveal-chip active">
-              00 <span>Initial state</span>
-            </span>
-            {slide.reveals.map((reveal, index) => (
-              <span className="reveal-chip" key={reveal}>
-                {(index + 1).toString().padStart(2, '0')} <span>{reveal.split(' / ')[0]}</span>
-              </span>
-            ))}
-          </div>
-        </section>
-      </main>
+      <SlideCanvas
+        key={slide.id}
+        slide={slide}
+        index={selectedIndex}
+        count={snapshot.project.slides.length}
+      />
       <SlideInspector
         key={slide.id}
         slide={slide}

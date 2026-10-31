@@ -29,6 +29,7 @@ export const snapshotResultSchema = z.union([
   }),
 ]);
 export interface DesktopBridge {
+  fullscreen: (enabled: boolean) => Promise<Result<boolean>>;
   newProject: () => Promise<Result<ProjectSnapshot>>;
   open: () => Promise<Result<ProjectSnapshot>>;
   save: (saveAs?: boolean) => Promise<Result<ProjectSnapshot>>;
@@ -38,3 +39,21 @@ export interface DesktopBridge {
   snapshot: () => Promise<Result<ProjectSnapshot>>;
   subscribe: (listener: (snapshot: ProjectSnapshot) => void) => () => void;
 }
+
+export const fullscreenResultSchema = z.union([
+  z.object({ ok: z.literal(true), value: z.boolean() }),
+  z.object({
+    ok: z.literal(false),
+    error: z.object({
+      code: z.enum([
+        'INVALID_INPUT',
+        'CONFLICT',
+        'REQUEST_REUSED',
+        'NOT_FOUND',
+        'IO_ERROR',
+        'CANCELLED',
+      ]),
+      message: z.string(),
+    }),
+  }),
+]);

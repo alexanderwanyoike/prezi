@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { snapshotResultSchema, snapshotSchema } from '../shared/desktop';
+import { fullscreenResultSchema, snapshotResultSchema, snapshotSchema } from '../shared/desktop';
 import type { DesktopBridge } from '../shared/desktop';
 import { failure } from '../shared/result';
 
@@ -14,6 +14,17 @@ async function request(channel: string, input?: unknown) {
 }
 
 const bridge: DesktopBridge = {
+  async fullscreen(enabled) {
+    try {
+      const response: unknown = await ipcRenderer.invoke('presentation:fullscreen', enabled);
+      const parsed = fullscreenResultSchema.safeParse(response);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The fullscreen response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'Fullscreen could not be changed.');
+    }
+  },
   newProject: () => request('project:new'),
   open: () => request('project:open'),
   save: (saveAs = false) => request(saveAs ? 'project:saveAs' : 'project:save'),

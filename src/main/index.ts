@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'node:path';
+import { registerPresentationIpc } from './register-presentation-ipc';
 import { registerFileIpc } from './project/register-file-ipc';
 import { ProjectOwner } from './project/project-owner';
 import { registerProjectIpc } from './project/register-project-ipc';
@@ -22,6 +23,7 @@ async function openWindow(): Promise<void> {
   });
   registerProjectIpc(window, owner);
   registerFileIpc(window, owner);
+  registerPresentationIpc(window);
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', (event) => {
     event.preventDefault();
