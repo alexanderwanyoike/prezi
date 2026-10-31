@@ -90,6 +90,7 @@ async function openWindow(): Promise<void> {
     (code, properties, signal) =>
       evaluateTransition(code, properties, signal, window.webContents.mainFrame.osProcessId),
   );
+  registerSceneIpc(window, transitionJobs, 'transitions');
   sceneJobs = new SceneJobs(
     owner,
     (request, signal) =>

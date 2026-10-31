@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
 import { editPendingContext } from './edit-pending';
 import { usePreviews } from './usePreviews';
+import type { CodeResource } from './source/CodeResourceTabs';
 import { useProjectFonts } from './useProjectFonts';
 import { PresentationThemeDialog } from './PresentationThemeDialog';
 import { PresentationView } from './presentation/PresentationView';
@@ -38,6 +39,7 @@ export function App(): React.JSX.Element {
   const { snapshot, error, busy, edit, undo, redo } = project;
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [codeVisible, setCodeVisible] = useState(false);
+  const [codeResource, setCodeResource] = useState<CodeResource>('scene');
   const [presenting, setPresenting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
@@ -84,8 +86,9 @@ export function App(): React.JSX.Element {
   let status = snapshot.filePath ? 'Saved on this computer' : 'Not saved yet';
   if (snapshot.dirty) status = 'Unsaved changes';
   if (busy) status = 'Updating the deck…';
+  const transitionCode = codeVisible && codeResource === 'transition';
   const editor = (
-    <div className="app-shell">
+    <div className={`app-shell${transitionCode ? ' is-transition-code' : ''}`}>
       {themeOpen && (
         <PresentationThemeDialog
           value={snapshot.project.theme}
@@ -254,7 +257,8 @@ export function App(): React.JSX.Element {
               }
             >
               <CodeView
-                key={`${slide.id}:${slide.scene?.definitionId ?? 'built-in'}`}
+                resource={codeResource}
+                selectResource={setCodeResource}
                 project={snapshot.project}
                 slide={slide}
                 pending={busy}
@@ -309,43 +313,46 @@ export function App(): React.JSX.Element {
           )}
         </div>
       </section>
-      <SlideInspector
-        definition={snapshot.project.scenes?.[slide.scene?.definitionId ?? '']}
-        updateCustom={(property, value) => {
-          edit(
-            [{ type: 'updateSceneProperties', slideId: slide.id, patch: { [property]: value } }],
-            'Edit scene properties',
-          );
-        }}
-        pending={selectionPending}
-        replaceMedia={() => {
-          project.replaceMedia(slide.id);
-        }}
-        updateMedia={(patch) => {
-          edit([{ type: 'updateMedia', slideId: slide.id, patch }], 'Configure media');
-        }}
-        selectedField={selectedField}
-        selectField={setSelectedField}
-        key={`inspector:${slide.id}`}
-        slide={slide}
-        index={selectedIndex}
-        count={snapshot.project.slides.length}
-        update={(patch) => {
-          edit([{ type: 'updateSlide', slideId: slide.id, patch }], 'Edit slide');
-        }}
-        duplicate={() => {
-          const newId = crypto.randomUUID();
-          edit([{ type: 'duplicateSlide', slideId: slide.id, newId }], 'Duplicate slide');
-          setSelectedId(newId);
-        }}
-        remove={() => {
-          edit([{ type: 'deleteSlide', slideId: slide.id }], 'Delete slide');
-          setSelectedId(snapshot.project.slides[Math.max(0, selectedIndex - 1)]?.id ?? null);
-        }}
-        move={(index) => {
-          edit([{ type: 'moveSlide', slideId: slide.id, index }], 'Move slide');
-        }}
-      />
+      {!transitionCode && (
+        <SlideInspector
+          definition={snapshot.project.scenes?.[slide.scene?.definitionId ?? '']}
+          updateCustom={(property, value) => {
+            edit(
+              [{ type: 'updateSceneProperties', slideId: slide.id, patch: { [property]: value } }],
+              'Edit scene properties',
+            );
+          }}
+          pending={selectionPending}
+          replaceMedia={() => {
+            project.replaceMedia(slide.id);
+          }}
+          updateMedia={(patch) => {
+            edit([{ type: 'updateMedia', slideId: slide.id, patch }], 'Configure media');
+          }}
+          selectedField={selectedField}
+          selectField={setSelectedField}
+          key={`inspector:${slide.id}`}
+          slide={slide}
+          index={selectedIndex}
+          count={snapshot.project.slides.length}
+          update={(patch) => {
+            edit([{ type: 'updateSlide', slideId: slide.id, patch }], 'Edit slide');
+          }}
+          duplicate={() => {
+            const newId = crypto.randomUUID();
+            edit([{ type: 'duplicateSlide', slideId: slide.id, newId }], 'Duplicate slide');
+            setSelectedId(newId);
+          }}
+          remove={() => {
+            edit([{ type: 'deleteSlide', slideId: slide.id }], 'Delete slide');
+            setSelectedId(snapshot.project.slides[Math.max(0, selectedIndex - 1)]?.id ?? null);
+          }}
+          move={(index) => {
+            edit([{ type: 'moveSlide', slideId: slide.id, index }], 'Move slide');
+          }}
+        />
+      )}
+
       <footer className="status-bar">
         <span>
           <span className="status-dot" />

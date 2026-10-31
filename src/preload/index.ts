@@ -29,9 +29,13 @@ async function updateRequest(command: 'status' | UpdateCommand) {
     return failure('IO_ERROR', 'The update service could not be reached.');
   }
 }
-async function sceneRequest(command: 'submit' | 'read' | 'cancel', input: unknown) {
+async function sceneRequest(
+  command: 'submit' | 'read' | 'cancel',
+  input: unknown,
+  namespace: 'scenes' | 'transitions' = 'scenes',
+) {
   try {
-    const result: unknown = await ipcRenderer.invoke(`scenes:${command}`, input);
+    const result: unknown = await ipcRenderer.invoke(`${namespace}:${command}`, input);
     const parsed = sceneJobResultSchema.safeParse(result);
     return parsed.success
       ? parsed.data
@@ -42,6 +46,9 @@ async function sceneRequest(command: 'submit' | 'read' | 'cancel', input: unknow
 }
 const bridge: DesktopBridge = {
   platform: process.platform,
+  submitTransition: (input) => sceneRequest('submit', input, 'transitions'),
+  transitionJob: (id) => sceneRequest('read', id, 'transitions'),
+  cancelTransitionJob: (id) => sceneRequest('cancel', id, 'transitions'),
   async capturePreview(input) {
     try {
       const result: unknown = await ipcRenderer.invoke('previews:submit', input);

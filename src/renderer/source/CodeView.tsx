@@ -1,5 +1,9 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Braces, FileCode2, Plus, Trash2 } from 'lucide-react';
+import { CodeResourceTabs } from './CodeResourceTabs';
+import type { CodeResource } from './CodeResourceTabs';
+import { TransitionCodeView } from './TransitionCodeView';
 import type { EditOperation, Project, Slide } from '../../shared/project';
 import { projectSources } from '../../shared/project-sources';
 import { withoutSceneDraft } from '../../shared/scene-draft';
@@ -8,19 +12,21 @@ import { SourceCode } from './SourceCode';
 import { useSceneDraft } from './useSceneDraft';
 import { SceneJobFeedback } from './SceneJobFeedback';
 
-export function CodeView({
-  project,
-  slide,
-  pending,
-  edit,
-  flush,
-}: {
+interface CodeViewProps {
   project: Project;
   slide: Slide;
   pending: boolean;
   edit: (operations: EditOperation[], label: string) => void;
   flush: () => Promise<void>;
-}): React.JSX.Element {
+}
+function SceneCodeView({
+  project,
+  slide,
+  pending,
+  edit,
+  flush,
+  tabs,
+}: CodeViewProps & { tabs: ReactNode }): React.JSX.Element {
   const editor = useSceneDraft(project, slide, pending, edit, flush);
   const { draft } = editor;
   const definition = project.scenes?.[slide.scene?.definitionId ?? ''];
@@ -56,9 +62,14 @@ export function CodeView({
   const metadata = name === `${prefix}definition.json`;
   const sourceName = editable && !metadata ? name.slice(`${prefix}source/`.length) : null;
   return (
-    <main className="workspace source-workspace">
+    <main
+      className="workspace source-workspace"
+      id="code-resource-panel"
+      role="tabpanel"
+      aria-labelledby="code-scene-tab"
+    >
       <div className="canvas-heading">
-        <span>SCENE SOURCE</span>
+        {tabs}
         <div className="source-commands">
           {!draft && (
             <button
@@ -229,5 +240,41 @@ export function CodeView({
         Built-in references are read-only.
       </p>
     </main>
+  );
+}
+
+export function CodeView({
+  project,
+  slide,
+  pending,
+  edit,
+  flush,
+  resource,
+  selectResource,
+}: CodeViewProps & {
+  resource: CodeResource;
+  selectResource: (resource: CodeResource) => void;
+}): React.JSX.Element {
+  const tabs = <CodeResourceTabs resource={resource} select={selectResource} />;
+  if (resource === 'transition')
+    return (
+      <TransitionCodeView
+        project={project}
+        pending={pending}
+        edit={edit}
+        flush={flush}
+        tabs={tabs}
+      />
+    );
+  return (
+    <SceneCodeView
+      key={`${slide.id}:${slide.scene?.definitionId ?? 'built-in'}`}
+      project={project}
+      slide={slide}
+      pending={pending}
+      edit={edit}
+      flush={flush}
+      tabs={tabs}
+    />
   );
 }

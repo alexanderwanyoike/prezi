@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { SceneJob, SceneJobRequest } from './scene-jobs';
+import type { TransitionRequest } from './transition';
 import type { PreviewJob, PreviewRequest } from './preview';
 import { projectSchema } from './project';
 import type { DesktopCommand, NativeEditCommand } from './desktop-commands';
@@ -37,6 +38,9 @@ export const snapshotResultSchema = z.union([
 ]);
 export interface DesktopBridge {
   platform: NodeJS.Platform;
+  submitTransition: (request: TransitionRequest) => Promise<Result<SceneJob>>;
+  transitionJob: (id: string) => Promise<Result<SceneJob>>;
+  cancelTransitionJob: (id: string) => Promise<Result<SceneJob>>;
   capturePreview: (request: PreviewRequest) => Promise<Result<PreviewJob>>;
   cancelPreview: (id: string) => Promise<Result<PreviewJob>>;
   previews: () => Promise<Result<PreviewJob[]>>;

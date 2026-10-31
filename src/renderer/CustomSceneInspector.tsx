@@ -7,14 +7,18 @@ export function CustomSceneInspector({
   definition,
   properties,
   update,
+  heading = 'SCENE',
 }: {
-  definition: CustomSceneDefinition;
+  definition: Pick<CustomSceneDefinition, 'name' | 'fields'>;
   properties: SceneValues;
   update: (property: string, value: SceneValues[string]) => void;
+  heading?: string;
 }): React.JSX.Element {
   return (
     <div className="inspector-section">
-      <span className="eyebrow">SCENE / {definition.name}</span>
+      <span className="eyebrow">
+        {heading} / {definition.name}
+      </span>
       {Object.entries(definition.fields).map(([name, field]) => {
         const value = properties[name] ?? field.default;
         if (field.type === 'boolean')

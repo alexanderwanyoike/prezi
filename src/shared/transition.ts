@@ -9,6 +9,9 @@ import { sceneDraftSchema } from './scene-draft';
 import { transitionSamplesSchema } from './transition-style';
 
 export const transitionCandidateSchema = sceneCandidateSchema.omit({ layers: true });
+export const transitionMetadataSchema = transitionCandidateSchema
+  .pick({ name: true, fields: true })
+  .extend({ properties: sceneValuesSchema.default({}) });
 export const transitionDefinitionSchema = transitionCandidateSchema
   .extend({
     version: z.uuid(),
