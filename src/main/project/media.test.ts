@@ -38,3 +38,30 @@ test('imports local media into an undoable slide edit and saves a copy independe
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('failed and stale media imports preserve the current deck and revision', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-media-failure-'));
+  const owner = new ProjectOwner();
+  try {
+    const initial = owner.snapshot();
+    const slideId = initial.project.slides[0]?.id;
+    if (!slideId) throw new Error('Missing example slide');
+    const unsupported = join(directory, 'recording.avi');
+    await writeFile(unsupported, 'unsupported');
+    expect(await owner.importMedia(unsupported, slideId, initial.revision)).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_INPUT' },
+    });
+    expect(
+      await owner.importMedia(join(directory, 'missing.png'), slideId, initial.revision),
+    ).toMatchObject({ ok: false, error: { code: 'IO_ERROR' } });
+    expect(await owner.importMedia(unsupported, slideId, initial.revision + 1)).toMatchObject({
+      ok: false,
+      error: { code: 'CONFLICT' },
+    });
+    expect(owner.snapshot()).toEqual(initial);
+  } finally {
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
