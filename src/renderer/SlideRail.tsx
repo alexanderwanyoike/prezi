@@ -55,10 +55,6 @@ export function SlideRail({ slides, selectedId, select, add }: Props): React.JSX
           </li>
         ))}
       </ol>
-      <div className="rail-footer">
-        <span className="status-dot" />
-        Made for your next explanation.
-      </div>
     </aside>
   );
 }

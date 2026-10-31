@@ -16,7 +16,6 @@ export function AppearancePanel({ appearance, change, close }: Props): React.JSX
           <X size={16} />
         </button>
       </div>
-      <p className="muted">Make yourself at home.</p>
       <fieldset>
         <legend>Mode</legend>
         <div className="option-row">

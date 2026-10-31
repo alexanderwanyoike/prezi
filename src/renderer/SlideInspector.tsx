@@ -213,14 +213,6 @@ export function SlideInspector({
           </button>
         </div>
       </div>
-      <div className="inspector-note">
-        <span className="eyebrow">A QUIET STAGE</span>
-        <p>
-          The story is yours.
-          <br />
-          The space around it is intentional.
-        </p>
-      </div>
     </aside>
   );
 }

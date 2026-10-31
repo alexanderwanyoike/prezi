@@ -178,15 +178,6 @@ button.slide-card.is-selected {
   font-size: 9px;
   color: var(--muted);
 }
-.rail-footer {
-  border-top: 1px solid var(--line);
-  padding: 16px 14px;
-  color: var(--muted);
-  font-size: 9px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
 .workspace {
   grid-area: workspace;
   min-width: 0;
@@ -329,16 +320,6 @@ button.slide-card.is-selected {
 .danger {
   color: #c98e89;
 }
-.inspector-note {
-  border-top: 1px solid var(--line);
-  padding: 20px 18px;
-}
-.inspector-note p {
-  font-size: 10px;
-  color: var(--muted);
-  line-height: 1.8;
-  margin-top: 9px;
-}
 .status-bar {
   grid-area: status;
   background: var(--chrome);
@@ -435,9 +416,6 @@ button.accent-option[aria-pressed='true'] {
   }
   .scene-text p {
     margin-top: 14px;
-  }
-  .inspector-note {
-    display: none;
   }
 }
 .project-name {
