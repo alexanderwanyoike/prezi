@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { fileCommand } from './file-command';
 
 test('keeps video independent of held reveal frames and stops inactive slide media', async () => {
   const desktop = await electron.launch({
@@ -19,7 +20,7 @@ test('keeps video independent of held reveal frames and stops inactive slide med
       });
     }, resolve('tests/fixtures/held-video.webm'));
     const page = await desktop.firstWindow();
-    await page.getByRole('button', { name: 'Import media', exact: true }).click();
+    await fileCommand(page, 'importMedia');
     await page.getByLabel('Reveal text', { exact: false }).fill('First thought\nSecond thought');
     const previewVideo = page.locator('.workspace video');
     await page.getByRole('button', { name: 'Play video', exact: true }).click();
@@ -98,7 +99,7 @@ test('configures playback and placement while media controls keep keyboard focus
       });
     }, resolve('tests/fixtures/held-video.webm'));
     const page = await desktop.firstWindow();
-    await page.getByRole('button', { name: 'Import media', exact: true }).click();
+    await fileCommand(page, 'importMedia');
     await page.getByLabel('Autoplay video', { exact: true }).uncheck({ timeout: 1500 });
     await page.getByLabel('Loop video', { exact: true }).check();
     await page.getByLabel('Mute video', { exact: true }).uncheck();

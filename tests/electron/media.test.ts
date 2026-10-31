@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { fileCommand } from './file-command';
 
 test('imports an image into the scene and serves bounded ranges without exposing arbitrary files', async () => {
   await mkdir(test.info().outputDir, { recursive: true });
@@ -27,7 +28,7 @@ test('imports an image into the scene and serves bounded ranges without exposing
       });
     }, path);
     const page = await desktop.firstWindow();
-    await page.getByRole('button', { name: 'Import media', exact: true }).click({ timeout: 2000 });
+    await fileCommand(page, 'importMedia');
     const image = page.getByRole('img', { name: 'sample.png', exact: true });
     await expect(image).toBeVisible();
     await expect

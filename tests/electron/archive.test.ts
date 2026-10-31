@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { fileCommand } from './file-command';
 
 test('defaults to a portable prezi file and reopens its edited content', async () => {
   const path = test.info().outputPath('portable.prezi');
@@ -30,7 +31,7 @@ test('defaults to a portable prezi file and reopens its edited content', async (
     await page
       .getByRole('textbox', { name: 'Canvas heading', exact: true })
       .fill('A portable explanation');
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await fileCommand(page, 'save');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     const options: unknown = await desktop.evaluate(({ BrowserWindow }) => {
       const window = BrowserWindow.getAllWindows()[0];
@@ -43,8 +44,8 @@ test('defaults to a portable prezi file and reopens its edited content', async (
       filters: expect.arrayContaining([{ name: 'Prezi project', extensions: ['prezi'] }]),
     });
     expect((await readFile(path)).subarray(0, 2).toString()).toBe('PK');
-    await page.getByRole('button', { name: 'New presentation', exact: true }).click();
-    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await fileCommand(page, 'newProject');
+    await fileCommand(page, 'open');
     await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('A portable explanation');
   } finally {
     await desktop.close();

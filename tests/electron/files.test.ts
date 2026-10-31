@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
 import { readFile, writeFile } from 'node:fs/promises';
+import { fileCommand } from './file-command';
 
 test('creates, saves and reopens a deck through desktop commands without discarding failed imports', async () => {
   const filePath = test.info().outputPath('my-deck.prezi.json');
@@ -26,28 +27,30 @@ test('creates, saves and reopens a deck through desktop commands without discard
       });
     }, filePath);
     const page = await desktop.firstWindow();
-    await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled({
+    await expect(
+      page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true }),
+    ).toBeEnabled({
       timeout: 1500,
     });
-    await page.getByRole('button', { name: 'New presentation', exact: true }).click();
+    await fileCommand(page, 'newProject');
     await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('Untitled slide');
     await page.getByLabel('Presentation name', { exact: true }).fill('My local explanation');
     await page.getByLabel('Heading', { exact: true }).fill('An opening thought');
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await fileCommand(page, 'save');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     expect(JSON.parse(await readFile(filePath, 'utf8'))).toMatchObject({
       name: 'My local explanation',
       slides: [{ title: 'An opening thought' }],
     });
-    await page.getByRole('button', { name: 'New presentation', exact: true }).click();
+    await fileCommand(page, 'newProject');
     await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('Untitled slide');
-    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await fileCommand(page, 'open');
     await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('An opening thought');
     await expect(page.getByLabel('Presentation name', { exact: true })).toHaveValue(
       'My local explanation',
     );
     await writeFile(filePath, '{invalid json', 'utf8');
-    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await fileCommand(page, 'open');
     await expect(page.getByRole('alert')).toContainText('Could not open');
     await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('An opening thought');
   } finally {

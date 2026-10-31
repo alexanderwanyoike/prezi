@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { fileCommand } from './file-command';
 
 test('inspects scene source and live instance properties without changing the deck', async () => {
   const desktop = await electron.launch({
@@ -19,7 +20,7 @@ test('inspects scene source and live instance properties without changing the de
       });
     }, test.info().outputPath('source-deck.prezi'));
     const page = await desktop.firstWindow();
-    await page.getByRole('button', { name: 'Code', exact: true }).click({ timeout: 1500 });
+    await page.getByRole('tab', { name: 'Code', exact: true }).click({ timeout: 1500 });
     const code = page.getByRole('textbox', { name: 'Scene source code', exact: true });
     await expect(code).toContainText('useCurrentFrame');
     await expect(code).toHaveAttribute('aria-readonly', 'true');
@@ -38,7 +39,7 @@ test('inspects scene source and live instance properties without changing the de
     await expect(code).toContainText('Vibez / how I built it');
     await page.getByLabel('Heading', { exact: true }).fill('Properties stay live');
     await expect(code).toContainText('Properties stay live');
-    await page.getByRole('button', { name: 'Code', exact: true }).click();
+    await page.getByRole('tab', { name: 'Canvas', exact: true }).click();
     await expect(page.getByRole('textbox', { name: 'Canvas heading', exact: true })).toHaveText(
       'Properties stay live',
     );
@@ -46,11 +47,11 @@ test('inspects scene source and live instance properties without changing the de
     await expect(page.getByRole('textbox', { name: 'Canvas heading', exact: true })).toHaveText(
       'Vibez / how I built it',
     );
-    await page.getByRole('button', { name: 'Code', exact: true }).click();
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await page.getByRole('tab', { name: 'Code', exact: true }).click();
+    await fileCommand(page, 'save');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'New presentation', exact: true }).click();
-    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await fileCommand(page, 'newProject');
+    await fileCommand(page, 'open');
     await page
       .getByRole('button', { name: 'renderer/presentation/SlideScene.tsx', exact: true })
       .click();
