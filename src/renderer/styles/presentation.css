@@ -108,3 +108,19 @@ button.preview-restart {
     animation: none;
   }
 }
+
+.composition-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  container-type: size;
+}
+.composition-transform {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: top left;
+  transform: scale(calc(100cqw / 1920px));
+}
