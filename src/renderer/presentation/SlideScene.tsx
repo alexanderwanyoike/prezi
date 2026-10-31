@@ -1,4 +1,5 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+import { presentationFont, presentationTheme } from '../../shared/presentation-theme';
 import { ProcessDiagram } from './ProcessDiagram';
 import { CodeExplanation } from './CodeExplanation';
 import { SceneMedia } from './SceneMedia';
@@ -8,6 +9,7 @@ import type { SceneProps } from './scene-props';
 export type { SceneProps };
 export function SlideScene({
   slide,
+  theme: inputTheme,
   reveal,
   slideNumber,
   slideCount,
@@ -15,11 +17,15 @@ export function SlideScene({
   mediaActive = true,
   mediaAutoplay = false,
 }: SceneProps): React.JSX.Element {
+  const theme = presentationTheme(inputTheme);
   const frame = useCurrentFrame();
-  const progress = interpolate(frame, [0, 10], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  const progress =
+    theme.animation === 'none'
+      ? 1
+      : interpolate(frame, [0, 10], [0, 1], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
   const entrance = reveal === 0 ? progress : 1;
   let headingSize = slide.layout === 'title' && !slide.media ? 116 : 76;
   if (slide.title.length > 75) headingSize = 80;
@@ -29,10 +35,10 @@ export function SlideScene({
     <AbsoluteFill
       className="slide-scene"
       style={{
-        backgroundColor: '#101513',
-        color: '#edf2ec',
-        fontFamily: 'Manrope Variable, sans-serif',
-        padding: 128,
+        backgroundColor: theme.background,
+        color: theme.foreground,
+        fontFamily: presentationFont(theme.bodyFont),
+        padding: theme.padding,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -40,22 +46,22 @@ export function SlideScene({
     >
       <div
         style={{
-          fontFamily: 'IBM Plex Mono, monospace',
+          fontFamily: presentationFont(theme.monoFont),
           fontSize: 18,
-          color: '#9bbb9f',
+          color: theme.accent,
           letterSpacing: 4,
           display: 'flex',
           alignItems: 'center',
           gap: 20,
         }}
       >
-        <span style={{ width: 36, height: 2, backgroundColor: '#7fa989' }} />
+        <span style={{ width: 36, height: 2, backgroundColor: theme.accent }} />
         THE 0SMOSYS SHOW
       </div>
       <div
         style={{
           opacity: entrance,
-          transform: `translateY(${((1 - entrance) * 14).toString()}px)`,
+          transform: `translateY(${(theme.animation === 'rise' ? (1 - entrance) * 14 : 0).toString()}px)`,
           maxWidth: slide.media ? 760 : 1664,
         }}
       >
@@ -80,7 +86,7 @@ export function SlideScene({
             editing={editing}
             style={{
               marginTop: 36,
-              color: '#a5b2a8',
+              color: theme.muted,
               fontSize: 34,
               lineHeight: 1.65,
               whiteSpace: 'pre-wrap',
@@ -89,10 +95,11 @@ export function SlideScene({
           />
         )}
         {slide.layout === 'process' && (
-          <ProcessDiagram steps={slide.reveals} reveal={reveal} progress={progress} />
+          <ProcessDiagram theme={theme} steps={slide.reveals} reveal={reveal} progress={progress} />
         )}
         {slide.layout === 'code' && (
           <CodeExplanation
+            theme={theme}
             code={slide.code ?? '// Add your code here.'}
             notes={slide.reveals}
             reveal={reveal}
@@ -113,13 +120,13 @@ export function SlideScene({
                     gap: 28,
                     fontSize: revealSize,
                     opacity,
-                    transform: `translateY(${((1 - opacity) * 12).toString()}px)`,
+                    transform: `translateY(${(theme.animation === 'rise' ? (1 - opacity) * 12 : 0).toString()}px)`,
                   }}
                 >
                   <span
                     style={{
-                      fontFamily: 'IBM Plex Mono, monospace',
-                      color: '#85ad8e',
+                      fontFamily: presentationFont(theme.monoFont),
+                      color: theme.accent,
                       fontSize: revealSize * 0.65,
                     }}
                   >
@@ -144,8 +151,8 @@ export function SlideScene({
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          fontFamily: 'IBM Plex Mono, monospace',
-          color: '#84968a',
+          fontFamily: presentationFont(theme.monoFont),
+          color: theme.muted,
           fontSize: 15,
           letterSpacing: 2,
         }}

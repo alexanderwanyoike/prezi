@@ -13,6 +13,7 @@ interface Props {
   setAppearanceOpen: (value: boolean) => void;
   setConnectionOpen: (value: boolean) => void;
   setUpdatesOpen: (value: boolean) => void;
+  setThemeOpen: (value: boolean) => void;
 }
 export function useApplicationActions({
   project,
@@ -22,6 +23,7 @@ export function useApplicationActions({
   setAppearanceOpen,
   setConnectionOpen,
   setUpdatesOpen,
+  setThemeOpen,
 }: Props): { actions: DesktopActions; error: string | null } {
   const { snapshot, newProject, open, save, importMedia, undo, redo } = project;
   const [desktopError, setDesktopError] = useState<string | null>(null);
@@ -33,6 +35,7 @@ export function useApplicationActions({
   function editor(code?: boolean): void {
     setConnectionOpen(false);
     setUpdatesOpen(false);
+    setThemeOpen(false);
     setPresenting(false);
     if (code !== undefined) setCodeVisible(code);
     handleDesktop(window.prezi.fullscreen(false));
@@ -99,6 +102,11 @@ export function useApplicationActions({
       setUpdatesOpen(false);
       setAppearanceOpen(false);
       setPresenting(true);
+    },
+    presentationTheme: () => {
+      editor();
+      setAppearanceOpen(false);
+      setThemeOpen(true);
     },
     appearance: () => {
       editor();

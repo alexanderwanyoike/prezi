@@ -1,13 +1,17 @@
 import { Fragment } from 'react';
+import { presentationFont } from '../../shared/presentation-theme';
+import type { PresentationTheme } from '../../shared/presentation-theme';
 
 export function ProcessDiagram({
   steps,
   reveal,
   progress,
+  theme,
 }: {
   steps: string[];
   reveal: number;
   progress: number;
+  theme: PresentationTheme;
 }): React.JSX.Element {
   const columns = Math.max(1, steps.length > 4 ? 3 : steps.length);
   return (
@@ -31,11 +35,11 @@ export function ProcessDiagram({
                 position: 'relative',
                 minHeight: 220,
                 padding: 32,
-                border: `2px solid ${index === reveal - 1 ? '#9bbb9f' : '#36483c'}`,
+                border: `2px solid ${index === reveal - 1 ? theme.accent : theme.border}`,
                 borderRadius: 10,
-                background: index === reveal - 1 ? '#1e3026' : '#162019',
+                background: theme.surface,
                 opacity,
-                transform: `translateY(${((1 - opacity) * 14).toString()}px)`,
+                transform: `translateY(${(theme.animation === 'rise' ? (1 - opacity) * 14 : 0).toString()}px)`,
               }}
             >
               {index > 0 && (
@@ -47,7 +51,7 @@ export function ProcessDiagram({
                     left: index % columns === 0 ? 32 : -33,
                     top: index % columns === 0 ? -38 : 98,
                     fontSize: 30,
-                    color: '#9bbb9f',
+                    color: theme.accent,
                   }}
                 >
                   {index % columns === 0 ? '↓' : '→'}
@@ -56,8 +60,8 @@ export function ProcessDiagram({
               <span
                 style={{
                   display: 'block',
-                  color: '#9bbb9f',
-                  fontFamily: 'IBM Plex Mono',
+                  color: theme.accent,
+                  fontFamily: presentationFont(theme.monoFont),
                   fontSize: 18,
                   marginBottom: 32,
                 }}

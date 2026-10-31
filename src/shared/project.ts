@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { presentationThemeSchema } from './presentation-theme';
 import { sceneDraftSchema } from './scene-draft';
 import {
   sceneDefinitionProblem,
@@ -17,6 +18,7 @@ export const slideSchema = textScenePropsSchema.extend({
 });
 export const projectSchema = z
   .object({
+    theme: presentationThemeSchema.optional(),
     drafts: z.record(z.uuid(), sceneDraftSchema).optional(),
     scenes: z
       .record(z.uuid(), sceneDefinitionSchema)
@@ -82,6 +84,7 @@ export const editRequestSchema = z.object({
   operations: z
     .array(
       z.discriminatedUnion('type', [
+        z.object({ type: z.literal('setTheme'), patch: presentationThemeSchema.partial() }),
         z.object({
           type: z.literal('setSceneDraft'),
           slideId: z.uuid(),

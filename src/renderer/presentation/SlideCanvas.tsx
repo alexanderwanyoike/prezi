@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
+import type { PresentationTheme } from '../../shared/presentation-theme';
 import type { CustomSceneDefinition } from '../../shared/scene-definition';
 import type { CustomSceneEditing } from './CustomScenePlayer';
 import type { Slide } from '../../shared/project';
@@ -7,6 +8,7 @@ import { ScenePlayer } from './ScenePlayer';
 import type { SceneEditing } from './SceneText';
 
 interface Props {
+  theme?: PresentationTheme | undefined;
   slide: Slide;
   pending: boolean;
   index: number;
@@ -17,6 +19,7 @@ interface Props {
 }
 export function SlideCanvas({
   slide,
+  theme,
   index,
   count,
   editing,
@@ -50,6 +53,7 @@ export function SlideCanvas({
             key={`${slide.id}:${run.toString()}`}
             scene={{
               slide,
+              theme,
               reveal: step,
               slideNumber: index + 1,
               slideCount: count,

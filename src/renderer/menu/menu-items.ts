@@ -33,6 +33,7 @@ export const menuItems: Record<MenuName, (ApplicationMenuItem | null)[]> = {
     { command: 'code', label: 'Code', shortcut: '2' },
     null,
     { command: 'present', label: 'Present', shortcut: 'F5' },
+    { command: 'presentationTheme', label: 'Presentation theme…' },
     { command: 'appearance', label: 'Appearance…', shortcut: ',' },
     { command: 'connection', label: 'Agent connection…' },
     { command: 'updates', label: 'Application updates…' },

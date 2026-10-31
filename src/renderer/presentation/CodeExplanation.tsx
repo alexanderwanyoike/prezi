@@ -1,3 +1,5 @@
+import { presentationFont } from '../../shared/presentation-theme';
+import type { PresentationTheme } from '../../shared/presentation-theme';
 import { SceneText } from './SceneText';
 import type { SceneEditing } from './SceneText';
 
@@ -6,12 +8,14 @@ export function CodeExplanation({
   notes,
   reveal,
   progress,
+  theme,
   editing,
 }: {
   code: string;
   notes: string[];
   reveal: number;
   progress: number;
+  theme: PresentationTheme;
   editing?: SceneEditing | undefined;
 }): React.JSX.Element {
   return (
@@ -24,13 +28,18 @@ export function CodeExplanation({
       }}
     >
       <div
-        style={{ padding: 32, background: '#162019', border: '1px solid #36483c', borderRadius: 8 }}
+        style={{
+          padding: 32,
+          background: theme.surface,
+          border: `1px solid ${theme.border}`,
+          borderRadius: 8,
+        }}
       >
         <div
           style={{
-            fontFamily: 'IBM Plex Mono',
+            fontFamily: presentationFont(theme.monoFont),
             fontSize: 14,
-            color: '#9bbb9f',
+            color: theme.accent,
             letterSpacing: 2,
             marginBottom: 24,
           }}
@@ -42,7 +51,7 @@ export function CodeExplanation({
           value={code}
           editing={editing}
           style={{
-            fontFamily: 'IBM Plex Mono, monospace',
+            fontFamily: presentationFont(theme.monoFont),
             fontSize: 26,
             lineHeight: 1.65,
             whiteSpace: 'pre-wrap',
@@ -61,13 +70,13 @@ export function CodeExplanation({
             key={`${index.toString()}:${note}`}
             style={{
               opacity: index === reveal - 1 ? progress : 1,
-              color: index === reveal - 1 ? '#edf2ec' : '#a5b2a8',
+              color: index === reveal - 1 ? theme.foreground : theme.muted,
             }}
           >
             <span
               style={{
-                color: '#9bbb9f',
-                fontFamily: 'IBM Plex Mono',
+                color: theme.accent,
+                fontFamily: presentationFont(theme.monoFont),
                 fontSize: 16,
                 marginRight: 16,
               }}

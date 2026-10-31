@@ -17,6 +17,7 @@ export const desktopCommandSchema = z.enum([
   'code',
   'present',
   'appearance',
+  'presentationTheme',
   'connection',
   'updates',
 ]);

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
+import { PresentationThemeDialog } from './PresentationThemeDialog';
 import { PresentationView } from './presentation/PresentationView';
 import { SlideCanvas } from './presentation/SlideCanvas';
 import { useUpdates } from './useUpdates';
@@ -25,6 +26,7 @@ export function App(): React.JSX.Element {
   const project = useProject();
   const updates = useUpdates(project.flush);
   const [updatesOpen, setUpdatesOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
   const { snapshot, error, busy, edit, undo, redo } = project;
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [codeVisible, setCodeVisible] = useState(false);
@@ -41,6 +43,7 @@ export function App(): React.JSX.Element {
     setAppearanceOpen,
     setConnectionOpen,
     setUpdatesOpen,
+    setThemeOpen,
   });
   const workspaceError = useWorkspaceSelection(
     snapshot,
@@ -75,6 +78,17 @@ export function App(): React.JSX.Element {
   if (busy) status = 'Updating the deck…';
   return (
     <div className="app-shell">
+      {themeOpen && (
+        <PresentationThemeDialog
+          value={snapshot.project.theme}
+          change={(patch) => {
+            edit([{ type: 'setTheme', patch }], 'Change presentation theme');
+          }}
+          close={() => {
+            setThemeOpen(false);
+          }}
+        />
+      )}
       {updatesOpen && (
         <UpdateDialog
           updates={updates}
@@ -226,6 +240,7 @@ export function App(): React.JSX.Element {
             </Suspense>
           ) : (
             <SlideCanvas
+              theme={snapshot.project.theme}
               definition={snapshot.project.scenes?.[slide.scene?.definitionId ?? '']}
               customEditing={{
                 selected: selectedField?.startsWith('layer/') ? selectedField.slice(6) : null,

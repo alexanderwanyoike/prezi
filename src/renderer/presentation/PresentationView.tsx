@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Maximize, X } from 'lucide-react';
+import { presentationTheme } from '../../shared/presentation-theme';
 import type { Project } from '../../shared/project';
 import { navigate, startPosition } from '../../shared/presentation/navigation';
 import { presentationAction } from '../../shared/presentation/keyboard';
-import { ANIMATION_MS, ScenePlayer } from './ScenePlayer';
+import { ScenePlayer } from './ScenePlayer';
 import type { SceneProps } from './SlideScene';
 
 interface Props {
@@ -11,12 +12,13 @@ interface Props {
   exit: () => void;
 }
 export function PresentationView({ project, exit }: Props): React.JSX.Element {
+  const {transitionMs} = presentationTheme(project.theme);
   const [position, setPosition] = useState(() => startPosition(project));
   const [outgoing, setOutgoing] = useState<SceneProps | null>(null);
   const [busy, setBusy] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const lockedUntil = useRef(performance.now() + ANIMATION_MS);
+  const lockedUntil = useRef(performance.now() + transitionMs);
   const index = Math.max(
     0,
     project.slides.findIndex((slide) => slide.id === position.slideId),
@@ -43,11 +45,11 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
     const timer = setTimeout(() => {
       setBusy(false);
       setOutgoing(null);
-    }, ANIMATION_MS);
+    }, transitionMs);
     return () => {
       clearTimeout(timer);
     };
-  }, [position]);
+  }, [position, transitionMs]);
   const leave = useCallback((): void => {
     void window.prezi.fullscreen(false).then((result) => {
       if (result.ok) exit();
@@ -62,16 +64,17 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
       if (next.slideId !== position.slideId && slide)
         setOutgoing({
           slide,
+          theme: project.theme,
           reveal,
           slideNumber: index + 1,
           slideCount: project.slides.length,
           definition: project.scenes?.[slide.scene?.definitionId ?? ''],
         });
-      lockedUntil.current = performance.now() + ANIMATION_MS;
+      lockedUntil.current = performance.now() + transitionMs;
       setBusy(true);
       setPosition(next);
     },
-    [index, position, project, reveal, slide],
+    [index, position, project, reveal, slide, transitionMs],
   );
   useEffect(() => {
     function keydown(event: KeyboardEvent): void {
@@ -103,6 +106,7 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
   if (!slide) return <main role="alert">The presentation has no slides.</main>;
   const scene: SceneProps = {
     slide,
+    theme: project.theme,
     reveal,
     slideNumber: index + 1,
     slideCount: project.slides.length,
@@ -126,6 +130,7 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
             return (
               <div
                 className={className}
+                style={{ animationDuration: `${transitionMs.toString()}ms` }}
                 key={layer.slide.id}
                 aria-hidden={leaving ? true : undefined}
               >

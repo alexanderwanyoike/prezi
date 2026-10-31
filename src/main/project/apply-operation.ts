@@ -1,3 +1,4 @@
+import { presentationTheme, presentationThemeSchema } from '../../shared/presentation-theme';
 import { withoutSceneDraft } from '../../shared/scene-draft';
 import { projectSchema, slideSchema } from '../../shared/project';
 import type { EditOperation, Project } from '../../shared/project';
@@ -8,6 +9,13 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
   let next = project;
   if (operation.type === 'renameProject') {
     next = { ...project, name: operation.name };
+  } else if (operation.type === 'setTheme') {
+    const theme = presentationThemeSchema.safeParse({
+      ...presentationTheme(project.theme),
+      ...operation.patch,
+    });
+    if (!theme.success) return failure('INVALID_INPUT', 'The presentation theme is invalid.');
+    next = { ...project, theme: theme.data };
   } else if (operation.type === 'addSlide') {
     if (operation.index > project.slides.length)
       return failure('INVALID_INPUT', 'The insertion position is outside the deck.');
