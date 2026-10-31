@@ -497,3 +497,15 @@ button.accent-option[aria-pressed='true'] {
     display: none;
   }
 }
+.project-name {
+  width: 260px;
+  padding: 3px 5px;
+  margin-left: -5px;
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent;
+  border-color: transparent;
+}
+.project-name:hover {
+  border-color: var(--line);
+}

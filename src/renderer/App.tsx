@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { FolderOpen, LayoutPanelTop, Palette, Play, Redo2, Save, Undo2 } from 'lucide-react';
+import {
+  FilePlus2,
+  FolderOpen,
+  LayoutPanelTop,
+  Palette,
+  Play,
+  Redo2,
+  Save,
+  Undo2,
+} from 'lucide-react';
+import { ProjectName } from './ProjectName';
 import { useProject } from './useProject';
 import { SlideRail } from './SlideRail';
 import { SlideInspector } from './SlideInspector';
@@ -7,7 +17,7 @@ import { useAppearance } from './appearance';
 import { AppearancePanel } from './AppearancePanel';
 
 export function App(): React.JSX.Element {
-  const { snapshot, error, busy, edit, undo, redo } = useProject();
+  const { snapshot, error, busy, edit, undo, redo, save, open, newProject } = useProject();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const { appearance, change, error: appearanceError } = useAppearance();
@@ -21,7 +31,7 @@ export function App(): React.JSX.Element {
     snapshot.project.slides.find((item) => item.id === selectedId) ?? snapshot.project.slides[0];
   if (!slide) return <main role="alert">The deck has no slides.</main>;
   const selectedIndex = snapshot.project.slides.findIndex((item) => item.id === slide.id);
-  let status = 'Everything stays on this computer';
+  let status = snapshot.filePath ? 'Saved on this computer' : 'Not saved yet';
   if (snapshot.dirty) status = 'Unsaved changes';
   if (busy) status = 'Updating the deck…';
   return (
@@ -38,13 +48,38 @@ export function App(): React.JSX.Element {
           <span className="brand-caption">PRESENTATION DESK</span>
         </div>
         <div className="header-actions">
-          <button type="button" disabled>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="New presentation"
+            title="New presentation"
+
+            onClick={newProject}
+          >
+            <FilePlus2 size={17} />
+          </button>
+          <button type="button" onClick={open}>
             <FolderOpen size={15} />
             Open
           </button>
-          <button type="button" disabled>
+          <button
+            type="button"
+
+            onClick={() => {
+              save();
+            }}
+          >
             <Save size={15} />
             Save
+          </button>
+          <button
+            type="button"
+
+            onClick={() => {
+              save(true);
+            }}
+          >
+            Save as
           </button>
           <span className="toolbar-divider" />
           <button
@@ -77,7 +112,13 @@ export function App(): React.JSX.Element {
       <div className="document-bar">
         <div>
           <span className="status-dot" />
-          <strong>{snapshot.project.name}</strong>
+          <ProjectName
+            key={snapshot.project.id}
+            name={snapshot.project.name}
+            rename={(name) => {
+              edit([{ type: 'renameProject', name }], 'Rename presentation');
+            }}
+          />
           <span className="muted small">Local project</span>
         </div>
         <div className="history-controls">
@@ -85,7 +126,7 @@ export function App(): React.JSX.Element {
             type="button"
             className="icon-button"
             aria-label="Undo"
-            disabled={busy || !snapshot.canUndo}
+            disabled={!snapshot.canUndo}
             onClick={undo}
           >
             <Undo2 size={16} />
@@ -94,7 +135,7 @@ export function App(): React.JSX.Element {
             type="button"
             className="icon-button"
             aria-label="Redo"
-            disabled={busy || !snapshot.canRedo}
+            disabled={!snapshot.canRedo}
             onClick={redo}
           >
             <Redo2 size={16} />
@@ -105,7 +146,6 @@ export function App(): React.JSX.Element {
         slides={snapshot.project.slides}
         selectedId={slide.id}
         select={setSelectedId}
-        busy={busy}
         add={() => {
           const id = crypto.randomUUID();
           edit(
@@ -173,7 +213,6 @@ export function App(): React.JSX.Element {
         slide={slide}
         index={selectedIndex}
         count={snapshot.project.slides.length}
-        busy={busy}
         update={(patch) => {
           edit([{ type: 'updateSlide', slideId: slide.id, patch }], 'Edit slide');
         }}
@@ -193,7 +232,7 @@ export function App(): React.JSX.Element {
       <footer className="status-bar">
         <span>
           <span className="status-dot" />
-          {error ?? appearanceError ?? status}
+          <span role={error ? 'alert' : undefined}>{error ?? appearanceError ?? status}</span>
         </span>
         <span>
           SLIDE {selectedIndex + 1} OF {snapshot.project.slides.length}

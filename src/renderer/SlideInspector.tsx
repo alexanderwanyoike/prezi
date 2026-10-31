@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp, Copy, Trash2 } from 'lucide-react';
+import { EditableText } from './EditableText';
 import type { Slide } from '../shared/project';
 
 interface Props {
   slide: Slide;
   index: number;
   count: number;
-  busy: boolean;
   update: (patch: Partial<Omit<Slide, 'id'>>) => void;
   duplicate: () => void;
   remove: () => void;
@@ -16,18 +15,12 @@ export function SlideInspector({
   slide,
   index,
   count,
-  busy,
+
   update,
   duplicate,
   remove,
   move,
 }: Props): React.JSX.Element {
-  const [draft, setDraft] = useState(slide);
-  const [reveals, setReveals] = useState(slide.reveals.join('\n'));
-  useEffect(() => {
-    setDraft(slide);
-    setReveals(slide.reveals.join('\n'));
-  }, [slide]);
   return (
     <aside className="inspector" aria-label="Slide properties">
       <div className="panel-heading">
@@ -38,35 +31,29 @@ export function SlideInspector({
         <div className="inspector-section">
           <span className="eyebrow">CONTENT</span>
           <label htmlFor="slide-title">Heading</label>
-          <input
+          <EditableText
             id="slide-title"
-            value={draft.title}
+            value={slide.title}
             maxLength={200}
-            onChange={(event) => {
-              setDraft({ ...draft, title: event.target.value });
-            }}
-            onBlur={() => {
-              if (draft.title !== slide.title) update({ title: draft.title });
+            commit={(title) => {
+              update({ title });
             }}
           />
           <label htmlFor="slide-body">Body</label>
-          <textarea
+          <EditableText
             id="slide-body"
-            value={draft.body}
+            value={slide.body}
             maxLength={10000}
             rows={5}
-            onChange={(event) => {
-              setDraft({ ...draft, body: event.target.value });
-            }}
-            onBlur={() => {
-              if (draft.body !== slide.body) update({ body: draft.body });
+            commit={(body) => {
+              update({ body });
             }}
           />
           <label htmlFor="slide-layout">Layout</label>
           <select
             id="slide-layout"
             value={slide.layout}
-            disabled={busy}
+
             onChange={(event) => {
               update({ layout: event.target.value === 'title' ? 'title' : 'content' });
             }}
@@ -83,22 +70,18 @@ export function SlideInspector({
           <label htmlFor="slide-reveals">
             Reveal text <span className="muted">one per line</span>
           </label>
-          <textarea
+          <EditableText
             id="slide-reveals"
-            value={reveals}
+            value={slide.reveals.join('\n')}
             rows={6}
-            onChange={(event) => {
-              setReveals(event.target.value);
-            }}
-            onBlur={() => {
-              if (reveals !== slide.reveals.join('\n'))
-                update({ reveals: reveals.split('\n').filter((text) => text.trim().length > 0) });
+            commit={(text) => {
+              update({ reveals: text.split('\n').filter((line) => line.trim().length > 0) });
             }}
           />
           <span className="field-hint">Up to 30 steps. Initial content is always visible.</span>
         </div>
         <div className="slide-actions">
-          <button type="button" disabled={busy || count >= 200} onClick={duplicate}>
+          <button type="button" disabled={count >= 200} onClick={duplicate}>
             <Copy size={14} />
             Duplicate
           </button>
@@ -106,7 +89,7 @@ export function SlideInspector({
             type="button"
             className="icon-button"
             aria-label="Move slide up"
-            disabled={busy || index === 0}
+            disabled={index === 0}
             onClick={() => {
               move(index - 1);
             }}
@@ -117,7 +100,7 @@ export function SlideInspector({
             type="button"
             className="icon-button"
             aria-label="Move slide down"
-            disabled={busy || index === count - 1}
+            disabled={index === count - 1}
             onClick={() => {
               move(index + 1);
             }}
@@ -128,7 +111,7 @@ export function SlideInspector({
             type="button"
             className="icon-button danger"
             aria-label="Delete slide"
-            disabled={busy || count === 1}
+            disabled={count === 1}
             onClick={remove}
           >
             <Trash2 size={15} />

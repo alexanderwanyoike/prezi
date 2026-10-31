@@ -29,6 +29,9 @@ export const snapshotResultSchema = z.union([
   }),
 ]);
 export interface DesktopBridge {
+  newProject: () => Promise<Result<ProjectSnapshot>>;
+  open: () => Promise<Result<ProjectSnapshot>>;
+  save: (saveAs?: boolean) => Promise<Result<ProjectSnapshot>>;
   edit: (request: EditRequest) => Promise<Result<ProjectSnapshot>>;
   undo: (expectedRevision: number) => Promise<Result<ProjectSnapshot>>;
   redo: (expectedRevision: number) => Promise<Result<ProjectSnapshot>>;

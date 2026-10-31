@@ -14,6 +14,9 @@ async function request(channel: string, input?: unknown) {
 }
 
 const bridge: DesktopBridge = {
+  newProject: () => request('project:new'),
+  open: () => request('project:open'),
+  save: (saveAs = false) => request(saveAs ? 'project:saveAs' : 'project:save'),
   snapshot: () => request('project:snapshot'),
   edit: (input) => request('project:edit', input),
   undo: (revision) => request('project:undo', revision),

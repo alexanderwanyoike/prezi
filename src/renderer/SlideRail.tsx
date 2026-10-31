@@ -6,9 +6,8 @@ interface Props {
   selectedId: string;
   select: (id: string) => void;
   add: () => void;
-  busy: boolean;
 }
-export function SlideRail({ slides, selectedId, select, add, busy }: Props): React.JSX.Element {
+export function SlideRail({ slides, selectedId, select, add }: Props): React.JSX.Element {
   return (
     <aside className="slide-rail" aria-label="Slides">
       <div className="panel-heading">
@@ -19,7 +18,7 @@ export function SlideRail({ slides, selectedId, select, add, busy }: Props): Rea
           type="button"
           className="icon-button"
           aria-label="Add slide"
-          disabled={busy || slides.length >= 200}
+          disabled={slides.length >= 200}
           onClick={add}
         >
           <Plus size={16} />

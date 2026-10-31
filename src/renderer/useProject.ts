@@ -57,6 +57,15 @@ export function useProject() {
     );
   }
   return {
+    newProject: () => {
+      dispatch(() => window.prezi.newProject());
+    },
+    open: () => {
+      dispatch(() => window.prezi.open());
+    },
+    save: (saveAs = false) => {
+      dispatch(() => window.prezi.save(saveAs));
+    },
     snapshot,
     busy,
     error,
