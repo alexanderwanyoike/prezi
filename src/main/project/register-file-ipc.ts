@@ -17,12 +17,12 @@ async function save(
     const chosen = await dialog.showSaveDialog(window, {
       title: 'Save presentation',
       defaultPath:
-        path ??
+        (path ? path.replace(/\.prezi(?:\.json)?$/i, '.prezi') : null) ??
         join(
           app.getPath('documents'),
-          `${snapshot.project.name.replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'presentation'}.prezi.json`,
+          `${snapshot.project.name.replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'presentation'}.prezi`,
         ),
-      filters: [{ name: 'Prezi project', extensions: ['prezi.json'] }],
+      filters: [{ name: 'Prezi project', extensions: ['prezi'] }],
     });
     if (chosen.canceled || !chosen.filePath) return failure('CANCELLED', 'Saving was cancelled.');
     path = chosen.filePath;
@@ -73,7 +73,10 @@ export function registerFileIpc(window: BrowserWindow, owner: ProjectOwner): voi
     const chosen = await dialog.showOpenDialog(window, {
       title: 'Open presentation',
       properties: ['openFile'],
-      filters: [{ name: 'Prezi project', extensions: ['json'] }],
+      filters: [
+        { name: 'Prezi project', extensions: ['prezi'] },
+        { name: 'Legacy JSON project', extensions: ['json'] },
+      ],
     });
     const path = chosen.filePaths[0];
     if (chosen.canceled || !path) return failure('CANCELLED', 'Opening was cancelled.');
