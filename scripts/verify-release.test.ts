@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { expect, test } from 'vitest';
 import { verifyRelease } from './verify-release';
 
@@ -31,6 +33,14 @@ test('checks installer metadata against actual bytes before publishing release c
       }),
     );
     expect((await verifyRelease(directory, version)).ok).toBe(true);
+    const command = promisify(execFile);
+    const executed = await command(process.execPath, [
+      '--experimental-strip-types',
+      resolve('scripts/verify-release.ts'),
+      directory,
+      version,
+    ]);
+    expect(executed.stdout).toContain('Validated 7 release files.');
     const sums = await readFile(join(directory, 'SHA256SUMS'), 'utf8');
     expect(sums).toContain(names[0]);
     expect(sums.trim().split('\n')).toHaveLength(7);
