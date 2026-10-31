@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { textScenePropsSchema } from './text-scene';
-import { mediaSchema } from './media';
+import { mediaPropertiesSchema, mediaSchema } from './media';
 
 export const slideSchema = textScenePropsSchema.extend({
   id: z.uuid(),
@@ -44,6 +44,11 @@ export const editRequestSchema = z.object({
           type: z.literal('updateSlide'),
           slideId: z.uuid(),
           patch: slideSchema.omit({ id: true }).partial(),
+        }),
+        z.object({
+          type: z.literal('updateMedia'),
+          slideId: z.uuid(),
+          patch: mediaPropertiesSchema.partial(),
         }),
         z.object({
           type: z.literal('addSlide'),

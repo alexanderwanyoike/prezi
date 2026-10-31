@@ -18,6 +18,10 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
       case 'updateSlide':
         Object.assign(slide, operation.patch);
         break;
+      case 'updateMedia':
+        if (!slide.media) return failure('NOT_FOUND', 'This slide has no media to edit.');
+        Object.assign(slide.media, operation.patch);
+        break;
       case 'duplicateSlide':
         project.slides.splice(index + 1, 0, { ...structuredClone(slide), id: operation.newId });
         break;
