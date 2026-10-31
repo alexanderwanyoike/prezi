@@ -1,8 +1,19 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { createProject } from '../../src/shared/project';
 import type { UpdateState } from '../../src/shared/updates';
 
 test('shows installed update controls, progress and retryable restart errors through the application menu', async () => {
+  const profile = test.info().outputPath('profile');
+  await mkdir(profile, { recursive: true });
+  const saved = createProject();
+  const first = saved.slides[0];
+  if (!first) throw new Error('Missing slide');
+  first.title = 'Reopened after update';
+  const path = test.info().outputPath('resume.json');
+  await writeFile(path, JSON.stringify(saved));
+  await writeFile(resolve(profile, 'update-resume.json'), JSON.stringify({ path }));
   const desktop = await electron.launch({
     args: [resolve('.'), '--mute-audio', `--user-data-dir=${test.info().outputPath('profile')}`],
     env: {
@@ -17,6 +28,7 @@ test('shows installed update controls, progress and retryable restart errors thr
   });
   try {
     const page = await desktop.firstWindow();
+    await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('Reopened after update');
     await page.getByRole('menubar').getByRole('menuitem', { name: 'View', exact: true }).click();
     await expect(
       page.getByRole('menuitem', { name: 'Application updates…', exact: true }),
