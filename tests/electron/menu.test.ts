@@ -61,6 +61,14 @@ test('uses application menus, desktop shortcuts and Canvas/Code workspace tabs',
     await expect(
       page.getByRole('menuitem', { name: 'New presentation', exact: true }),
     ).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByRole('menu', { name: 'Edit', exact: true })).toBeVisible();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.getByRole('menu', { name: 'File', exact: true })).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('menu', { name: 'File' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Appearance', exact: true })).toBeFocused();
+    await page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('menu', { name: 'File' })).toHaveCount(0);
     await page.getByRole('tab', { name: 'Code', exact: true }).click();
