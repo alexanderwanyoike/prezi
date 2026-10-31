@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useEditPending } from './edit-pending';
 
 interface Props {
   id: string;
@@ -21,13 +22,10 @@ export function EditableText({
   className,
 }: Props): React.JSX.Element {
   const [draft, setDraft] = useState(value);
-  const [focused, setFocused] = useState(false);
+  const pending = useEditPending();
   useEffect(() => {
-    if (!focused) setDraft(value);
-  }, [value, focused]);
-  function finish(): void {
-    setFocused(false);
-  }
+    if (!pending) setDraft(value);
+  }, [value, pending]);
   if (rows !== undefined)
     return (
       <textarea
@@ -38,14 +36,12 @@ export function EditableText({
         rows={rows}
         maxLength={maxLength}
         onFocus={() => {
-          setFocused(true);
           onFocus?.();
         }}
         onChange={(event) => {
           setDraft(event.target.value);
           commit(event.target.value);
         }}
-        onBlur={finish}
       />
     );
   return (
@@ -56,14 +52,12 @@ export function EditableText({
       value={draft}
       maxLength={maxLength}
       onFocus={() => {
-        setFocused(true);
         onFocus?.();
       }}
       onChange={(event) => {
         setDraft(event.target.value);
         commit(event.target.value);
       }}
-      onBlur={finish}
     />
   );
 }

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
+import { editPendingContext } from './edit-pending';
 import { useProjectFonts } from './useProjectFonts';
 import { PresentationThemeDialog } from './PresentationThemeDialog';
 import { PresentationView } from './presentation/PresentationView';
@@ -81,7 +82,7 @@ export function App(): React.JSX.Element {
   let status = snapshot.filePath ? 'Saved on this computer' : 'Not saved yet';
   if (snapshot.dirty) status = 'Unsaved changes';
   if (busy) status = 'Updating the deck…';
-  return (
+  const editor = (
     <div className="app-shell">
       {themeOpen && (
         <PresentationThemeDialog
@@ -275,6 +276,7 @@ export function App(): React.JSX.Element {
               }}
               pending={selectionPending}
               editing={{
+                pending: busy,
                 selected:
                   selectedField === 'title' || selectedField === 'body' || selectedField === 'code'
                     ? selectedField
@@ -363,4 +365,5 @@ export function App(): React.JSX.Element {
       </footer>
     </div>
   );
+  return <editPendingContext.Provider value={busy}>{editor}</editPendingContext.Provider>;
 }

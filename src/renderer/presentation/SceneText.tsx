@@ -5,6 +5,7 @@ import type { TextField } from '../../shared/text-scene';
 
 export interface SceneEditing {
   selected: TextField | null;
+  pending?: boolean;
   select: (field: TextField) => void;
   update: (field: TextField, value: string) => void;
 }
@@ -24,12 +25,14 @@ function EditableSceneText({ field, value, style, editing }: Props): React.JSX.E
   const label = layer.label.toLowerCase();
   useLayoutEffect(() => {
     const node = element.current;
-    // Native editing owns the focused DOM so accepted snapshots preserve the caret.
-    if (node && node !== document.activeElement) {
+    if (
+      node &&
+      (node !== document.activeElement || (!editing?.pending && value !== submitted.current))
+    ) {
       node.textContent = value;
       submitted.current = value;
     }
-  }, [value]);
+  }, [value, editing?.pending]);
   return (
     <Tag
       ref={(node: HTMLElement | null) => {
