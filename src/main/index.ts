@@ -2,6 +2,7 @@ import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
 import { WorkspaceOwner } from './mcp/workspace-owner';
 import { registerWorkspaceIpc } from './mcp/register-workspace-ipc';
+import { registerConnectionIpc } from './mcp/register-connection-ipc';
 import { startMcp } from './mcp/server';
 import type { McpConnection } from './mcp/server';
 import { registerMedia } from './media/register-media';
@@ -45,6 +46,7 @@ async function openWindow(): Promise<void> {
   const connected = await startMcp(owner, app.getPath('userData'), workspace);
   if (connected.ok) mcp = connected.value;
   else process.stderr.write(`${connected.error.message}\n`);
+  registerConnectionIpc(window, connected);
   registerWorkspaceIpc(window, workspace);
   registerProjectIpc(window, owner);
   registerDesktopIpc(window);

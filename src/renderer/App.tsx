@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
 import { PresentationView } from './presentation/PresentationView';
 import { SlideCanvas } from './presentation/SlideCanvas';
+import { AgentConnection } from './AgentConnection';
 import { MenuBar } from './menu/MenuBar';
 import { WorkspaceTabs } from './WorkspaceTabs';
 import { ProjectName } from './ProjectName';
@@ -27,6 +28,7 @@ export function App(): React.JSX.Element {
   const [presenting, setPresenting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [connectionOpen, setConnectionOpen] = useState(false);
   const { appearance, change, error: appearanceError } = useAppearance();
   const { actions, error: desktopError } = useApplicationActions({
     project,
@@ -34,6 +36,7 @@ export function App(): React.JSX.Element {
     setPresenting,
     setCodeVisible,
     setAppearanceOpen,
+    setConnectionOpen,
   });
   const workspaceError = useWorkspaceSelection(
     snapshot,
@@ -68,6 +71,13 @@ export function App(): React.JSX.Element {
   if (busy) status = 'Updating the deck…';
   return (
     <div className="app-shell">
+      {connectionOpen && (
+        <AgentConnection
+          close={() => {
+            setConnectionOpen(false);
+          }}
+        />
+      )}
       <h1 className="sr-only">Your presentation desk</h1>
       <header className="app-header">
         <div className="application-navigation">

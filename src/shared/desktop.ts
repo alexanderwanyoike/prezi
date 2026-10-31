@@ -34,6 +34,8 @@ export const snapshotResultSchema = z.union([
 ]);
 export interface DesktopBridge {
   platform: NodeJS.Platform;
+  mcpStatus: () => Promise<Result<{ url: string }>>;
+  copyMcpConfig: () => Promise<Result<boolean>>;
   publishView: (patch: WorkspacePatch) => Promise<Result<boolean>>;
   subscribeSelection: (listener: (selection: Selection) => void) => () => void;
   close: () => Promise<Result<boolean>>;

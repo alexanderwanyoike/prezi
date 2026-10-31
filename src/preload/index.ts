@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { fullscreenResultSchema, snapshotResultSchema, snapshotSchema } from '../shared/desktop';
 import type { DesktopBridge } from '../shared/desktop';
+import { mcpStatusSchema } from '../shared/mcp';
 import { selectionSchema } from '../shared/workspace';
 import { desktopCommandSchema } from '../shared/desktop-commands';
 import { failure } from '../shared/result';
@@ -17,6 +18,28 @@ async function request(channel: string, input?: unknown) {
 
 const bridge: DesktopBridge = {
   platform: process.platform,
+  async mcpStatus() {
+    try {
+      const response: unknown = await ipcRenderer.invoke('mcp:status');
+      const parsed = mcpStatusSchema.safeParse(response);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The MCP status response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'MCP status could not be read.');
+    }
+  },
+  async copyMcpConfig() {
+    try {
+      const response: unknown = await ipcRenderer.invoke('mcp:copy');
+      const parsed = fullscreenResultSchema.safeParse(response);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The MCP copy response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'MCP configuration could not be copied.');
+    }
+  },
   async publishView(patch) {
     try {
       const response: unknown = await ipcRenderer.invoke('workspace:publish', patch);
