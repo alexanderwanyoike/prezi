@@ -12,12 +12,12 @@
   "scripts": {
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
-    "build": "electron-vite build && yarn scene:types",
+    "build": "electron-vite build && yarn scene:prepare",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx,.cjs --max-warnings 0 --report-unused-disable-directives",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "yarn scene:types && vitest run",
+    "test": "yarn scene:prepare && vitest run",
     "test:watch": "vitest",
     "test:electron": "playwright test",
     "verify": "yarn format:check && yarn lint && yarn typecheck && yarn test && yarn build",
@@ -25,7 +25,8 @@
     "package:test": "playwright test --config playwright.packaged.config.ts tests/packaged/desktop.test.ts",
     "package:update:test": "playwright test --config playwright.packaged.config.ts tests/packaged/updates.test.ts",
     "release:verify": "node --experimental-strip-types scripts/verify-release.ts",
-    "scene:types": "node --experimental-strip-types scripts/prepare-scene-types.ts"
+    "scene:types": "node --experimental-strip-types scripts/prepare-scene-types.ts",
+    "scene:prepare": "yarn scene:types && node --experimental-strip-types scripts/build-scene-worker.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",

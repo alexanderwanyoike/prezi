@@ -25,9 +25,32 @@ export interface SourceDiagnostic {
   column: number;
   message: string;
 }
-export type Compilation =
-  | { ok: true; value: { code: string } }
-  | {
-      ok: false;
-      error: { code: 'INVALID_INPUT'; message: string; diagnostics: SourceDiagnostic[] };
-    };
+export const compilationSchema = z.discriminatedUnion('ok', [
+  z.object({
+    ok: z.literal(true),
+    value: z.object({
+      code: z.string().max(2 * 1024 * 1024),
+      resources: z
+        .object({
+          peakMemoryBytes: z.number(),
+          cpuMicros: z.number(),
+          memoryLimitBytes: z.number().nullable(),
+          swapLimitBytes: z.number().nullable(),
+        })
+        .optional(),
+    }),
+  }),
+  z.object({
+    ok: z.literal(false),
+    error: z.object({
+      code: z.literal('INVALID_INPUT'),
+      message: z.string(),
+      diagnostics: z
+        .array(
+          z.object({ file: z.string(), line: z.number(), column: z.number(), message: z.string() }),
+        )
+        .max(50),
+    }),
+  }),
+]);
+export type Compilation = z.infer<typeof compilationSchema>;

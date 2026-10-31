@@ -14,8 +14,8 @@ it('compiles in a separate bounded process and cancels before spawning', async (
   expect(result.value.code).toContain('A bounded scene');
   const cancelled = new AbortController();
   cancelled.abort();
-  expect(await runCompiler(source, cancelled.signal)).toMatchObject({
-    ok: false,
-    error: { message: expect.stringContaining('cancelled') },
-  });
+  const cancelledResult = await runCompiler(source, cancelled.signal);
+  expect(cancelledResult.ok).toBe(false);
+  if (cancelledResult.ok) throw Error('Expected cancellation');
+  expect(cancelledResult.error.message).toContain('cancelled');
 }, 30000);
