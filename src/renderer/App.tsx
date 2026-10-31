@@ -244,6 +244,9 @@ export function App(): React.JSX.Element {
       )}
       <SlideInspector
         pending={selectionPending}
+        updateMedia={(patch) => {
+          edit([{ type: 'updateMedia', slideId: slide.id, patch }], 'Configure media');
+        }}
         selectedField={selectedField}
         selectField={setSelectedField}
         key={`inspector:${slide.id}`}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { mediaUrl } from '../../shared/media';
+import { mediaFrame, mediaUrl } from '../../shared/media';
 import type { MediaAsset } from '../../shared/media';
 import { SceneVideo } from './SceneVideo';
 
@@ -12,9 +12,18 @@ export function SceneMedia({
   active: boolean;
   autoplay: boolean;
 }): React.JSX.Element {
+  const frame = mediaFrame(media);
   const [failed, setFailed] = useState(false);
   return (
-    <div style={{ position: 'absolute', left: 1000, top: 220, width: 792, height: 640 }}>
+    <div
+      style={{
+        position: 'absolute',
+        left: frame.x,
+        top: frame.y,
+        width: frame.width,
+        height: frame.height,
+      }}
+    >
       {failed && (
         <p role="alert" style={{ fontSize: 28, padding: 30 }}>
           Could not display {media.name}. Check that the file exists and uses a supported image or
@@ -26,7 +35,7 @@ export function SceneMedia({
           src={mediaUrl(media.id)}
           alt={media.name}
           draggable={false}
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          style={{ width: '100%', height: '100%', objectFit: media.fit ?? 'contain' }}
           onError={() => {
             setFailed(true);
           }}

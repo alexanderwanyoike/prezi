@@ -481,3 +481,26 @@ p.editable-scene-text:empty {
   position: absolute;
   width: 100%;
 }
+
+.media-frame-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.media-frame-fields > div {
+  min-width: 0;
+}
+.media-frame-fields label {
+  display: block;
+  margin-bottom: 8px;
+}
+.media-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.media-checkbox input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+}

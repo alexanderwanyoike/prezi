@@ -25,11 +25,18 @@ export function SceneVideo({ media, active, autoplay, failed }: Props): React.JS
     const video = element.current;
     if (!video) return;
     if (!active) video.pause();
-    else if (autoplay)
+    else if (autoplay && media.autoplay !== false)
       void playVideo(video).then((result) => {
         setError(result.ok ? null : result.error.message);
       });
-  }, [active, autoplay]);
+  }, [active, autoplay, media.autoplay]);
+  useEffect(() => {
+    const video = element.current;
+    if (video) {
+      video.volume = media.volume ?? 1;
+      video.muted = !active || (media.muted ?? true);
+    }
+  }, [active, media.volume, media.muted]);
   useEffect(() => {
     const video = element.current;
     return () => {
@@ -47,9 +54,10 @@ export function SceneVideo({ media, active, autoplay, failed }: Props): React.JS
         src={mediaUrl(media.id)}
         aria-label={media.name}
         muted
+        loop={media.loop ?? false}
         playsInline
         preload="metadata"
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        style={{ width: '100%', height: '100%', objectFit: media.fit ?? 'contain' }}
         onPlay={() => {
           setPlaying(true);
         }}
