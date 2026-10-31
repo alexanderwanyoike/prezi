@@ -1,10 +1,12 @@
 import ts from 'typescript';
 import { posix } from 'node:path';
+import type { SceneCandidate } from '../../shared/scene-definition';
 import type { SceneSource, SourceDiagnostic } from '../../shared/custom-scene';
 
 export function checkSceneTypes(
   source: SceneSource,
   libraries: Record<string, string>,
+  fields: SceneCandidate['fields'] = {},
 ): SourceDiagnostic[] {
   const root = '/prezi/scenes/';
   const files = new Map(Object.entries(libraries));
@@ -12,9 +14,24 @@ export function checkSceneTypes(
   files.set(
     `${root}__prezi_contract.tsx`,
     `import type {ComponentType} from 'react';
+import type {SceneProps} from 'prezi';
 import Scene from './${source.entry.replace(/\.tsx$/, '')}';
-const component: ComponentType<{title:string;body:string;reveal:number;props:Record<string,string|number|boolean>}> = Scene;
+const component: ComponentType<SceneProps> = Scene;
 export default component;`,
+  );
+  const propertyTypes = Object.entries(fields)
+    .map(
+      ([name, field]) =>
+        `${JSON.stringify(name)}: ${{ number: 'number', boolean: 'boolean', text: 'string', color: 'string' }[field.type]};`,
+    )
+    .join('\n');
+  files.set(
+    '/prezi/node_modules/prezi/index.d.ts',
+    `import type {ComponentType, CSSProperties, ReactNode} from 'react';
+export interface SceneProps { title:string; body:string; reveal:number; props:{${propertyTypes}}; }
+export const Text:ComponentType<{property:keyof SceneProps['props'];layer?:string;style?:CSSProperties}>;
+export const Layer:ComponentType<{id:string;children?:ReactNode;style?:CSSProperties}>;
+`,
   );
   const directories = new Set<string>();
   files.forEach((_text, name) => {

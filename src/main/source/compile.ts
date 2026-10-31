@@ -18,7 +18,7 @@ const buildErrorSchema = z.object({
 export async function compileScene(
   source: SceneSource,
   libraries?: Record<string, string>,
-  _fields?: SceneCandidate['fields'],
+  fields: SceneCandidate['fields'] = {},
 ): Promise<Compilation> {
   const invalid = (message: string): Compilation => ({
     ok: false,
@@ -80,7 +80,7 @@ export async function compileScene(
     const code = output.outputFiles[0]?.text;
     if (!code || Buffer.byteLength(code) > 2 * 1024 * 1024)
       return invalid('The compiled scene must be smaller than 2 MiB.');
-    const diagnostics = libraries ? checkSceneTypes(source, libraries) : [];
+    const diagnostics = libraries ? checkSceneTypes(source, libraries, fields) : [];
     if (diagnostics.length)
       return {
         ok: false,
