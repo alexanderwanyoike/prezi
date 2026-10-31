@@ -29,7 +29,6 @@ test('keeps video independent of held reveal frames and stops inactive slide med
       .toBeGreaterThan(0.6);
     await expect(stage).toHaveAttribute('data-reveal', '0');
     const heldVideo = await video.elementHandle();
-    if (!heldVideo) throw new Error('Missing active video');
     await page.getByRole('button', { name: 'Next reveal', exact: true }).click();
     await expect(stage).toHaveAttribute('data-reveal', '1');
     expect(await heldVideo.evaluate((node: HTMLVideoElement) => node.isConnected)).toBe(true);
@@ -37,7 +36,7 @@ test('keeps video independent of held reveal frames and stops inactive slide med
       .poll(() => video.evaluate((node: HTMLVideoElement) => node.currentTime))
       .toBeGreaterThan(0.8);
     await video.evaluate((node: HTMLVideoElement) => {
-      node.currentTime = node.duration - 0.15;
+      Object.assign(node, { currentTime: node.duration - 0.15 });
     });
     await expect.poll(() => video.evaluate((node: HTMLVideoElement) => node.ended)).toBe(true);
     await expect(stage).toHaveAttribute('data-slide', '1');
