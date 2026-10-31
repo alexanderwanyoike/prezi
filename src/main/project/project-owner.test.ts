@@ -2,6 +2,45 @@ import { describe, expect, it } from 'vitest';
 import { ProjectOwner } from './project-owner';
 
 describe('project editing', () => {
+  it('builds a deck by adding, duplicating, reordering and deleting slides with stable IDs', () => {
+    const owner = new ProjectOwner();
+    const originalIds = owner.snapshot().project.slides.map((slide) => slide.id);
+    const opening = owner.snapshot().project.slides[0];
+    if (!opening) throw new Error('Expected an initial slide');
+    const newId = crypto.randomUUID();
+    const duplicateId = crypto.randomUUID();
+    expect(
+      owner.edit({
+        requestId: 'arrange',
+        expectedRevision: 0,
+        label: 'Arrange deck',
+        operations: [
+          { type: 'addSlide', slide: { ...opening, id: newId, title: 'A new thought' }, index: 1 },
+          { type: 'duplicateSlide', slideId: newId, newId: duplicateId },
+          { type: 'moveSlide', slideId: duplicateId, index: 0 },
+          { type: 'deleteSlide', slideId: newId },
+          { type: 'renameProject', name: 'My explanation' },
+        ],
+      }).ok,
+    ).toBe(true);
+    expect(owner.snapshot().project.name).toBe('My explanation');
+    expect(owner.snapshot().project.slides.map((slide) => slide.id)).toEqual([
+      duplicateId,
+      ...originalIds,
+    ]);
+    expect(owner.snapshot().project.slides).toHaveLength(4);
+    expect(owner.snapshot().project.slides[0]?.title).toBe('A new thought');
+    expect(
+      owner.edit({
+        requestId: 'duplicate-id',
+        expectedRevision: 1,
+        label: 'Invalid addition',
+        operations: [{ type: 'addSlide', slide: opening, index: 0 }],
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    owner.undo(1);
+    expect(owner.snapshot().project.slides).toHaveLength(3);
+  });
   it('undoes a labelled batch as one action and clears redo after a new edit', () => {
     const owner = new ProjectOwner();
     const before = owner.snapshot();
