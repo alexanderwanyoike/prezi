@@ -91,6 +91,7 @@ export default function Scene() { return <AbsoluteFill>{message} {useCurrentFram
   expect(compiled.ok).toBe(true);
   if (!compiled.ok) throw new Error('Expected a compiled scene');
   expect(compiled.value.code).toContain('A working scene');
+  expect(compiled.value.code).toMatch(/export\s*\{/);
   const invalid = await compileScene({
     entry: 'Scene.tsx',
     files: { 'Scene.tsx': 'export default function Scene() { return <div>;' },
