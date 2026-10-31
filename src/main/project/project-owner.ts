@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { applyOperation } from './apply-operation';
 import { createProject, editRequestSchema } from '../../shared/project';
 import type { Project, ProjectSnapshot } from '../../shared/project';
 import { failure } from '../../shared/result';
@@ -8,12 +9,15 @@ export class ProjectOwner {
   private project: Project = createProject();
 
   private revision = 0;
+
   private past: Project[] = [];
+
   private future: Project[] = [];
 
   private dirty = false;
 
   private requests = new Map<string, { fingerprint: string; snapshot: ProjectSnapshot }>();
+
   private listeners = new Set<(snapshot: ProjectSnapshot) => void>();
 
   snapshot(): ProjectSnapshot {
@@ -75,13 +79,7 @@ export class ProjectOwner {
       return failure('CONFLICT', 'The project changed. Read its latest revision and retry.');
     const draft = structuredClone(this.project);
     const problem = parsed.data.operations.reduce<Result<Project>>(
-      (result, operation) => {
-        if (!result.ok) return result;
-        const slide = result.value.slides.find((item) => item.id === operation.slideId);
-        if (!slide) return failure('NOT_FOUND', 'The slide no longer exists.');
-        Object.assign(slide, operation.patch);
-        return result;
-      },
+      (result, operation) => (result.ok ? applyOperation(result.value, operation) : result),
       { ok: true, value: draft },
     );
     if (!problem.ok) return problem;

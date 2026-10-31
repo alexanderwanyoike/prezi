@@ -29,15 +29,31 @@ export const editRequestSchema = z.object({
   label: z.string().min(1).max(100),
   operations: z
     .array(
-      z.object({
-        type: z.literal('updateSlide'),
-        slideId: z.uuid(),
-        patch: slideSchema.omit({ id: true }).partial(),
-      }),
+      z.discriminatedUnion('type', [
+        z.object({
+          type: z.literal('updateSlide'),
+          slideId: z.uuid(),
+          patch: slideSchema.omit({ id: true }).partial(),
+        }),
+        z.object({
+          type: z.literal('addSlide'),
+          slide: slideSchema,
+          index: z.number().int().nonnegative(),
+        }),
+        z.object({ type: z.literal('duplicateSlide'), slideId: z.uuid(), newId: z.uuid() }),
+        z.object({ type: z.literal('deleteSlide'), slideId: z.uuid() }),
+        z.object({
+          type: z.literal('moveSlide'),
+          slideId: z.uuid(),
+          index: z.number().int().nonnegative(),
+        }),
+        z.object({ type: z.literal('renameProject'), name: z.string().min(1).max(200) }),
+      ]),
     )
     .min(1)
     .max(100),
 });
+export type EditOperation = z.infer<typeof editRequestSchema>['operations'][number];
 export type EditRequest = z.infer<typeof editRequestSchema>;
 
 export function createProject(): Project {
