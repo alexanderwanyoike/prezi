@@ -14,7 +14,7 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 
 - [x] Additional editor slice: direct canvas heading/body editing with shared properties, selection and undo.
 
-- [ ] Import local images/video and persist asset references; stream media with range requests.
+- [x] Import local images/video and persist asset references; stream media with range requests.
 - [ ] Keep video playing while the reveal holds; stop inactive media and expose useful playback settings.
 - [ ] Official MCP SDK adapter connected to the existing owner, selection and edits, conflict/retry verification, and connection instructions.
 

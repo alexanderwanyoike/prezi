@@ -32,6 +32,8 @@ There is no installer yet. Desktop packaging is part of checkpoint three.
 - Edit the presentation name in the document bar. Text edits reach the backend while the field is still focused.
 - Choose **Title / chapter** or **Text / reveals**. Enter one reveal per line, up to 30. Use the reveal buttons to preview any step or **Restart preview** to replay the initial entrance.
 - Undo and redo operate on content edits. Each accepted edit batch is one undo action; typing creates successive edits.
+- **Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Video playback settings follow in the next slice.
+- Media saves currently keep an adjacent `<project path>.assets` directory. Move it with the JSON file. Single-file `.prezi` packaging is planned next.
 - **Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi.json` files and are saved with a temporary file, sync and atomic rename.
 - The app asks whether to save, discard or cancel before replacing or closing a changed deck. Failed saves and invalid imports leave the current deck open.
 - Appearance has Studio, Aluminium and Paper materials, light/dark modes and five accents. These preferences persist locally and do not change the deck's near-black/green visual theme.
