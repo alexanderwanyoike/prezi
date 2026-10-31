@@ -18,8 +18,8 @@ export async function importFontFile(
       const info = await input.stat();
       if (!info.isFile() || info.size < 12 || info.size > 16 * 1024 * 1024)
         return failure('INVALID_INPUT', 'Choose a font between 12 bytes and 16 MiB.');
-      const header = Buffer.alloc(4);
-      await input.read(header, 0, 4, 0);
+      const header = Buffer.alloc(48);
+      const { bytesRead } = await input.read(header, 0, 48, 0);
       const formats: Record<string, ProjectFont['extension']> = {
         OTTO: 'otf',
         wOFF: 'woff',
@@ -27,7 +27,18 @@ export async function importFontFile(
         true: 'ttf',
         '00010000': 'ttf',
       };
-      const extension = formats[header.toString('ascii')] ?? formats[header.toString('hex')];
+      const extension =
+        formats[header.toString('ascii', 0, 4)] ?? formats[header.toString('hex', 0, 4)];
+      if (
+        (extension === 'woff' || extension === 'woff2') &&
+        (bytesRead < (extension === 'woff2' ? 48 : 44) ||
+          header.readUInt32BE(16) > 64 * 1024 * 1024 ||
+          header.readUInt32BE(16) < 12)
+      )
+        return failure(
+          'INVALID_INPUT',
+          'Compressed fonts must declare a decoded size within 64 MiB.',
+        );
       const parsed = fontSchema.safeParse({
         ...credit,
         id: crypto.randomUUID(),
