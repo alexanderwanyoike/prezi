@@ -220,6 +220,48 @@ test('shares revisioned MCP edits and retry-safe undo with the live Electron edi
         (await client.callTool({ name: 'read_project', arguments: {} })).structuredContent,
       ).result.value.project.slides[0]?.title,
     ).toBe('A manual opening');
+    const importingRevision = summarySchema.parse(
+      (await client.callTool({ name: 'read_project', arguments: {} })).structuredContent,
+    ).result.value.revision;
+    const registration = {
+      requestId: 'video-fixture',
+      expectedRevision: importingRevision,
+      slideId,
+      path: resolve('tests/fixtures/held-video.webm'),
+    };
+    const imported = summarySchema.parse(
+      (await client.callTool({ name: 'import_media', arguments: registration })).structuredContent,
+    ).result.value;
+    expect(
+      summarySchema.parse(
+        (await client.callTool({ name: 'import_media', arguments: registration }))
+          .structuredContent,
+      ).result.value.revision,
+    ).toBe(imported.revision);
+    await page.getByRole('button', { name: 'Present', exact: true }).click();
+    const heldVideo = stage.locator('video');
+    await expect
+      .poll(() => heldVideo.evaluate((node: HTMLVideoElement) => node.currentTime))
+      .toBeGreaterThan(0.5);
+    const handle = await heldVideo.elementHandle();
+    await client.callTool({
+      name: 'edit_project',
+      arguments: {
+        requestId: 'unrelated-during-video',
+        expectedRevision: imported.revision,
+        label: 'Keep presentation running',
+        operations: [
+          { type: 'updateSlide', slideId: second.id, patch: { title: 'An unrelated slide' } },
+        ],
+      },
+    });
+    expect(
+      await handle.evaluate(
+        (node: HTMLVideoElement) => node.isConnected && !node.paused && node.currentTime > 0.5,
+      ),
+    ).toBe(true);
+    await expect(stage).toHaveAttribute('data-slide', '1');
+    await expect(stage).toHaveAttribute('data-reveal', '0');
   } finally {
     await client.close();
     await desktop.close();
