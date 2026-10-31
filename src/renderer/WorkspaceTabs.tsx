@@ -13,7 +13,9 @@ export function WorkspaceTabs({
   function keydown(event: React.KeyboardEvent<HTMLButtonElement>): void {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const next = event.key === 'ArrowRight' || event.key === 'End';
+    let next = !code;
+    if (event.key === 'Home') next = false;
+    if (event.key === 'End') next = true;
     select(next);
     if (next) codeTab.current?.focus();
     else canvasTab.current?.focus();
