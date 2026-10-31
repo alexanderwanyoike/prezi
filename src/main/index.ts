@@ -1,5 +1,7 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { startMcp } from './mcp/server';
+import type { McpConnection } from './mcp/server';
 import { registerMedia } from './media/register-media';
 import { registerDesktopIpc } from './register-desktop-ipc';
 import { registerPresentationIpc } from './register-presentation-ipc';
@@ -21,6 +23,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 const owner = new ProjectOwner();
+let mcp: McpConnection | undefined;
 
 async function openWindow(): Promise<void> {
   const window = new BrowserWindow({
@@ -36,6 +39,9 @@ async function openWindow(): Promise<void> {
       nodeIntegration: false,
     },
   });
+  const connected = await startMcp(owner, app.getPath('userData'));
+  if (connected.ok) mcp = connected.value;
+  else process.stderr.write(`${connected.error.message}\n`);
   registerProjectIpc(window, owner);
   registerDesktopIpc(window);
   registerMedia(window, owner);
@@ -64,5 +70,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
+  void mcp?.close();
   void owner.dispose();
 });
