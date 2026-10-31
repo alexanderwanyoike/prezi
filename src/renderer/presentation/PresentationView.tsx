@@ -54,8 +54,11 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
   useEffect(() => {
     function keydown(event: KeyboardEvent): void {
       const typing =
-        event.target instanceof Element &&
-        !!event.target.closest('input,textarea,select,[contenteditable="true"]');
+        (event.target instanceof Element &&
+          !!event.target.closest('input,textarea,select,[contenteditable="true"]')) ||
+        (event.key !== 'Escape' &&
+          event.target instanceof Element &&
+          !!event.target.closest('video,[data-media-controls]'));
       if (
         !typing &&
         !event.ctrlKey &&
@@ -92,17 +95,21 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
           data-reveal={reveal}
           data-busy={busy}
         >
-          {outgoing && (
-            <div className="presentation-outgoing" aria-hidden="true">
-              <ScenePlayer scene={outgoing} still />
-            </div>
-          )}
-          <div
-            className={outgoing ? 'presentation-incoming' : ''}
-            key={`${slide.id}:${reveal.toString()}`}
-          >
-            <ScenePlayer scene={scene} />
-          </div>
+          {[...(outgoing ? [outgoing] : []), scene].map((layer) => {
+            const leaving = layer.slide.id !== slide.id;
+            let className = '';
+            if (leaving) className = 'presentation-outgoing';
+            else if (outgoing) className = 'presentation-incoming';
+            return (
+              <div
+                className={className}
+                key={layer.slide.id}
+                aria-hidden={leaving ? true : undefined}
+              >
+                <ScenePlayer scene={layer} still={leaving} />
+              </div>
+            );
+          })}
         </section>
       </div>
       <div className="presenter-toolbar">

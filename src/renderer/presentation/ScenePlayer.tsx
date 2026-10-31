@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { Player } from '@remotion/player';
+import type { PlayerRef } from '@remotion/player';
 import { textSceneDefinition } from './text-scene-definition';
 import type { SceneProps } from './SlideScene';
 
@@ -10,12 +12,19 @@ export function ScenePlayer({
   scene: SceneProps;
   still?: boolean;
 }): React.JSX.Element {
+  const player = useRef<PlayerRef>(null);
+  useEffect(() => {
+    player.current?.pause();
+    player.current?.seekTo(still ? 11 : 0);
+    if (!still) player.current?.play();
+  }, [scene.reveal, still]);
   return (
     <div className="composition-viewport">
       <div className="composition-transform">
         <Player
+          ref={player}
           component={textSceneDefinition.Component}
-          inputProps={scene}
+          inputProps={{ ...scene, mediaActive: !still, mediaAutoplay: !still && !scene.editing }}
           compositionWidth={1920}
           compositionHeight={1080}
           durationInFrames={12}

@@ -10,6 +10,8 @@ export interface SceneProps extends Record<string, unknown> {
   slideNumber: number;
   slideCount: number;
   editing?: SceneEditing;
+  mediaActive?: boolean;
+  mediaAutoplay?: boolean;
 }
 export function SlideScene({
   slide,
@@ -17,6 +19,8 @@ export function SlideScene({
   slideNumber,
   slideCount,
   editing,
+  mediaActive = true,
+  mediaAutoplay = false,
 }: SceneProps): React.JSX.Element {
   const frame = useCurrentFrame();
   const progress = interpolate(frame, [0, 10], [0, 1], {
@@ -123,7 +127,14 @@ export function SlideScene({
           </div>
         )}
       </div>
-      {slide.media && <SceneMedia key={slide.media.id} media={slide.media} />}
+      {slide.media && (
+        <SceneMedia
+          key={slide.media.id}
+          media={slide.media}
+          active={mediaActive}
+          autoplay={mediaAutoplay}
+        />
+      )}
       <div
         style={{
           display: 'flex',
