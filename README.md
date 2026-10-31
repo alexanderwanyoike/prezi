@@ -2,7 +2,7 @@
 
 A small local-first Electron presentation desk for narrated explanations. Built with strict TypeScript, React, Vite and Remotion. Recording happens in OBS or ClipForge.
 
-Checkpoint one covers phases 1-5: edit a text deck, save it locally, reopen it and present manually controlled animated reveals. Media import, independent video playback, portable projects and source inspection extend checkpoint two. Shared MCP editing and validated custom Remotion scenes are available, with editable instance properties and canvas text editing. Human code authoring follows.
+Checkpoint one covers phases 1-5: edit a text deck, save it locally, reopen it and present manually controlled animated reveals. Media import, independent video playback, portable projects and source inspection extend checkpoint two. Shared MCP editing and validated custom Remotion scenes are available, with editable instance properties and canvas text editing. Human code authoring uses saved drafts and explicit Apply validation.
 
 ![Dark editor](docs/screenshots/editor-dark.png)
 
@@ -33,7 +33,7 @@ Build native installers with `yarn package:make --linux --x64`, `--win --x64` or
 - Edit the presentation name in the document bar. Text edits reach the backend while the field is still focused.
 - Choose **Title / chapter** or **Text / reveals**. Enter one reveal per line, up to 30. Use the reveal buttons to preview any step or **Restart preview** to replay the initial entrance.
 - Undo and redo operate on content edits. Each accepted edit batch is one undo action; typing creates successive edits. The Edit menu and button tooltips show the next action label, including agent batches. History holds up to 50 batches for the open deck and resets when opening or creating a project.
-- The **Canvas / Code** tabs switch the workspace view. **Code** opens a read-only browser for Remotion components, schemas and presentation styles. **Slide properties** shows live instance values; use the inspector to change them. Custom scene source and definition JSON are included. Agents can compile bespoke scenes through MCP; human code authoring follows.
+- The **Canvas / Code** tabs switch the workspace view. **Code** opens Remotion components, schemas and presentation styles. Choose **Create custom scene** or **Edit scene code** to edit TSX/TS/JSON drafts and declared properties. Drafts save with the project; **Apply scene code** validates before replacing the working scene. Invalid source preserves the last working version. Built-in references and **Slide properties** are read-only. See [code authoring](docs/verification/scene-code-editor.md).
 - **File > Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Use the inspector to position/resize media and choose contain or cover. Video has autoplay, looping, mute and volume settings; hover it for play/pause/restart controls.
 - Default saves create a single `.prezi` file containing deck content, scene source, local media, built-in fonts and their licences. Move that file on its own. Legacy JSON projects still use an adjacent `<project path>.assets` directory.
 - **File > Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.

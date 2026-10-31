@@ -7,6 +7,7 @@ A local-first Electron presentation app for recording narrated explanations with
 - Slide: ordered scene with initial text and optional reveal steps.
 - Text scene definition: code component, validated properties and named editable text layers. Inspector and canvas edit the same slide instance.
 - Custom scene definition: reusable TSX code, validated fields, named layers and a compiled browser module.
+- Scene draft: retained raw source and metadata for a slide, saved with the project, based on a working definition version. Apply validates before consuming the draft; agent installs preserve human drafts by default.
 - Scene instance: definition reference and editable property overrides; working source installs as one labelled history action after bounded compilation/render validation.
 - Scene job: serial, cancellable compilation and render validation guarded by the original content revision.
 - Reveal: manually triggered addition whose completed appearance holds.
