@@ -17,7 +17,6 @@ export function SlideCanvas({ slide, index, count, editing, pending }: Props): R
   const step = Math.min(reveal, slide.reveals.length);
   function preview(next: number): void {
     setReveal(next);
-    setRun(run + 1);
   }
   if (pending)
     return (
@@ -36,7 +35,7 @@ export function SlideCanvas({ slide, index, count, editing, pending }: Props): R
       <div className="canvas-wrap" aria-label="Slide preview">
         <div className="scene-player">
           <ScenePlayer
-            key={`${slide.id}:${step.toString()}:${run.toString()}`}
+            key={`${slide.id}:${run.toString()}`}
             scene={{ slide, reveal: step, slideNumber: index + 1, slideCount: count, editing }}
           />
         </div>
@@ -46,6 +45,7 @@ export function SlideCanvas({ slide, index, count, editing, pending }: Props): R
           type="button"
           className="preview-restart"
           onClick={() => {
+            setRun(run + 1);
             preview(0);
           }}
         >
