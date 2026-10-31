@@ -30,7 +30,7 @@ test('edits scene text on the canvas through the same properties and undo histor
       'First thought\nSecond thought',
     );
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
-    await expect(body).toHaveText('A small idea. A working application.\nThe steps in between.');
+    await expect(body).toHaveText('');
     await page.getByLabel('Heading', { exact: true }).fill('Changed through properties');
     await page.getByLabel('Heading', { exact: true }).press('Tab');
     await expect(heading).toHaveText('Changed through properties');

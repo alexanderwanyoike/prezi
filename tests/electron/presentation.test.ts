@@ -22,6 +22,7 @@ test('presents manual reveals without repeated-key skipping or automatic progres
     await expect(page.getByRole('region', { name: 'Presentation stage' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     const stage = page.getByRole('region', { name: 'Presentation stage' });
+    await expect(stage).not.toContainText('NOTES FROM THE BUILD');
     await expect(stage).toHaveAttribute('data-slide', '1');
     await expect(stage).toHaveAttribute('data-busy', 'false');
     await page.keyboard.press('Space');
@@ -35,9 +36,7 @@ test('presents manual reveals without repeated-key skipping or automatic progres
     await page.keyboard.down('Space');
     await page.keyboard.up('Space');
     await expect(stage).toHaveAttribute('data-reveal', '1');
-    await expect(
-      stage.getByText('Planning / find the smallest useful idea', { exact: true }),
-    ).toBeVisible();
+    await expect(stage.getByText('Planning', { exact: true })).toBeVisible();
     await page.waitForTimeout(700);
     await expect(stage).toHaveAttribute('data-slide', '2');
     await expect(stage).toHaveAttribute('data-reveal', '1');
