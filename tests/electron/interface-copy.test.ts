@@ -20,6 +20,10 @@ test('keeps editor panels focused on controls without decorative filler', async 
     await expect(page.getByRole('complementary', { name: 'Slides' })).not.toContainText(
       'Made for your next explanation.',
     );
+    await expect(page.getByRole('region', { name: 'Reveal overview' })).not.toContainText(
+      'One thought at a time.',
+    );
+    await expect(inspector).not.toContainText('Nothing moves on without you.');
     await page.getByRole('button', { name: 'Appearance', exact: true }).click();
     const appearance = page.getByRole('dialog', { name: 'Appearance preferences' });
     await expect(appearance.getByRole('button', { name: 'Dark', exact: true })).toBeVisible();
