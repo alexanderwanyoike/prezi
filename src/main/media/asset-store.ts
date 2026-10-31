@@ -20,6 +20,10 @@ export class AssetStore {
 
   private readonly paths = new Map<string, string>();
 
+  register(id: string, path: string): void {
+    this.paths.set(id, path);
+  }
+
   path(id: string): string | undefined {
     return this.paths.get(id);
   }

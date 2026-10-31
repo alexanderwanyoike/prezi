@@ -23,7 +23,7 @@ export function useWorkspaceSelection(
         )
           selectField(`layer/${id}`);
         else if (id === 'heading') selectField('title');
-        else if (id === 'body') selectField('body');
+        else if (id === 'body' || id === 'code') selectField(id);
         else selectField(null);
       }),
     [selectSlide, selectField],

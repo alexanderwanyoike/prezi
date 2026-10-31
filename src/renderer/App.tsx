@@ -249,7 +249,9 @@ export function App(): React.JSX.Element {
               pending={selectionPending}
               editing={{
                 selected:
-                  selectedField === 'title' || selectedField === 'body' ? selectedField : null,
+                  selectedField === 'title' || selectedField === 'body' || selectedField === 'code'
+                    ? selectedField
+                    : null,
                 select: setSelectedField,
                 update: (field, value) => {
                   edit(

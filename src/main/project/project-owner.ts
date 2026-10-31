@@ -20,6 +20,23 @@ interface HistoryEntry {
 }
 
 export class ProjectOwner {
+  constructor(exampleVideoPath?: string) {
+    const slide = this.project.slides[2];
+    if (exampleVideoPath && slide) {
+      const media = {
+        id: crypto.randomUUID(),
+        name: 'Vibez / playback example',
+        kind: 'video' as const,
+        extension: 'webm' as const,
+        loop: true,
+        muted: true,
+      };
+      slide.media = media;
+      this.assets.register(media.id, exampleVideoPath);
+      this.savedContent = JSON.stringify(this.project);
+    }
+  }
+
   installScene(input: SceneInstallation): Result<ProjectSnapshot> {
     const parsed = sceneInstallationSchema.safeParse(input);
     if (!parsed.success) return failure('INVALID_INPUT', 'The scene definition is invalid.');

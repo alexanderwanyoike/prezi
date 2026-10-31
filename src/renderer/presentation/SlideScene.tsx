@@ -1,4 +1,6 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+import { ProcessDiagram } from './ProcessDiagram';
+import { CodeExplanation } from './CodeExplanation';
 import { SceneMedia } from './SceneMedia';
 import { SceneText } from './SceneText';
 import type { SceneProps } from './scene-props';
@@ -54,7 +56,7 @@ export function SlideScene({
         style={{
           opacity: entrance,
           transform: `translateY(${((1 - entrance) * 14).toString()}px)`,
-          maxWidth: slide.media ? 760 : 1550,
+          maxWidth: slide.media ? 760 : 1664,
         }}
       >
         <SceneText
@@ -86,7 +88,19 @@ export function SlideScene({
             }}
           />
         )}
-        {slide.reveals.length > 0 && (
+        {slide.layout === 'process' && (
+          <ProcessDiagram steps={slide.reveals} reveal={reveal} progress={progress} />
+        )}
+        {slide.layout === 'code' && (
+          <CodeExplanation
+            code={slide.code ?? '// Add your code here.'}
+            notes={slide.reveals}
+            reveal={reveal}
+            progress={progress}
+            editing={editing}
+          />
+        )}
+        {!['process', 'code'].includes(slide.layout) && slide.reveals.length > 0 && (
           <div style={{ marginTop: 36, display: 'flex', flexDirection: 'column', gap: 16 }}>
             {slide.reveals.slice(0, reveal).map((text, index) => {
               const opacity = index === reveal - 1 ? progress : 1;

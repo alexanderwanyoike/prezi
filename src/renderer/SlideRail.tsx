@@ -44,7 +44,12 @@ export function SlideRail({ slides, selectedId, select, add }: Props): React.JSX
               </span>
               <span className="slide-card-title">{slide.title || 'Untitled slide'}</span>
               <span className="slide-card-detail">
-                {slide.layout === 'title' ? 'Title' : 'Text'} · {slide.reveals.length} reveals
+                {
+                  { title: 'Title', content: 'Text', code: 'Code', process: 'Process' }[
+                    slide.layout
+                  ]
+                }{' '}
+                · {slide.reveals.length} reveals
               </span>
             </button>
           </li>

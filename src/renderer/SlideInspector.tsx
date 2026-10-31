@@ -42,7 +42,7 @@ export function SlideInspector({
   let sectionLabel = 'CONTENT';
   if (definition) sectionLabel = 'CUSTOM SCENE';
   else if (selectedField)
-    sectionLabel = `SELECTED / ${selectedField === 'title' ? 'HEADING' : 'BODY'}`;
+    sectionLabel = `SELECTED / ${selectedField === 'title' ? 'HEADING' : selectedField.toUpperCase()}`;
   if (pending)
     return <aside className="inspector" aria-label="Slide properties" aria-busy="true" />;
   return (
@@ -97,16 +97,45 @@ export function SlideInspector({
             onChange={(event) => {
               if (event.target.value !== 'custom')
                 update({
-                  layout: event.target.value === 'title' ? 'title' : 'content',
+                  layout:
+                    (['title', 'content', 'code', 'process'] as const).find(
+                      (layout) => layout === event.target.value,
+                    ) ?? 'content',
                   scene: null,
+                  ...(event.target.value === 'process'
+                    ? {
+                        reveals: slide.reveals.length
+                          ? slide.reveals.slice(0, 6)
+                          : ['Planning', 'Implementation', 'Review', 'Human testing'],
+                      }
+                    : {}),
                 });
             }}
           >
             {definition && <option value="custom">Custom / {definition.name}</option>}
             <option value="title">Title / chapter</option>
             <option value="content">Text / reveals</option>
+            <option value="code">Code explanation</option>
+            <option value="process">Process / workflow</option>
           </select>
         </div>
+        {!definition && slide.layout === 'code' && (
+          <div className="inspector-section">
+            <label htmlFor="slide-code">Code block</label>
+            <EditableText
+              id="slide-code"
+              value={slide.code ?? '// Add your code here.'}
+              rows={10}
+              onFocus={() => {
+                selectField('code');
+              }}
+              maxLength={16000}
+              commit={(code) => {
+                update({ code });
+              }}
+            />
+          </div>
+        )}
         {slide.media && (
           <MediaInspector
             media={slide.media}
@@ -129,10 +158,19 @@ export function SlideInspector({
             value={slide.reveals.join('\n')}
             rows={6}
             commit={(text) => {
-              update({ reveals: text.split('\n').filter((line) => line.trim().length > 0) });
+              update({
+                reveals: text
+                  .split('\n')
+                  .filter((line) => line.trim().length > 0)
+                  .slice(0, slide.layout === 'process' ? 6 : 30),
+              });
             }}
           />
-          <span className="field-hint">Up to 30 steps. Initial content is always visible.</span>
+          <span className="field-hint">
+            {slide.layout === 'process'
+              ? 'Up to six diagram stages.'
+              : 'Up to 30 steps. Initial content is always visible.'}
+          </span>
         </div>
         <div className="slide-actions">
           <button type="button" disabled={count >= 200} onClick={duplicate}>

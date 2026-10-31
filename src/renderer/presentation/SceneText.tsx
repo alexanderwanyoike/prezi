@@ -17,7 +17,9 @@ interface Props {
 function EditableSceneText({ field, value, style, editing }: Props): React.JSX.Element {
   const submitted = useRef(value);
   const element = useRef<HTMLElement | null>(null);
-  const Tag = field === 'title' ? 'h2' : 'p';
+  let Tag: 'h2' | 'p' | 'pre' = 'p';
+  if (field === 'title') Tag = 'h2';
+  if (field === 'code') Tag = 'pre';
   const layer = textLayers[field];
   const label = layer.label.toLowerCase();
   useLayoutEffect(() => {
@@ -30,7 +32,7 @@ function EditableSceneText({ field, value, style, editing }: Props): React.JSX.E
   }, [value]);
   return (
     <Tag
-      ref={(node) => {
+      ref={(node: HTMLElement | null) => {
         element.current = node;
       }}
       style={style}
@@ -40,7 +42,7 @@ function EditableSceneText({ field, value, style, editing }: Props): React.JSX.E
       contentEditable="plaintext-only"
       role="textbox"
       aria-label={`Canvas ${label}`}
-      aria-multiline={field === 'body'}
+      aria-multiline={field !== 'title'}
       tabIndex={0}
       onFocus={() => editing?.select(field)}
       onInput={(event) => {
@@ -73,5 +75,6 @@ export function SceneText(props: Props): React.JSX.Element | null {
   if (editing)
     return <EditableSceneText field={field} value={value} style={style} editing={editing} />;
   if (field === 'title') return <h2 style={style}>{value}</h2>;
+  if (field === 'code') return <pre style={style}>{value}</pre>;
   return value ? <p style={style}>{value}</p> : null;
 }

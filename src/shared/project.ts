@@ -49,6 +49,11 @@ export const projectSchema = z
         });
     });
     project.slides.forEach((slide) => {
+      if (slide.layout === 'process' && slide.reveals.length > 6)
+        context.addIssue({
+          code: 'custom',
+          message: 'A process diagram supports at most six stages.',
+        });
       if (!slide.scene) return;
       const definition = project.scenes?.[slide.scene.definitionId];
       if (!definition || !validSceneValues(definition, slide.scene.properties))
@@ -135,7 +140,7 @@ export function createProject(): Project {
         id: crypto.randomUUID(),
         title: 'From idea to something useful',
         body: 'One deliberate step at a time.',
-        layout: 'content',
+        layout: 'process',
         reveals: [
           'Planning / find the smallest useful idea',
           'Implementation / make it work',
