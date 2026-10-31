@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { Player } from '@remotion/player';
 import type { PlayerRef } from '@remotion/player';
 import { textSceneDefinition } from './text-scene-definition';
@@ -13,7 +13,7 @@ export function ScenePlayer({
   still?: boolean;
 }): React.JSX.Element {
   const player = useRef<PlayerRef>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     player.current?.pause();
     player.current?.seekTo(still ? 11 : 0);
     if (!still) player.current?.play();
