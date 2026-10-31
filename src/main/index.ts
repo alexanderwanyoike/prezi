@@ -1,5 +1,6 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { consumeResume } from './updates/resume-project';
 import { createInstalledUpdates } from './updates/runtime';
 import { registerUpdateIpc } from './updates/register-ipc';
 import { WorkspaceOwner } from './mcp/workspace-owner';
@@ -55,7 +56,7 @@ async function openWindow(): Promise<void> {
   registerDesktopIpc(window);
   registerMedia(window, owner);
   const files = registerFileIpc(window, owner);
-  installedUpdates = createInstalledUpdates();
+  installedUpdates = createInstalledUpdates(() => owner.snapshot().filePath);
   registerUpdateIpc(window, installedUpdates.updates, files.prepareRestart);
   installedUpdates.start();
   registerPresentationIpc(window);
@@ -73,7 +74,16 @@ async function openWindow(): Promise<void> {
 
 app
   .whenReady()
-  .then(openWindow)
+  .then(async () => {
+    const resume = await consumeResume(app.getPath('userData'));
+    if (!resume.ok) process.stderr.write(`${resume.error.message}\n`);
+    else if (resume.value) {
+      const restored = await owner.open(resume.value, owner.snapshot().revision);
+      if (!restored.ok)
+        process.stderr.write(`Could not reopen the saved project: ${restored.error.message}\n`);
+    }
+    await openWindow();
+  })
   .catch(() => {
     app.quit();
   });

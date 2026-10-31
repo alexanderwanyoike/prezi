@@ -5,10 +5,11 @@ import { failure } from '../../shared/result';
 import { latestRelease, RELEASES_URL } from './latest-release';
 import { createNativeBackend } from './native-backend';
 import { installVerified } from './restart';
+import { rememberResume } from './resume-project';
 import { createUpdateService } from './service';
 import type { UpdateBackend } from './service';
 
-export function createInstalledUpdates() {
+export function createInstalledUpdates(savedProject: () => string | null) {
   const automatic =
     process.platform === 'win32' || (process.platform === 'linux' && !!process.env.APPIMAGE);
   const check = () => latestRelease(fetch, app.getVersion(), process.platform, process.arch);
@@ -16,7 +17,17 @@ export function createInstalledUpdates() {
     ? createNativeBackend({
         createClient: () => electronUpdater.autoUpdater,
         readRelease: check,
-        installVerified,
+        async installVerified(path, client) {
+          const directory = app.getPath('userData');
+          const remembered = await rememberResume(directory, savedProject());
+          if (!remembered.ok) return remembered;
+          const result = await installVerified(path, client);
+          if (!result.ok) {
+            const cleared = await rememberResume(directory, null);
+            if (!cleared.ok) return cleared;
+          }
+          return result;
+        },
       })
     : {
         automatic: false,
