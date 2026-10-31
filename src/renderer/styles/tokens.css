@@ -13,8 +13,8 @@
   --line: #3e4551;
   --text: #e6eaf0;
   --muted: #a5afbd;
-  --accent: #a2c7aa;
-  --on-accent: #17251c;
+  --accent: #00e060;
+  --on-accent: #10151b;
   --material: linear-gradient(180deg, #ffffff03, #ffffff00);
 }
 :root[data-mode='dark'] {
@@ -29,7 +29,7 @@
   --line: #d5d9e0;
   --text: #252c36;
   --muted: #616b78;
-  --accent: #466c52;
+  --accent: #008536;
   --on-accent: #fff;
 }
 :root[data-theme='aluminium'][data-mode='light'] {
@@ -66,35 +66,45 @@
   --text: #eee8dc;
   --muted: #b9ae9b;
 }
-[data-accent='cobalt'] {
-  --accent: #3563a7;
+:root[data-accent='cobalt'],
+.accent-option[data-accent='cobalt'] {
+  --accent: #155dfb;
 }
-[data-accent='amber'] {
-  --accent: #906415;
+:root[data-accent='amber'],
+.accent-option[data-accent='amber'] {
+  --accent: #9c6500;
 }
-[data-accent='plum'] {
-  --accent: #825277;
+:root[data-accent='plum'],
+.accent-option[data-accent='plum'] {
+  --accent: #aa00dc;
 }
-[data-accent='copper'] {
-  --accent: #a44e32;
+:root[data-accent='copper'],
+.accent-option[data-accent='copper'] {
+  --accent: #cc4400;
 }
-[data-accent='sage'] {
-  --accent: #466c52;
+:root[data-accent='sage'],
+.accent-option[data-accent='sage'] {
+  --accent: #008536;
 }
-[data-mode='dark'][data-accent='cobalt'] {
-  --accent: #91b5ea;
+:root[data-mode='dark'][data-accent='cobalt'],
+:root[data-mode='dark'] .accent-option[data-accent='cobalt'] {
+  --accent: #4ca2ff;
 }
-[data-mode='dark'][data-accent='amber'] {
-  --accent: #dec088;
+:root[data-mode='dark'][data-accent='amber'],
+:root[data-mode='dark'] .accent-option[data-accent='amber'] {
+  --accent: #ffb900;
 }
-[data-mode='dark'][data-accent='plum'] {
-  --accent: #c6a0bd;
+:root[data-mode='dark'][data-accent='plum'],
+:root[data-mode='dark'] .accent-option[data-accent='plum'] {
+  --accent: #ed65ff;
 }
-[data-mode='dark'][data-accent='copper'] {
-  --accent: #e5a18a;
+:root[data-mode='dark'][data-accent='copper'],
+:root[data-mode='dark'] .accent-option[data-accent='copper'] {
+  --accent: #ff7500;
 }
-[data-mode='dark'][data-accent='sage'] {
-  --accent: #a2c7aa;
+:root[data-mode='dark'][data-accent='sage'],
+:root[data-mode='dark'] .accent-option[data-accent='sage'] {
+  --accent: #00e060;
 }
 * {
   box-sizing: border-box;
