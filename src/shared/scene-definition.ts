@@ -100,12 +100,13 @@ export function sceneDefinitionProblem(candidate: SceneCandidate): string | null
   if (invalidDefault) return `The default for ${invalidDefault[1].label} is outside its limits.`;
   if (new Set(candidate.layers.map((layer) => layer.id)).size !== candidate.layers.length)
     return 'Editable layer IDs must be unique.';
-  const invalidLayer = candidate.layers.find(
-    (layer) =>
-      (layer.property && !Object.hasOwn(candidate.fields, layer.property)) ||
-      (layer.frame &&
-        Object.values(layer.frame).some((name) => candidate.fields[name]?.type !== 'number')),
-  );
+  const invalidLayer = candidate.layers.find((layer) => {
+    if (layer.property && !Object.hasOwn(candidate.fields, layer.property)) return true;
+    return (
+      !!layer.frame &&
+      Object.values(layer.frame).some((name) => candidate.fields[name]?.type !== 'number')
+    );
+  });
   return invalidLayer
     ? `The editable properties for ${invalidLayer.label} are missing or have the wrong type.`
     : null;
