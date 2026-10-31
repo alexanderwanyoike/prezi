@@ -41,17 +41,6 @@ button.preview-restart {
 .presentation-outgoing {
   pointer-events: none;
 }
-.presentation-incoming {
-  animation: crossfade 300ms linear both;
-}
-@keyframes crossfade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 .presenter-toolbar {
   height: 56px;
   flex-shrink: 0;

@@ -14,12 +14,16 @@ export function CustomScenePlayer({
   scene,
   definition,
   still,
+  onReady,
 }: {
   scene: SceneProps;
   definition: CustomSceneDefinition;
   still: boolean;
+  onReady?: (() => void) | undefined;
 }): React.JSX.Element {
   const iframe = useRef<HTMLIFrameElement>(null);
+  const ready = useRef(onReady);
+  ready.current = onReady;
   const [instance, setInstance] = useState(() => crypto.randomUUID());
   const failedContent = useRef<string | null>(null);
   const current = useRef(scene);
@@ -60,8 +64,15 @@ export function CustomScenePlayer({
       if (!parsed.success) return;
       const item = parsed.data;
       if (item.type === 'prezi:status') {
+        if (
+          item.state === 'ready' &&
+          item.reveal !== undefined &&
+          item.reveal !== latest.current.reveal
+        )
+          return;
         if (item.state === 'error') failedContent.current = currentContent.current;
         setError(item.state === 'error' ? (item.message ?? 'The scene could not render.') : null);
+        ready.current?.();
       }
       if (item.type === 'prezi:select') current.current.customEditing?.select(item.layer);
       if (item.type === 'prezi:edit')
@@ -107,6 +118,7 @@ export function CustomScenePlayer({
             if (!result.ok) {
               failedContent.current = currentContent.current;
               setError(result.error.message);
+              ready.current?.();
               return;
             }
             iframe.current.contentWindow?.postMessage(

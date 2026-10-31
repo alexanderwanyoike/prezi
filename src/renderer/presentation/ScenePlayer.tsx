@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Player } from '@remotion/player';
 import type { PlayerRef } from '@remotion/player';
 import { CustomScenePlayer } from './CustomScenePlayer';
@@ -9,11 +9,23 @@ export const ANIMATION_MS = 400;
 export function ScenePlayer({
   scene,
   still = false,
+  onReady,
 }: {
   scene: SceneProps;
   still?: boolean;
+  onReady?: (() => void) | undefined;
 }): React.JSX.Element {
   const player = useRef<PlayerRef>(null);
+  const custom = !!(scene.definition && scene.slide.scene);
+  useEffect(() => {
+    if (custom || !onReady) return undefined;
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(onReady);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [custom, onReady, scene.reveal]);
   useLayoutEffect(() => {
     player.current?.pause();
     player.current?.seekTo(still ? 11 : 0);
@@ -32,6 +44,7 @@ export function ScenePlayer({
             scene={scene}
             definition={scene.definition}
             still={still}
+            onReady={onReady}
           />
         ) : (
           <Player

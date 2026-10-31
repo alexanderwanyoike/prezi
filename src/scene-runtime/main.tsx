@@ -147,7 +147,7 @@ function Runtime(): React.JSX.Element | null {
       timer = requestAnimationFrame(() => {
         if (document.documentElement.dataset.state !== 'error') {
           document.documentElement.dataset.state = 'ready';
-          emit({ type: 'prezi:status', state: 'ready' });
+          emit({ type: 'prezi:status', state: 'ready', reveal: state.reveal });
         }
       });
     });

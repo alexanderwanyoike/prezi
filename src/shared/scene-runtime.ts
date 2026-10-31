@@ -54,6 +54,7 @@ export const runtimeEventSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('prezi:status'),
     state: z.enum(['ready', 'error']),
+    reveal: z.number().int().min(0).max(30).optional(),
     message: z.string().max(2000).optional(),
   }),
   z.object({ type: z.literal('prezi:select'), layer: z.string().max(32) }),

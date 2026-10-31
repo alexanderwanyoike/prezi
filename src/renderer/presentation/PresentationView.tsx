@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, Maximize, X } from 'lucide-react';
 import { presentationTheme } from '../../shared/presentation-theme';
 import type { Project } from '../../shared/project';
 import { navigate, startPosition } from '../../shared/presentation/navigation';
 import { presentationAction } from '../../shared/presentation/keyboard';
-import { ScenePlayer } from './ScenePlayer';
+import { ANIMATION_MS, ScenePlayer } from './ScenePlayer';
+import { TransitionLayer } from './TransitionLayer';
+import type { SlideMotion } from './TransitionLayer';
+import { usePresentationStep } from './usePresentationStep';
 import type { SceneProps } from './SlideScene';
 
 interface Props {
@@ -15,10 +18,18 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
   const { transitionMs } = presentationTheme(project.theme);
   const [position, setPosition] = useState(() => startPosition(project));
   const [outgoing, setOutgoing] = useState<SceneProps | null>(null);
-  const [busy, setBusy] = useState(true);
+  const [motion, setMotion] = useState<SlideMotion | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const lockedUntil = useRef(performance.now() + transitionMs);
+  const { busy, playing, generation, begin, ready, locked } = usePresentationStep(
+    position.slideId,
+    position.reveal,
+    ANIMATION_MS,
+    () => {
+      setOutgoing(null);
+      setMotion(null);
+    },
+  );
   const index = Math.max(
     0,
     project.slides.findIndex((slide) => slide.id === position.slideId),
@@ -26,6 +37,17 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
   const slide = project.slides[index];
   const reveal = Math.min(position.reveal, slide?.reveals.length ?? 0);
   const activeSlideId = slide?.id;
+  const sceneReady = useCallback(() => {
+    if (activeSlideId) ready(activeSlideId, reveal);
+  }, [activeSlideId, reveal, ready]);
+  useEffect(() => {
+    if (activeSlideId && (activeSlideId !== position.slideId || reveal !== position.reveal)) {
+      begin(activeSlideId, reveal, ANIMATION_MS);
+      setOutgoing(null);
+      setMotion(null);
+      setPosition({ slideId: activeSlideId, reveal });
+    }
+  }, [activeSlideId, reveal, position.slideId, position.reveal, begin]);
   useEffect(() => {
     if (activeSlideId)
       void window.prezi
@@ -41,15 +63,6 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
     [],
   );
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setBusy(false);
-      setOutgoing(null);
-    }, transitionMs);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [position, transitionMs]);
   const leave = useCallback((): void => {
     void window.prezi.fullscreen(false).then((result) => {
       if (result.ok) exit();
@@ -58,7 +71,7 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
   }, [exit]);
   const move = useCallback(
     (direction: 'advance' | 'back'): void => {
-      if (performance.now() < lockedUntil.current) return;
+      if (locked()) return;
       const next = navigate(project, position, direction);
       if (next.slideId === position.slideId && next.reveal === position.reveal) return;
       if (next.slideId !== position.slideId && slide)
@@ -71,11 +84,16 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
           slideCount: project.slides.length,
           definition: project.scenes?.[slide.scene?.definitionId ?? ''],
         });
-      lockedUntil.current = performance.now() + transitionMs;
-      setBusy(true);
+      const changingSlide = next.slideId !== position.slideId;
+      setMotion(
+        changingSlide
+          ? { definition: project.transition, durationMs: transitionMs, navigation: direction }
+          : null,
+      );
+      begin(next.slideId, next.reveal, changingSlide ? transitionMs : ANIMATION_MS);
       setPosition(next);
     },
-    [index, position, project, reveal, slide, transitionMs],
+    [index, position, project, reveal, slide, transitionMs, locked, begin],
   );
   useEffect(() => {
     function keydown(event: KeyboardEvent): void {
@@ -93,7 +111,7 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
         [' ', 'ArrowLeft', 'ArrowRight'].includes(event.key)
       )
         event.preventDefault();
-      const action = presentationAction(event, typing, performance.now() < lockedUntil.current);
+      const action = presentationAction(event, typing, locked());
       if (action === 'exit') {
         event.preventDefault();
         leave();
@@ -103,7 +121,7 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
     return () => {
       window.removeEventListener('keydown', keydown);
     };
-  }, [leave, move]);
+  }, [leave, move, locked]);
   if (!slide) return <main role="alert">The presentation has no slides.</main>;
   const scene: SceneProps = {
     slide,
@@ -126,18 +144,20 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
         >
           {[...(outgoing ? [outgoing] : []), scene].map((layer) => {
             const leaving = layer.slide.id !== slide.id;
-            let className = '';
-            if (leaving) className = 'presentation-outgoing';
-            else if (outgoing) className = 'presentation-incoming';
             return (
-              <div
-                className={className}
-                style={{ animationDuration: `${transitionMs.toString()}ms` }}
+              <TransitionLayer
+                motion={motion}
+                playing={playing}
+                generation={generation}
+                leaving={leaving}
                 key={layer.slide.id}
-                aria-hidden={leaving ? true : undefined}
               >
-                <ScenePlayer scene={layer} still={leaving} />
-              </div>
+                <ScenePlayer
+                  scene={layer}
+                  still={leaving}
+                  onReady={leaving ? undefined : sceneReady}
+                />
+              </TransitionLayer>
             );
           })}
         </section>
