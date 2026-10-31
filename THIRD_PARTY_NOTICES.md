@@ -37,3 +37,7 @@ Manrope and IBM Plex Mono are provided through their Fontsource packages with th
 `remotion` and `@remotion/player` are pinned to 4.0.539. Remotion is source-available under its own free/company licence, not MIT. The exact installed licence is retained at [licenses/remotion-4.0.539.md](licenses/remotion-4.0.539.md). Its free eligibility includes individuals; distribution or changed organisational use must be assessed against those exact terms.
 
 The bundled font licences are retained in [licenses/manrope.txt](licenses/manrope.txt) and [licenses/ibm-plex-mono.txt](licenses/ibm-plex-mono.txt).
+
+## zip.js
+
+Portable `.prezi` files use @zip.js/zip.js 2.24.0 under the BSD 3-Clause licence. Its streaming reader/writer APIs and documented lazily read file Blob pattern inform the project container. The licence is preserved in [licenses/zipjs.txt](licenses/zipjs.txt). No dependency source is copied or modified.

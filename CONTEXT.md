@@ -2,6 +2,7 @@
 
 A local-first Electron presentation app for recording narrated explanations with external recording software.
 
+- Project container: a portable `.prezi` archive containing deck content, scene source, media and built-in fonts/licences. Legacy JSON remains supported.
 - Project: saved deck content with stable IDs and one backend owner.
 - Slide: ordered scene with initial text and optional reveal steps.
 - Text scene definition: code component, validated properties and named editable text layers. Inspector and canvas edit the same slide instance.
