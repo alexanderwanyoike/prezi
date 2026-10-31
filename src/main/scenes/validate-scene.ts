@@ -1,6 +1,7 @@
 import { BrowserWindow } from 'electron';
 import { setTimeout as pause } from 'node:timers/promises';
 import { z } from 'zod';
+import type { ProjectFont } from '../../shared/fonts';
 import type { PresentationTheme } from '../../shared/presentation-theme';
 import { prepareSceneFrame } from './register-runtime';
 import type { SceneJobRequest } from '../../shared/scene-jobs';
@@ -29,6 +30,7 @@ export async function validateScene(
   signal: AbortSignal,
   editorPid: number,
   theme?: PresentationTheme,
+  fonts?: ProjectFont[],
 ): Promise<Result<void>> {
   if (signal.aborted) return failure('CANCELLED', 'Scene validation was cancelled.');
   const window = new BrowserWindow({
@@ -76,6 +78,7 @@ export async function validateScene(
       if (!prepared.ok) return prepared;
       const state = {
         theme,
+        fonts: fonts?.map(({ id, name, extension }) => ({ id, name, extension })),
         title: slide.title,
         body: slide.body,
         reveal: 0,

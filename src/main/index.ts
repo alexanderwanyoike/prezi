@@ -14,6 +14,7 @@ import { registerWorkspaceIpc } from './mcp/register-workspace-ipc';
 import { registerConnectionIpc } from './mcp/register-connection-ipc';
 import { startMcp } from './mcp/server';
 import type { McpConnection } from './mcp/server';
+import { registerFontIpc } from './media/register-font-ipc';
 import { registerMedia } from './media/register-media';
 import { registerDesktopIpc } from './register-desktop-ipc';
 import { registerPresentationIpc } from './register-presentation-ipc';
@@ -82,6 +83,7 @@ async function openWindow(): Promise<void> {
             signal,
             window.webContents.mainFrame.osProcessId,
             project.theme,
+            project.fonts,
           )
         : Promise.resolve(failure('NOT_FOUND', 'The slide no longer exists.'));
     },
@@ -99,6 +101,7 @@ async function openWindow(): Promise<void> {
   registerProjectIpc(window, owner);
   registerDesktopIpc(window);
   registerMedia(window, owner);
+  registerFontIpc(window, owner);
   const files = registerFileIpc(window, owner);
   installedUpdates = createInstalledUpdates(() => owner.snapshot().filePath);
   registerUpdateIpc(window, installedUpdates.updates, files.prepareRestart);

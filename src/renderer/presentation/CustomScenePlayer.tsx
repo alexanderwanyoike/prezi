@@ -27,6 +27,7 @@ export function CustomScenePlayer({
   const [prepared, setPrepared] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const state: RuntimeState = {
+    fonts: scene.fonts?.map(({ id, name, extension }) => ({ id, name, extension })),
     theme: scene.theme,
     title: scene.slide.title,
     body: scene.slide.body,

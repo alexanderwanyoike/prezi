@@ -33,6 +33,7 @@ export function registerMedia(window: BrowserWindow, owner: ProjectOwner): void 
       });
       const outputHeaders = new Headers(response.headers);
       outputHeaders.set('Accept-Ranges', 'bytes');
+      outputHeaders.set('Access-Control-Allow-Origin', '*');
       outputHeaders.set('Content-Length', size.toString());
       if (range.value) {
         outputHeaders.set(

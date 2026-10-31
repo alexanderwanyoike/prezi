@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
+import { useProjectFonts } from './useProjectFonts';
 import { PresentationThemeDialog } from './PresentationThemeDialog';
 import { PresentationView } from './presentation/PresentationView';
 import { SlideCanvas } from './presentation/SlideCanvas';
@@ -27,6 +28,10 @@ export function App(): React.JSX.Element {
   const updates = useUpdates(project.flush);
   const [updatesOpen, setUpdatesOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const fontStatus = useProjectFonts(
+    project.snapshot?.project.fonts,
+    project.snapshot?.project.theme,
+  );
   const { snapshot, error, busy, edit, undo, redo } = project;
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [codeVisible, setCodeVisible] = useState(false);
@@ -81,6 +86,11 @@ export function App(): React.JSX.Element {
       {themeOpen && (
         <PresentationThemeDialog
           value={snapshot.project.theme}
+          fonts={snapshot.project.fonts ?? []}
+          importFont={project.importFont}
+          updateFont={(fontId, patch) => {
+            edit([{ type: 'updateFont', fontId, patch }], 'Edit font credits');
+          }}
           change={(patch) => {
             edit([{ type: 'setTheme', patch }], 'Change presentation theme');
           }}
@@ -241,6 +251,7 @@ export function App(): React.JSX.Element {
           ) : (
             <SlideCanvas
               theme={snapshot.project.theme}
+              fonts={snapshot.project.fonts}
               definition={snapshot.project.scenes?.[slide.scene?.definitionId ?? '']}
               customEditing={{
                 selected: selectedField?.startsWith('layer/') ? selectedField.slice(6) : null,
@@ -320,8 +331,13 @@ export function App(): React.JSX.Element {
       <footer className="status-bar">
         <span>
           <span className="status-dot" />
-          <span role={error || desktopError ? 'alert' : undefined}>
-            {error ?? desktopError ?? workspaceError ?? appearanceError ?? status}
+          <span role={error || desktopError || fontStatus.error ? 'alert' : undefined}>
+            {error ??
+              desktopError ??
+              fontStatus.error ??
+              workspaceError ??
+              appearanceError ??
+              status}
           </span>
         </span>
         {['available', 'ready'].includes(updates.snapshot?.state.stage ?? '') && (

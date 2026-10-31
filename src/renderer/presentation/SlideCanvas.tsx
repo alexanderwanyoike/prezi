@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
+import type { ProjectFont } from '../../shared/fonts';
 import type { PresentationTheme } from '../../shared/presentation-theme';
 import type { CustomSceneDefinition } from '../../shared/scene-definition';
 import type { CustomSceneEditing } from './CustomScenePlayer';
@@ -8,6 +9,7 @@ import { ScenePlayer } from './ScenePlayer';
 import type { SceneEditing } from './SceneText';
 
 interface Props {
+  fonts?: ProjectFont[] | undefined;
   theme?: PresentationTheme | undefined;
   slide: Slide;
   pending: boolean;
@@ -20,6 +22,7 @@ interface Props {
 export function SlideCanvas({
   slide,
   theme,
+  fonts,
   index,
   count,
   editing,
@@ -54,6 +57,7 @@ export function SlideCanvas({
             scene={{
               slide,
               theme,
+              fonts,
               reveal: step,
               slideNumber: index + 1,
               slideCount: count,

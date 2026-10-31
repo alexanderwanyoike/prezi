@@ -65,6 +65,7 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
         setOutgoing({
           slide,
           theme: project.theme,
+          fonts: project.fonts,
           reveal,
           slideNumber: index + 1,
           slideCount: project.slides.length,
@@ -107,6 +108,7 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
   const scene: SceneProps = {
     slide,
     theme: project.theme,
+    fonts: project.fonts,
     reveal,
     slideNumber: index + 1,
     slideCount: project.slides.length,

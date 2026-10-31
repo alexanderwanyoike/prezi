@@ -186,3 +186,30 @@
   height: 34px;
   padding: 3px;
 }
+
+.font-credits {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 8px;
+}
+.font-credits fieldset {
+  border: 1px solid var(--line);
+  padding: 14px;
+  margin: 14px 0;
+}
+.font-credits legend {
+  font-size: 11px;
+  padding: 0 6px;
+}
+.font-credits label {
+  display: block;
+  font-size: 11px;
+  margin: 12px 0 6px;
+}
+.font-credits input,
+.font-credits textarea {
+  width: 100%;
+}
+.presentation-theme-dialog > button {
+  margin-top: 20px;
+}

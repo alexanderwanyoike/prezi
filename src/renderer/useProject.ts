@@ -58,6 +58,9 @@ export function useProject() {
   }
   return {
     flush: () => queue.current,
+    importFont: () => {
+      dispatch(() => window.prezi.importFont());
+    },
     importMedia: (slideId: string) => {
       dispatch(() => window.prezi.importMedia(slideId));
     },

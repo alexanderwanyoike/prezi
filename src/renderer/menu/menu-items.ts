@@ -16,6 +16,7 @@ export const menuItems: Record<MenuName, (ApplicationMenuItem | null)[]> = {
     { command: 'saveAs', label: 'Save as…', shortcut: 'Shift+S' },
     null,
     { command: 'importMedia', label: 'Import media…', shortcut: 'I' },
+    { command: 'importFont', label: 'Import font…' },
     null,
     { command: 'close', label: 'Close window', shortcut: 'W' },
   ],

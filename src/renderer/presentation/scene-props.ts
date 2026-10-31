@@ -1,3 +1,4 @@
+import type { ProjectFont } from '../../shared/fonts';
 import type { PresentationTheme } from '../../shared/presentation-theme';
 import type { Slide } from '../../shared/project';
 import type { CustomSceneDefinition } from '../../shared/scene-definition';
@@ -6,6 +7,7 @@ import type { CustomSceneEditing } from './CustomScenePlayer';
 
 export interface SceneProps extends Record<string, unknown> {
   slide: Slide;
+  fonts?: ProjectFont[] | undefined;
   theme?: PresentationTheme | undefined;
   reveal: number;
   slideNumber: number;

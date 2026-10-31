@@ -6,6 +6,7 @@ import type { PlayerRef } from '@remotion/player';
 import { z } from 'zod';
 import type { PresentationTheme } from '../shared/presentation-theme';
 import { presentationFont, presentationTheme } from '../shared/presentation-theme';
+import { useProjectFonts } from '../renderer/useProjectFonts';
 import { runtimeMessageSchema } from '../shared/scene-runtime';
 import type { RuntimeState, RuntimeDefinition, RuntimeEvent } from '../shared/scene-runtime';
 import { sceneContext } from './context';
@@ -42,6 +43,10 @@ function Runtime(): React.JSX.Element | null {
     definition: RuntimeDefinition;
   } | null>(null);
   const [state, setState] = useState<RuntimeState | null>(null);
+  const fonts = useProjectFonts(state?.fonts, state?.theme);
+  useEffect(() => {
+    if (fonts.error) failed(fonts.error);
+  }, [fonts.error]);
   const player = useRef<PlayerRef>(null);
   useEffect(() => {
     let live = true;
@@ -85,7 +90,7 @@ function Runtime(): React.JSX.Element | null {
     if (probeFrame === undefined) player.current?.play();
   }, [loaded, reveal, probeFrame]);
   useEffect(() => {
-    if (!loaded || !state) return undefined;
+    if (!loaded || !state || !fonts.ready) return undefined;
     let timer = requestAnimationFrame(() => {
       timer = requestAnimationFrame(() => {
         if (document.documentElement.dataset.state !== 'error') {
@@ -97,7 +102,7 @@ function Runtime(): React.JSX.Element | null {
     return () => {
       cancelAnimationFrame(timer);
     };
-  }, [loaded, state]);
+  }, [loaded, state, fonts.ready]);
   useEffect(() => {
     if (!state?.editing) return undefined;
     const select = (event: PointerEvent | FocusEvent): void => {

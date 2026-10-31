@@ -55,6 +55,11 @@ export function useApplicationActions({
     saveAs: () => {
       save(true);
     },
+    importFont: () => {
+      editor();
+      setThemeOpen(true);
+      project.importFont();
+    },
     importMedia: () => {
       editor();
       const id =

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { presentationThemeSchema } from './presentation-theme';
 import { sceneCandidateSchema, sceneValuesSchema } from './scene-definition';
+import { fontSchema } from './fonts';
 import { mediaSchema } from './media';
 
 export const runtimeDefinitionSchema = sceneCandidateSchema.pick({
@@ -10,6 +11,10 @@ export const runtimeDefinitionSchema = sceneCandidateSchema.pick({
   layers: true,
 });
 export const runtimeStateSchema = z.object({
+  fonts: z
+    .array(fontSchema.pick({ id: true, name: true, extension: true }))
+    .max(16)
+    .optional(),
   theme: presentationThemeSchema.optional(),
   title: z.string().max(200),
   body: z.string().max(10000),

@@ -1,15 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { FontCredits } from './FontCredits';
+import type { FontCredit, ProjectFont } from '../shared/fonts';
 import { presentationTheme } from '../shared/presentation-theme';
 import type { PresentationTheme } from '../shared/presentation-theme';
 import { NumberField } from './NumberField';
 
 export function PresentationThemeDialog({
   value,
+  fonts,
+  importFont,
+  updateFont,
   change,
   close,
 }: {
   value: PresentationTheme | undefined;
+  fonts: ProjectFont[];
+  importFont: () => void;
+  updateFont: (id: string, patch: FontCredit) => void;
   change: (patch: Partial<PresentationTheme>) => void;
   close: () => void;
 }): React.JSX.Element {
@@ -73,11 +81,16 @@ export function PresentationThemeDialog({
               id={`theme-${name}`}
               value={theme[name]}
               onChange={(event) => {
-                change({ [name]: event.target.value === 'plex' ? 'plex' : 'manrope' });
+                change({ [name]: event.target.value });
               }}
             >
               <option value="manrope">Manrope</option>
               <option value="plex">IBM Plex Mono</option>
+              {fonts.map((font) => (
+                <option key={font.id} value={font.id}>
+                  {font.name}
+                </option>
+              ))}
             </select>
           </div>
         ))}
@@ -119,6 +132,10 @@ export function PresentationThemeDialog({
           </select>
         </div>
       </div>
+      <button type="button" onClick={importFont} disabled={fonts.length >= 16}>
+        Import font…
+      </button>
+      <FontCredits fonts={fonts} update={updateFont} />
     </dialog>
   );
 }
