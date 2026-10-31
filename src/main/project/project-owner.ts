@@ -216,7 +216,7 @@ export class ProjectOwner {
       } else {
         const result = await readProject(path);
         if (!result.ok) return result;
-        if (this.restarting || expectedRevision !== this.revision)
+        if (expectedRevision !== this.revision)
           return failure('CONFLICT', 'The project was edited while opening. Try again.');
         project = result.value;
         this.assets.remember(
