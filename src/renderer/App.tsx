@@ -1,36 +1,16 @@
-import { useEffect, useState } from 'react';
-import {
-  ArrowDown,
-  ArrowUp,
-  Copy,
-  FolderOpen,
-  LayoutPanelTop,
-  Palette,
-  Play,
-  Plus,
-  Redo2,
-  Save,
-  Trash2,
-  Undo2,
-} from 'lucide-react';
-import type { ProjectSnapshot } from '../shared/project';
+import { useState } from 'react';
+import { FolderOpen, LayoutPanelTop, Palette, Play, Redo2, Save, Undo2 } from 'lucide-react';
+import { useProject } from './useProject';
+import { SlideRail } from './SlideRail';
+import { SlideInspector } from './SlideInspector';
 import { useAppearance } from './appearance';
 import { AppearancePanel } from './AppearancePanel';
 
 export function App(): React.JSX.Element {
-  const [snapshot, setSnapshot] = useState<ProjectSnapshot | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { snapshot, error, busy, edit, undo, redo } = useProject();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const { appearance, change, error: appearanceError } = useAppearance();
-  useEffect(() => {
-    const unsubscribe = window.prezi.subscribe(setSnapshot);
-    void window.prezi.snapshot().then((result) => {
-      if (result.ok) setSnapshot(result.value);
-      else setError(result.error.message);
-    });
-    return unsubscribe;
-  }, []);
   if (!snapshot)
     return (
       <main className="loading" role="status">
@@ -41,6 +21,9 @@ export function App(): React.JSX.Element {
     snapshot.project.slides.find((item) => item.id === selectedId) ?? snapshot.project.slides[0];
   if (!slide) return <main role="alert">The deck has no slides.</main>;
   const selectedIndex = snapshot.project.slides.findIndex((item) => item.id === slide.id);
+  let status = 'Everything stays on this computer';
+  if (snapshot.dirty) status = 'Unsaved changes';
+  if (busy) status = 'Updating the deck…';
   return (
     <div className="app-shell">
       <h1 className="sr-only">Your presentation desk</h1>
@@ -98,57 +81,46 @@ export function App(): React.JSX.Element {
           <span className="muted small">Local project</span>
         </div>
         <div className="history-controls">
-          <button type="button" className="icon-button" aria-label="Undo" disabled>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Undo"
+            disabled={busy || !snapshot.canUndo}
+            onClick={undo}
+          >
             <Undo2 size={16} />
           </button>
-          <button type="button" className="icon-button" aria-label="Redo" disabled>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Redo"
+            disabled={busy || !snapshot.canRedo}
+            onClick={redo}
+          >
             <Redo2 size={16} />
           </button>
         </div>
       </div>
-      <aside className="slide-rail" aria-label="Slides">
-        <div className="panel-heading">
-          <span>
-            Slides{' '}
-            <span className="count">
-              {snapshot.project.slides.length.toString().padStart(2, '0')}
-            </span>
-          </span>
-          <button type="button" className="icon-button" aria-label="Add slide" disabled>
-            <Plus size={16} />
-          </button>
-        </div>
-        <ol className="slide-list">
-          {snapshot.project.slides.map((item, index) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                className={`slide-card ${item.id === slide.id ? 'is-selected' : ''}`}
-                aria-label={`Slide ${(index + 1).toString()}: ${item.title}`}
-                aria-pressed={item.id === slide.id}
-                onClick={() => {
-                  setSelectedId(item.id);
-                }}
-              >
-                <span className="slide-number">{(index + 1).toString().padStart(2, '0')}</span>
-                <span className={`thumbnail thumbnail-${item.layout}`}>
-                  <span className="mini-kicker">THE 0SMOSYS SHOW</span>
-                  <strong>{item.title}</strong>
-                  <span className="mini-rule" />
-                </span>
-                <span className="slide-card-title">{item.title}</span>
-                <span className="slide-card-detail">
-                  {item.layout === 'title' ? 'Title' : 'Text'} · {item.reveals.length} reveals
-                </span>
-              </button>
-            </li>
-          ))}
-        </ol>
-        <div className="rail-footer">
-          <span className="status-dot" />
-          Made for your next explanation.
-        </div>
-      </aside>
+      <SlideRail
+        slides={snapshot.project.slides}
+        selectedId={slide.id}
+        select={setSelectedId}
+        busy={busy}
+        add={() => {
+          const id = crypto.randomUUID();
+          edit(
+            [
+              {
+                type: 'addSlide',
+                slide: { id, title: 'Untitled slide', body: '', layout: 'content', reveals: [] },
+                index: selectedIndex + 1,
+              },
+            ],
+            'Add slide',
+          );
+          setSelectedId(id);
+        }}
+      />
       <main className="workspace">
         <div className="canvas-heading">
           <span>SLIDE {(selectedIndex + 1).toString().padStart(2, '0')}</span>
@@ -196,64 +168,32 @@ export function App(): React.JSX.Element {
           </div>
         </section>
       </main>
-      <aside className="inspector" aria-label="Slide properties">
-        <div className="panel-heading">
-          <span>Slide properties</span>
-          <span className="small muted">{(selectedIndex + 1).toString().padStart(2, '0')}</span>
-        </div>
-        <div className="inspector-body">
-          <div className="inspector-section">
-            <span className="eyebrow">CONTENT</span>
-            <label htmlFor="slide-title">Heading</label>
-            <input id="slide-title" value={slide.title} readOnly />
-            <label htmlFor="slide-body">Body</label>
-            <textarea id="slide-body" value={slide.body} readOnly rows={5} />
-            <label htmlFor="slide-layout">Layout</label>
-            <select id="slide-layout" value={slide.layout} disabled>
-              <option value="title">Title / chapter</option>
-              <option value="content">Text / reveals</option>
-            </select>
-          </div>
-          <div className="inspector-section">
-            <span className="eyebrow">PROGRESSION</span>
-            <p className="muted small">
-              Reveals appear when you advance. Nothing moves on without you.
-            </p>
-            <label htmlFor="slide-reveals">
-              Reveal text <span className="muted">one per line</span>
-            </label>
-            <textarea id="slide-reveals" value={slide.reveals.join('\n')} readOnly rows={6} />
-            <span className="field-hint">Initial content is always visible.</span>
-          </div>
-          <div className="slide-actions">
-            <button type="button" disabled>
-              <Copy size={14} />
-              Duplicate
-            </button>
-            <button type="button" className="icon-button" aria-label="Move slide up" disabled>
-              <ArrowUp size={15} />
-            </button>
-            <button type="button" className="icon-button" aria-label="Move slide down" disabled>
-              <ArrowDown size={15} />
-            </button>
-            <button type="button" className="icon-button danger" aria-label="Delete slide" disabled>
-              <Trash2 size={15} />
-            </button>
-          </div>
-        </div>
-        <div className="inspector-note">
-          <span className="eyebrow">A QUIET STAGE</span>
-          <p>
-            The story is yours.
-            <br />
-            The space around it is intentional.
-          </p>
-        </div>
-      </aside>
+      <SlideInspector
+        key={slide.id}
+        slide={slide}
+        index={selectedIndex}
+        count={snapshot.project.slides.length}
+        busy={busy}
+        update={(patch) => {
+          edit([{ type: 'updateSlide', slideId: slide.id, patch }], 'Edit slide');
+        }}
+        duplicate={() => {
+          const newId = crypto.randomUUID();
+          edit([{ type: 'duplicateSlide', slideId: slide.id, newId }], 'Duplicate slide');
+          setSelectedId(newId);
+        }}
+        remove={() => {
+          edit([{ type: 'deleteSlide', slideId: slide.id }], 'Delete slide');
+          setSelectedId(snapshot.project.slides[Math.max(0, selectedIndex - 1)]?.id ?? null);
+        }}
+        move={(index) => {
+          edit([{ type: 'moveSlide', slideId: slide.id, index }], 'Move slide');
+        }}
+      />
       <footer className="status-bar">
         <span>
           <span className="status-dot" />
-          {error ?? appearanceError ?? 'Everything stays on this computer'}
+          {error ?? appearanceError ?? status}
         </span>
         <span>
           SLIDE {selectedIndex + 1} OF {snapshot.project.slides.length}

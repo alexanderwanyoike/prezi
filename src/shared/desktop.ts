@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { projectSchema } from './project';
 import type { Result } from './result';
-import type { ProjectSnapshot } from './project';
+import type { EditRequest, ProjectSnapshot } from './project';
 
 export const snapshotSchema = z.object({
   project: projectSchema,
@@ -29,6 +29,9 @@ export const snapshotResultSchema = z.union([
   }),
 ]);
 export interface DesktopBridge {
+  edit: (request: EditRequest) => Promise<Result<ProjectSnapshot>>;
+  undo: (expectedRevision: number) => Promise<Result<ProjectSnapshot>>;
+  redo: (expectedRevision: number) => Promise<Result<ProjectSnapshot>>;
   snapshot: () => Promise<Result<ProjectSnapshot>>;
   subscribe: (listener: (snapshot: ProjectSnapshot) => void) => () => void;
 }

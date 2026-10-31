@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { join } from 'node:path';
 import { ProjectOwner } from './project/project-owner';
-import { failure } from '../shared/result';
+import { registerProjectIpc } from './project/register-project-ipc';
 
 const owner = new ProjectOwner();
 
@@ -19,11 +19,7 @@ async function openWindow(): Promise<void> {
       nodeIntegration: false,
     },
   });
-  ipcMain.handle('project:snapshot', (event) => {
-    if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame)
-      return failure('INVALID_INPUT', 'Untrusted project request.');
-    return { ok: true, value: owner.snapshot() };
-  });
+  registerProjectIpc(window, owner);
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', (event) => {
     event.preventDefault();
