@@ -28,6 +28,10 @@ export async function prepareSceneFrame(
   return { ok: true, value: true };
 }
 export function registerSceneRuntime(window: BrowserWindow): void {
+  window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => {
+    callback(false);
+  });
+  window.webContents.session.setPermissionCheckHandler(() => false);
   protocol.handle('prezi-scene', async (request) => {
     const url = new URL(request.url);
     if (

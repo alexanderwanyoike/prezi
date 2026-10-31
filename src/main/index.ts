@@ -77,6 +77,10 @@ async function openWindow(): Promise<void> {
         : Promise.resolve(failure('NOT_FOUND', 'The slide no longer exists.'));
     },
   );
+  window.on('closed', () => {
+    sceneJobs?.dispose();
+    app.quit();
+  });
   const connected = await startMcp(owner, app.getPath('userData'), workspace, sceneJobs);
   if (connected.ok) mcp = connected.value;
   else process.stderr.write(`${connected.error.message}\n`);
