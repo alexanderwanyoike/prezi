@@ -1,5 +1,5 @@
-import { readProject, writeProject } from './project-files';
 import { createHash } from 'node:crypto';
+import { readProject, writeProject } from './project-files';
 import { applyOperation } from './apply-operation';
 import { createProject, editRequestSchema } from '../../shared/project';
 import type { Project, ProjectSnapshot } from '../../shared/project';
@@ -16,7 +16,9 @@ export class ProjectOwner {
   private future: Project[] = [];
 
   private savedContent = JSON.stringify(this.project);
+
   private filePath: string | null = null;
+
   private fileBusy = false;
 
   private requests = new Map<string, { fingerprint: string; snapshot: ProjectSnapshot }>();
@@ -39,6 +41,35 @@ export class ProjectOwner {
     return () => {
       this.listeners.delete(listener);
     };
+  }
+
+  reset(expectedRevision: number): Result<ProjectSnapshot> {
+    if (this.fileBusy || expectedRevision !== this.revision)
+      return failure('CONFLICT', 'The project changed or a file operation is running.');
+    this.project = {
+      schemaVersion: 1,
+      id: crypto.randomUUID(),
+      name: 'Untitled presentation',
+      slides: [
+        {
+          id: crypto.randomUUID(),
+          title: 'Untitled slide',
+          body: '',
+          layout: 'title',
+          reveals: [],
+        },
+      ],
+    };
+    this.savedContent = JSON.stringify(this.project);
+    this.filePath = null;
+    this.revision += 1;
+    this.past = [];
+    this.future = [];
+    this.requests.clear();
+    this.listeners.forEach((listener) => {
+      listener(this.snapshot());
+    });
+    return { ok: true, value: this.snapshot() };
   }
 
   async save(path: string): Promise<Result<ProjectSnapshot>> {
