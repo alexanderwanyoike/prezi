@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { isAbsolute } from 'node:path';
 import { registerSceneTools } from './scene-tools';
 import type { SceneJobs } from '../source/scene-jobs';
-import { builtInSceneSources } from '../../shared/scene-sources';
+import { projectSources } from '../../shared/project-sources';
 import { failure } from '../../shared/result';
 import { selectionSchema } from '../../shared/workspace';
 import type { WorkspaceOwner } from './workspace-owner';
@@ -21,9 +21,10 @@ function summary(snapshot: ProjectSnapshot) {
     project: {
       id: snapshot.project.id,
       name: snapshot.project.name,
-      sourceFiles: Object.entries(snapshot.project.sources ?? builtInSceneSources).map(
-        ([path, source]) => ({ path, length: source.length }),
-      ),
+      sourceFiles: Object.entries(projectSources(snapshot.project)).map(([path, source]) => ({
+        path,
+        length: source.length,
+      })),
       slides: snapshot.project.slides.map((slide) => ({
         id: slide.id,
         title: slide.title,
@@ -115,7 +116,7 @@ export function createToolServer(
     },
     ({ path, offset, length }) => {
       const snapshot = owner.snapshot();
-      const sources = snapshot.project.sources ?? builtInSceneSources;
+      const sources = projectSources(snapshot.project);
       const source = Object.hasOwn(sources, path) ? sources[path] : undefined;
       return toolResult(
         source === undefined

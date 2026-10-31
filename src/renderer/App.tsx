@@ -215,7 +215,11 @@ export function App(): React.JSX.Element {
                 </main>
               }
             >
-              <CodeView project={snapshot.project} slide={slide} />
+              <CodeView
+                key={slide.scene?.definitionId ?? 'built-in'}
+                project={snapshot.project}
+                slide={slide}
+              />
             </Suspense>
           ) : (
             <SlideCanvas

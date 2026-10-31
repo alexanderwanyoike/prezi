@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Braces, FileCode2 } from 'lucide-react';
 import type { Project, Slide } from '../../shared/project';
-import { builtInSceneSources } from '../../shared/scene-sources';
+import { projectSources } from '../../shared/project-sources';
 import { SourceCode } from './SourceCode';
 
 export function CodeView({
@@ -11,9 +11,14 @@ export function CodeView({
   project: Project;
   slide: Slide;
 }): React.JSX.Element {
-  const sources = project.sources ?? builtInSceneSources;
+  const sources = projectSources(project);
   const paths = Object.keys(sources).sort();
-  const [selected, setSelected] = useState<string | null>('renderer/presentation/SlideScene.tsx');
+  const [selected, setSelected] = useState<string | null>(() => {
+    const definition = project.scenes?.[slide.scene?.definitionId ?? ''];
+    return definition
+      ? `scenes/${definition.id}/source/${definition.source.entry}`
+      : 'renderer/presentation/SlideScene.tsx';
+  });
   let name = 'slide-properties.json';
   let source = JSON.stringify(slide, null, 2);
   if (selected !== null) {
@@ -39,7 +44,7 @@ export function CodeView({
             <Braces size={14} />
             <span>Slide properties</span>
           </button>
-          <span className="eyebrow">REMOTION / TEXT</span>
+          <span className="eyebrow">REMOTION / SCENES</span>
           {paths.map((path) => (
             <button
               type="button"
