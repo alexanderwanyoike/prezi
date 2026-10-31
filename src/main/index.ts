@@ -39,6 +39,7 @@ async function openWindow(): Promise<void> {
     height: 920,
     minWidth: 1000,
     minHeight: 680,
+    icon: join(import.meta.dirname, '../../resources/icons/icon.png'),
     backgroundColor: '#1b1e24',
     webPreferences: {
       preload: join(import.meta.dirname, '../preload/index.cjs'),
