@@ -22,7 +22,7 @@ Changed a heading while it remained focused, requested window close with a contr
 
 ## Resource observations
 
-Electron `app.getAppMetrics()` reported aggregate process working-set observations around 601-615 MiB for the three-slide text deck. A 12-sample, 100 ms interval transition check peaked at 600.75 MiB and a sum of reported process CPU percentages of 13.69%; the settled last sample reported 0% CPU. The observed processes were Browser, GPU, Tab and two Utility processes.
+On the final build, Electron `app.getAppMetrics()` reported an aggregate process working-set baseline of 621.13 MiB for the three-slide text deck. A 12-sample, 100 ms interval transition check peaked at 623.34 MiB and a sum of reported process CPU percentages of 12.77%; the settled last sample reported 0% CPU. The observed processes were Browser, GPU, Tab and two Utility processes.
 
 Working sets include shared pages, so their sum is a conservative process total rather than a unique-memory measurement. These short samples are observations for a text-only deck, not a guarantee or a media workload benchmark. The final text-only Player configuration disables its unused shared audio pool. No compilation or rendering workers run in this checkpoint.
 
