@@ -25,7 +25,6 @@ export function EditableText({
   }, [value, focused]);
   function finish(): void {
     setFocused(false);
-    if (draft !== value) commit(draft);
   }
   if (rows !== undefined)
     return (
@@ -41,6 +40,7 @@ export function EditableText({
         }}
         onChange={(event) => {
           setDraft(event.target.value);
+          commit(event.target.value);
         }}
         onBlur={finish}
       />
@@ -57,6 +57,7 @@ export function EditableText({
       }}
       onChange={(event) => {
         setDraft(event.target.value);
+        commit(event.target.value);
       }}
       onBlur={finish}
     />
