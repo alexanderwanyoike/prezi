@@ -12,6 +12,12 @@ test('inspects scene source and live instance properties without changing the de
     ),
   });
   try {
+    await desktop.evaluate(({ dialog }, filePath) => {
+      Object.assign(dialog, {
+        showSaveDialog: () => Promise.resolve({ canceled: false, filePath }),
+        showOpenDialog: () => Promise.resolve({ canceled: false, filePaths: [filePath] }),
+      });
+    }, test.info().outputPath('source-deck.prezi'));
     const page = await desktop.firstWindow();
     await page.getByRole('button', { name: 'Code', exact: true }).click({ timeout: 1500 });
     const code = page.getByRole('textbox', { name: 'Scene source code', exact: true });
@@ -33,6 +39,15 @@ test('inspects scene source and live instance properties without changing the de
     await expect(page.getByRole('textbox', { name: 'Canvas heading', exact: true })).toHaveText(
       'Vibez / how I built it',
     );
+    await page.getByRole('button', { name: 'Code', exact: true }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'New presentation', exact: true }).click();
+    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await page
+      .getByRole('button', { name: 'renderer/presentation/SlideScene.tsx', exact: true })
+      .click();
+    await expect(code).toContainText('useCurrentFrame');
   } finally {
     await desktop.evaluate(({ dialog }) => {
       Object.assign(dialog, {
