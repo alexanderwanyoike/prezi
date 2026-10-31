@@ -32,6 +32,7 @@ test('edits deck styling through View, saves it portably and uses it in presenta
     const theme = page.getByRole('dialog', { name: 'Presentation theme', exact: true });
     await theme.getByLabel('Background', { exact: true }).fill('#f4f0e8');
     await theme.getByLabel('Text colour', { exact: true }).fill('#18221c');
+    await theme.getByLabel('Secondary text', { exact: true }).fill('#52645a');
     await theme.getByLabel('Body font', { exact: true }).selectOption('plex');
     await theme.getByLabel('Canvas padding', { exact: true }).fill('96');
     await theme.getByRole('button', { name: 'Close presentation theme', exact: true }).click();
@@ -62,6 +63,18 @@ test('edits deck styling through View, saves it portably and uses it in presenta
     await page.keyboard.press('Escape');
     await page.getByRole('tab', { name: 'Code', exact: true }).click();
     await page.getByRole('button', { name: 'Create custom scene', exact: true }).click();
+    await page.getByRole('button', { name: 'Apply scene code', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Edit scene code', exact: true })).toBeVisible({
+      timeout: 15000,
+    });
+    await page.getByRole('tab', { name: 'Canvas', exact: true }).click();
+    await expect(
+      page
+        .frameLocator('iframe[title="Custom scene"]')
+        .getByRole('textbox', { name: 'Canvas body', exact: true }),
+    ).toHaveCSS('color', 'rgb(82, 100, 90)');
+    await page.getByRole('tab', { name: 'Code', exact: true }).click();
+    await page.getByRole('button', { name: 'Edit scene code', exact: true }).click();
     await page
       .getByRole('textbox', { name: 'Scene source code' })
       .fill(
