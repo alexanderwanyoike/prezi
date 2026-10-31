@@ -71,11 +71,72 @@ test('shares revisioned MCP edits and retry-safe undo with the live Electron edi
       (await client.callTool({ name: 'read_project', arguments: {} })).structuredContent,
     ).result.value;
     expect(before.project.slides[0]?.title).toBe('A manual opening');
+    const second = before.project.slides[1];
+    if (!second) throw new Error('Missing second slide');
+    await page.getByRole('button', { name: `Slide 2: ${second.title}`, exact: true }).click();
+    await page.getByRole('textbox', { name: 'Canvas body', exact: true }).focus();
+    await expect
+      .poll(
+        async () => (await client.callTool({ name: 'read_view', arguments: {} })).structuredContent,
+      )
+      .toMatchObject({
+        result: {
+          ok: true,
+          value: {
+            selection: { slideId: second.id, elementId: `${second.id}:body` },
+            presentation: null,
+          },
+        },
+      });
+    await page.getByRole('button', { name: 'Present', exact: true }).click();
+    const stage = page.getByRole('region', { name: 'Presentation stage' });
+    await expect(stage).toHaveAttribute('data-busy', 'false');
+    await page.getByRole('button', { name: 'Next reveal', exact: true }).click();
+    await expect(stage).toHaveAttribute('data-slide', '2');
+    await expect(stage).toHaveAttribute('data-busy', 'false');
+    await page.getByRole('button', { name: 'Next reveal', exact: true }).click();
+    await expect(stage).toHaveAttribute('data-reveal', '1');
+    await expect
+      .poll(
+        async () => (await client.callTool({ name: 'read_view', arguments: {} })).structuredContent,
+      )
+      .toMatchObject({
+        result: { ok: true, value: { presentation: { slideId: second.id, reveal: 1 } } },
+      });
+    await client.callTool({
+      name: 'edit_project',
+      arguments: {
+        requestId: 'unrelated',
+        expectedRevision: before.revision,
+        label: 'Revise another slide',
+        operations: [
+          {
+            type: 'updateSlide',
+            slideId: before.project.slides[2]?.id,
+            patch: { title: 'Unrelated change' },
+          },
+        ],
+      },
+    });
+    await expect(stage).toHaveAttribute('data-slide', '2');
+    await expect(stage).toHaveAttribute('data-reveal', '1');
+    await page.keyboard.press('Escape');
+    const firstId = before.project.slides[0]?.id;
+    await client.callTool({
+      name: 'select_element',
+      arguments: { slideId: firstId, elementId: `${firstId ?? ''}:heading` },
+    });
+    await expect(
+      page.getByRole('button', { name: 'Slide 1: A manual opening', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    const current = summarySchema.parse(
+      (await client.callTool({ name: 'read_project', arguments: {} })).structuredContent,
+    ).result.value;
     const slideId = before.project.slides[0]?.id;
     if (!slideId) throw new Error('Missing opening slide');
     const request = {
       requestId: 'agent-opening',
-      expectedRevision: before.revision,
+      expectedRevision: current.revision,
       label: 'Revise opening',
       operations: [
         {
