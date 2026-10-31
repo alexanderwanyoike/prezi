@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+env:
+  COREPACK_NPM_REGISTRY: https://registry.npmjs.org
 concurrency:
   group: installers-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true

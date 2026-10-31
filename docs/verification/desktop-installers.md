@@ -31,3 +31,7 @@ yarn release:verify release-set 0.1.0
 ```
 
 The update rehearsal additionally requires a baseline AppImage under `.scratch/update-fixtures/` and a patch-version candidate built into `.scratch/update-fixtures/next`; the workflow shows the exact commands. Generated installers and temporary update fixtures are ignored by Git.
+
+## Yarn bootstrap registry
+
+The Intel macOS installer runner failed twice before dependency installation while Corepack fetched Yarn from registry.yarnpkg.com. The installer workflow now uses Corepack's documented COREPACK_NPM_REGISTRY override to retrieve the same pinned Yarn 1.22.22 from registry.npmjs.org. Integrity checks stay enabled. A fresh private Corepack cache successfully downloaded and ran the pinned Yarn locally; native CI confirms the runner path. See [Corepack environment variables](https://github.com/nodejs/corepack#environment-variables).
