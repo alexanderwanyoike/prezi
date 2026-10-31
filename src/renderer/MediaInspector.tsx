@@ -1,13 +1,13 @@
 import { Trash2 } from 'lucide-react';
 import { mediaFrame } from '../shared/media';
-import type { MediaAsset, MediaProperties } from '../shared/media';
+import type { MediaAsset, MediaPatch } from '../shared/media';
 import { CheckboxField } from './CheckboxField';
 import { EditableText } from './EditableText';
 import { NumberField } from './NumberField';
 
 interface Props {
   media: MediaAsset;
-  update: (patch: MediaProperties) => void;
+  update: (patch: MediaPatch) => void;
   remove: () => void;
   locate: () => void;
 }
@@ -37,7 +37,7 @@ export function MediaInspector({ media, update, remove, locate }: Props): React.
             min={min}
             max={max}
             change={(value) => {
-              update({ frame: { ...frame, [key]: value } });
+              update({ frame: { [key]: value } });
             }}
           />
         ))}

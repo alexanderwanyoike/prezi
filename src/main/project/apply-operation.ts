@@ -1,4 +1,5 @@
 import { presentationTheme, presentationThemeSchema } from '../../shared/presentation-theme';
+import { mediaFrame, mediaSchema } from '../../shared/media';
 import { withoutSceneDraft } from '../../shared/scene-draft';
 import { projectSchema, slideSchema } from '../../shared/project';
 import type { EditOperation, Project } from '../../shared/project';
@@ -85,10 +86,18 @@ export function applyOperation(project: Project, operation: EditOperation): Resu
         slides[index] = updated.data;
         break;
       }
-      case 'updateMedia':
+      case 'updateMedia': {
         if (!slide.media) return failure('NOT_FOUND', 'This slide has no media to edit.');
-        slides[index] = { ...slide, media: { ...slide.media, ...operation.patch } };
+        const { frame, ...properties } = operation.patch;
+        const media = mediaSchema.safeParse({
+          ...slide.media,
+          ...properties,
+          ...(frame ? { frame: { ...mediaFrame(slide.media), ...frame } } : {}),
+        });
+        if (!media.success) return failure('INVALID_INPUT', 'The media properties are invalid.');
+        slides[index] = { ...slide, media: media.data };
         break;
+      }
       case 'duplicateSlide':
         slides.splice(index + 1, 0, { ...slide, id: operation.newId });
         break;

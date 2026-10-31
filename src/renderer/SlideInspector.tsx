@@ -3,7 +3,7 @@ import { CustomSceneInspector } from './CustomSceneInspector';
 import type { CustomSceneDefinition, SceneValues } from '../shared/scene-definition';
 import { MediaInspector } from './MediaInspector';
 import { EditableText } from './EditableText';
-import type { MediaProperties } from '../shared/media';
+import type { MediaPatch } from '../shared/media';
 import type { Slide } from '../shared/project';
 import { textLayers } from '../shared/text-scene';
 import type { TextField } from '../shared/text-scene';
@@ -11,7 +11,7 @@ import type { TextField } from '../shared/text-scene';
 interface Props {
   slide: Slide;
   pending: boolean;
-  updateMedia: (patch: MediaProperties) => void;
+  updateMedia: (patch: MediaPatch) => void;
   replaceMedia: () => void;
   selectedField: string | null;
   definition?: CustomSceneDefinition | undefined;
