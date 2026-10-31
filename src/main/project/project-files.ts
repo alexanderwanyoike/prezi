@@ -31,7 +31,7 @@ export async function writeProject(path: string, project: Project): Promise<Resu
       `Could not save the presentation: ${error instanceof Error ? error.message : 'unknown file error'}`,
     );
   } finally {
-    await rm(temporary, { force: true }).catch(() => {});
+    await rm(temporary, { force: true }).catch(() => undefined);
   }
 }
 
