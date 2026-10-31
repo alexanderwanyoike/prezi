@@ -2,7 +2,7 @@
 
 A small local-first Electron presentation desk for narrated explanations. Built with strict TypeScript, React, Vite and Remotion. Recording happens in OBS or ClipForge.
 
-Checkpoint one covers phases 1-5: edit a text deck, save it locally, reopen it and present manually controlled animated reveals. Media import, independent video playback, portable projects and source inspection extend checkpoint two. MCP and custom source follow.
+Checkpoint one covers phases 1-5: edit a text deck, save it locally, reopen it and present manually controlled animated reveals. Media import, independent video playback, portable projects and source inspection extend checkpoint two. Shared MCP editing is available; custom source editing/compilation follows.
 
 ![Dark editor](docs/screenshots/editor-dark.png)
 
@@ -71,6 +71,10 @@ Video keeps playing while reveals hold. Reveals retain the current video node; l
 The final slide stays visible. There is no automatic progression. Repeated keydown events and navigation during the brief 400 ms animation lock are ignored. Space cannot scroll the stage, and typing in the editor does not trigger presentation navigation.
 
 Fullscreen contains only the stage and any letterboxing. In windowed presentation mode, recording tools should capture the stage region rather than its separate presenter toolbar. Recording integration is outside this checkpoint.
+
+## Agent collaboration
+
+Choose **View > Agent connection** to copy a private Streamable HTTP configuration. The agent and editor share content, revisions and undo history. See [connection instructions and tools](docs/mcp.md).
 
 ## Checks
 

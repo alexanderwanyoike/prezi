@@ -49,3 +49,7 @@ Read-only source inspection uses CodeMirror 6 and Lezer language highlighting un
 ## Application commands
 
 The styled application menu uses Electron's documented `before-input-event` and `webContents` editing APIs, the WAI-ARIA APG menubar keyboard pattern, and CodeMirror's public keymap/selectAll commands. These inform command routing, focus and selection; no reference application's source or styling was copied. Electron and CodeMirror are MIT licensed. The APG reference is used as design guidance; no example code was copied.
+
+## Model Context Protocol SDK
+
+The official MCP server/client 2.4.0 and Node adapter 2.1.2 provide the protocol and Streamable HTTP transport. Upstream identifies these packages as Apache-2.0 with existing MIT contributions; its exact licence is retained at [licenses/mcp-sdk.txt](licenses/mcp-sdk.txt). The official stateless Node example informs lifecycle, loopback binding and Host/Origin guards. Auto Digger's authenticated local connection pattern informs private credentials and client configuration. No reference source was copied.
