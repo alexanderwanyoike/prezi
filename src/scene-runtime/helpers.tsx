@@ -78,6 +78,11 @@ export function Text({
 export function Media(): React.JSX.Element | null {
   const { state } = useScene();
   return state.media ? (
-    <SceneMedia media={state.media} active={state.active} autoplay={state.autoplay} />
+    <SceneMedia
+      key={state.media.id}
+      media={state.media}
+      active={state.active}
+      autoplay={state.autoplay}
+    />
   ) : null;
 }
