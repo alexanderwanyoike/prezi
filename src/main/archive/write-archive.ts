@@ -4,6 +4,7 @@ import { open, rename, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { Writable } from 'node:stream';
 import { BlobReader, TextReader, ZipWriter } from '@zip.js/zip.js';
+import runtime from '../../../package.json';
 import { archiveResources } from './archive-resources';
 import { builtInSceneSources } from '../../shared/scene-sources';
 import type { Project } from '../../shared/project';
@@ -24,7 +25,14 @@ export async function writeArchive(
   try {
     await writer.add(
       'manifest.json',
-      new TextReader(JSON.stringify({ format: 'prezi', version: 1, sceneVersion: 1 })),
+      new TextReader(
+        JSON.stringify({
+          format: 'prezi',
+          version: 1,
+          sceneVersion: 1,
+          dependencies: runtime.dependencies,
+        }),
+      ),
     );
     await writer.add('project.json', new TextReader(JSON.stringify(project)));
     const sources = Object.entries(project.sources ?? builtInSceneSources);

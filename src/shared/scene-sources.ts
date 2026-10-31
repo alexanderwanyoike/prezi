@@ -7,6 +7,7 @@ import textProps from './text-scene?raw';
 import mediaProps from './media?raw';
 import project from './project?raw';
 import styles from '../renderer/styles/presentation.css?raw';
+import tokens from '../renderer/styles/tokens.css?raw';
 
 export const builtInSceneSources: Record<string, string> = {
   'renderer/presentation/SlideScene.tsx': scene,
@@ -15,6 +16,7 @@ export const builtInSceneSources: Record<string, string> = {
   'renderer/presentation/ScenePlayer.tsx': player,
   'renderer/presentation/text-scene-definition.ts': definition,
   'renderer/styles/presentation.css': styles,
+  'renderer/styles/tokens.css': tokens,
   'shared/text-scene.ts': textProps,
   'shared/media.ts': mediaProps,
   'shared/project.ts': project,
