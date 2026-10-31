@@ -45,7 +45,7 @@ function EditableSceneText({ field, value, style, editing }: Props): React.JSX.E
       onFocus={() => editing?.select(field)}
       onInput={(event) => {
         const node = event.currentTarget;
-        const text = node.innerText;
+        const text = node.textContent ? node.innerText : '';
         const { maxLength } = layer;
         const next = text.slice(0, maxLength);
         if (text !== next) node.textContent = next;
