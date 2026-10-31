@@ -52,6 +52,11 @@ test('opens the isolated desktop with an editor ready for a local presentation',
     await expect(title).toHaveValue('Untitled slide');
     expect(await page.evaluate(() => 'require' in window || 'process' in window)).toBe(false);
   } finally {
+    await desktop.evaluate(({ dialog }) => {
+      Object.assign(dialog, {
+        showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
+      });
+    });
     await desktop.close();
   }
 });

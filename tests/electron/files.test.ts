@@ -15,9 +15,15 @@ test('creates, saves and reopens a deck through desktop commands without discard
   });
   try {
     await desktop.evaluate(({ dialog }, path) => {
-      dialog.showSaveDialog = async () => ({ canceled: false, filePath: path });
-      dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [path] });
-      dialog.showMessageBox = async () => ({ response: 1, checkboxChecked: false });
+      Object.assign(dialog, {
+        showSaveDialog: () => Promise.resolve({ canceled: false, filePath: path }),
+      });
+      Object.assign(dialog, {
+        showOpenDialog: () => Promise.resolve({ canceled: false, filePaths: [path] }),
+      });
+      Object.assign(dialog, {
+        showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
+      });
     }, filePath);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled({
