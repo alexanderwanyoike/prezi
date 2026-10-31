@@ -157,3 +157,32 @@ test('retries the same media registration once even after its source is removed'
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('reserves a pending import request ID against a different edit or history action', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-import-reservation-'));
+  const source = join(directory, 'image.png');
+  await writeFile(source, 'image fixture');
+  const owner = new ProjectOwner();
+  const slideId = owner.snapshot().project.slides[0]?.id;
+  if (!slideId) throw new Error('Missing slide');
+  const pending = owner.importMedia(source, slideId, 0, 'reserved');
+  try {
+    expect(
+      owner.edit({
+        requestId: 'reserved',
+        expectedRevision: 0,
+        label: 'Different edit',
+        operations: [{ type: 'renameProject', name: 'Wrong request' }],
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'REQUEST_REUSED' } });
+    expect(owner.undo(0, 'reserved')).toMatchObject({
+      ok: false,
+      error: { code: 'REQUEST_REUSED' },
+    });
+    expect((await pending).ok).toBe(true);
+  } finally {
+    await pending;
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
