@@ -1,4 +1,5 @@
 import { _electron as electron, expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 test('uses application menus, desktop shortcuts and Canvas/Code workspace tabs', async () => {
@@ -56,6 +57,26 @@ test('uses application menus, desktop shortcuts and Canvas/Code workspace tabs',
     ).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('menu', { name: 'File' })).toHaveCount(0);
+    await page.getByRole('tab', { name: 'Code', exact: true }).click();
+    const source = page.getByRole('textbox', { name: 'Scene source code', exact: true });
+    await source.focus();
+    await page.getByRole('menubar').getByRole('menuitem', { name: 'Edit', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Select all', exact: true }).click();
+    await page.getByRole('menubar').getByRole('menuitem', { name: 'Edit', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Copy', exact: true }).click();
+    const expectedSource = await readFile(
+      resolve('src/renderer/presentation/SlideScene.tsx'),
+      'utf8',
+    );
+    await expect
+      .poll(() => desktop.evaluate(({ clipboard }) => clipboard.readText()))
+      .toBe(expectedSource);
+    await source.press('ArrowRight');
+    await page.keyboard.press('Control+a');
+    await page.keyboard.press('Control+c');
+    await expect
+      .poll(() => desktop.evaluate(({ clipboard }) => clipboard.readText()))
+      .toBe(expectedSource);
   } finally {
     await desktop.close();
   }
