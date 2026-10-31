@@ -82,6 +82,15 @@ test('shows installed update controls, progress and retryable restart errors thr
     ).toBeEnabled();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('heading', { name: 'Your presentation desk' })).toBeVisible();
+    await page.getByRole('menubar').getByRole('menuitem', { name: 'View', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Application updates…', exact: true }).click();
+    await page.keyboard.press('F5');
+    await expect(page.getByRole('region', { name: 'Presentation stage' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('heading', { name: 'Your presentation desk' })).toBeVisible();
+    await expect(
+      page.getByRole('dialog', { name: 'Application updates', exact: true }),
+    ).toHaveCount(0);
   } finally {
     await desktop.close();
   }
