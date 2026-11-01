@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
 import { failure } from '../../shared/result';
 import type { Result } from '../../shared/result';
+import { SceneProcesses } from './scene-processes';
 import { bindRendererBudget } from './renderer-budget';
 import type { RendererBoundary } from './renderer-budget';
 
@@ -28,6 +29,7 @@ export async function prepareSceneFrame(
   return { ok: true, value: true };
 }
 export function registerSceneRuntime(window: BrowserWindow): void {
+  const processes = new SceneProcesses();
   window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => {
     callback(false);
   });
@@ -58,9 +60,19 @@ export function registerSceneRuntime(window: BrowserWindow): void {
     const frame = window.webContents.mainFrame.framesInSubtree.find(
       (item) => item.url === `prezi-scene://${instance.data}/index.html`,
     );
-    return frame
-      ? prepareSceneFrame(frame, window.webContents.mainFrame.osProcessId)
-      : failure('NOT_FOUND', 'The scene renderer is not ready.');
+    if (!frame) return failure('NOT_FOUND', 'The scene renderer is not ready.');
+    const tracked = processes.track(instance.data, frame, window.webContents.mainFrame.osProcessId);
+    if (!tracked.ok) return tracked;
+    const prepared = await prepareSceneFrame(frame, window.webContents.mainFrame.osProcessId);
+    return prepared;
+  });
+  ipcMain.handle('scenes:stop', (event, input: unknown) => {
+    if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame)
+      return failure('INVALID_INPUT', 'Untrusted scene request.');
+    const instance = z.uuid().safeParse(input);
+    return instance.success
+      ? processes.stop(instance.data)
+      : failure('INVALID_INPUT', 'A scene instance ID is required.');
   });
   window.webContents.on('will-frame-navigate', (event) => {
     if (!/^prezi-scene:\/\/[a-f0-9-]+\/index\.html$/.test(event.url)) event.preventDefault();

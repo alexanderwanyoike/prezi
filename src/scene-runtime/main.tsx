@@ -69,6 +69,10 @@ function presetComponent(
   };
 }
 function Runtime(): React.JSX.Element | null {
+  useEffect(() => {
+    const timer = window.setInterval(() => { emit({ type: 'prezi:heartbeat' }); }, 500);
+    return () => { window.clearInterval(timer); };
+  }, []);
   const [loaded, setLoaded] = useState<{
     Component: ComponentType<SceneProps>;
     definition: RuntimeDefinition;

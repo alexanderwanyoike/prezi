@@ -104,6 +104,17 @@ const bridge: DesktopBridge = {
       return failure('IO_ERROR', 'The scene renderer could not be prepared.');
     }
   },
+  async stopScene(instance) {
+    try {
+      const input: unknown = await ipcRenderer.invoke('scenes:stop', instance);
+      const parsed = fullscreenResultSchema.safeParse(input);
+      return parsed.success
+        ? parsed.data
+        : failure('IO_ERROR', 'The scene resource response was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'The scene renderer could not be stopped.');
+    }
+  },
   updateStatus: () => updateRequest('status'),
   updateAction: (command) => updateRequest(command),
   subscribeUpdates(listener) {

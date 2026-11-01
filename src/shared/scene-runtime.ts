@@ -52,6 +52,7 @@ export const runtimeMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('prezi:update'), state: runtimeStateSchema }),
 ]);
 export const runtimeEventSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('prezi:heartbeat') }),
   z.object({
     type: z.literal('prezi:status'),
     state: z.enum(['ready', 'error']),

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSceneWatchdog } from './useSceneWatchdog';
 import type { FramePatch } from './FrameEditor';
 import type { CustomSceneDefinition, SceneValues } from '../../shared/scene-definition';
 import { runtimeEventSchema } from '../../shared/scene-runtime';
@@ -59,6 +60,13 @@ export function CustomScenePlayer({
   });
   const currentContent = useRef(content);
   currentContent.current = content;
+  const heartbeat = useSceneWatchdog(instance, prepared, error !== null, (message) => {
+    failedContent.current = currentContent.current;
+    if (document.activeElement === iframe.current)
+      iframe.current?.parentElement?.focus({ preventScroll: true });
+    setError(message);
+    ready.current?.();
+  });
   const latest = useRef(state);
   latest.current = state;
   const message = JSON.stringify({ type: 'prezi:update', state });
@@ -68,6 +76,7 @@ export function CustomScenePlayer({
       const parsed = runtimeEventSchema.safeParse(event.data);
       if (!parsed.success) return;
       const item = parsed.data;
+      if (item.type === 'prezi:heartbeat') heartbeat();
       if (item.type === 'prezi:status') {
         if (
           item.state === 'ready' &&
@@ -98,7 +107,7 @@ export function CustomScenePlayer({
     return () => {
       window.removeEventListener('message', receive);
     };
-  }, []);
+  }, [heartbeat]);
   useEffect(() => {
     if (error && failedContent.current !== content) {
       setPrepared(false);
@@ -114,43 +123,48 @@ export function CustomScenePlayer({
       );
   }, [prepared, message, error]);
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <iframe
-        key={instance}
-        ref={iframe}
-        title="Custom scene"
-        src={`prezi-scene://${instance}/index.html`}
-        sandbox="allow-scripts allow-same-origin"
-        allow="autoplay"
-        style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
-        onLoad={(event) => {
-          const target = event.currentTarget;
-          void window.prezi.prepareScene(instance).then((result) => {
-            if (iframe.current !== target) return;
-            if (!result.ok) {
-              failedContent.current = currentContent.current;
-              setError(result.error.message);
-              ready.current?.();
-              return;
-            }
-            iframe.current.contentWindow?.postMessage(
-              {
-                type: 'prezi:load',
-                code: definition.code,
-                definition: {
-                  id: definition.id,
-                  name: definition.name,
-                  fields: definition.fields,
-                  layers: definition.layers,
+    <div
+      tabIndex={-1}
+      style={{ width: '100%', height: '100%', position: 'relative', outline: 'none' }}
+    >
+      {!error && (
+        <iframe
+          key={instance}
+          ref={iframe}
+          title="Custom scene"
+          src={`prezi-scene://${instance}/index.html`}
+          sandbox="allow-scripts allow-same-origin"
+          allow="autoplay"
+          style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
+          onLoad={(event) => {
+            const target = event.currentTarget;
+            void window.prezi.prepareScene(instance).then((result) => {
+              if (iframe.current !== target) return;
+              if (!result.ok) {
+                failedContent.current = currentContent.current;
+                setError(result.error.message);
+                ready.current?.();
+                return;
+              }
+              iframe.current.contentWindow?.postMessage(
+                {
+                  type: 'prezi:load',
+                  code: definition.code,
+                  definition: {
+                    id: definition.id,
+                    name: definition.name,
+                    fields: definition.fields,
+                    layers: definition.layers,
+                  },
+                  state: latest.current,
                 },
-                state: latest.current,
-              },
-              '*',
-            );
-            setPrepared(true);
-          });
-        }}
-      />
+                '*',
+              );
+              setPrepared(true);
+            });
+          }}
+        />
+      )}
       {error && (
         <div
           role="alert"
@@ -165,6 +179,16 @@ export function CustomScenePlayer({
         >
           {error}
           <p>Undo the last change or correct its source.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setPrepared(false);
+              setError(null);
+              setInstance(crypto.randomUUID());
+            }}
+          >
+            Restart scene
+          </button>
         </div>
       )}
     </div>

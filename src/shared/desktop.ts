@@ -48,6 +48,7 @@ export interface DesktopBridge {
   submitScene: (request: SceneJobRequest) => Promise<Result<SceneJob>>;
   sceneJob: (id: string) => Promise<Result<SceneJob>>;
   cancelSceneJob: (id: string) => Promise<Result<SceneJob>>;
+  stopScene: (instance: string) => Promise<Result<boolean>>;
   prepareScene: (instance: string) => Promise<Result<boolean>>;
   updateStatus: () => Promise<Result<UpdateSnapshot>>;
   updateAction: (command: UpdateCommand) => Promise<Result<UpdateSnapshot>>;
