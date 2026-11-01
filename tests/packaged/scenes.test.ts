@@ -147,16 +147,14 @@ test('compiles custom scenes in the installed application with portable fonts an
           .locator('body')
           .innerText({ timeout: 1500 })
           .catch(() => 'Page text unavailable.');
-        await test
-          .info()
-          .attach('installed-state', {
-            body: JSON.stringify({
-              body,
-              errors,
-              frames: page.frames().map((frame) => frame.url()),
-            }),
-            contentType: 'application/json',
-          });
+        await test.info().attach('installed-state', {
+          body: JSON.stringify({
+            body,
+            errors,
+            frames: page.frames().map((frame) => frame.url()),
+          }),
+          contentType: 'application/json',
+        });
         await page
           .screenshot({ path: test.info().outputPath('installed-failure.png') })
           .catch(() => undefined);
