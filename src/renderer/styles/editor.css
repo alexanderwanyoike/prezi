@@ -137,9 +137,7 @@ button.slide-card.is-selected {
 .thumbnail {
   position: relative;
   aspect-ratio: 16/9;
-  background: #101513;
-  color: #edf2ec;
-  border: 1px solid #ffffff10;
+  border: 1px solid;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -174,7 +172,6 @@ button.slide-card.is-selected {
   display: block;
   width: 20px;
   height: 1px;
-  background: #739a7d;
 }
 .slide-card-title {
   font-size: 10px;

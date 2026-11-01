@@ -43,5 +43,5 @@ it('applies one shared theme edit atomically and undoes it without changing slid
   ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
   expect(owner.snapshot()).toEqual(accepted);
   expect(owner.undo(1).ok).toBe(true);
-  expect(owner.snapshot().project.theme).toBeUndefined();
+  expect(owner.snapshot().project.theme).toEqual(initial.project.theme);
 });

@@ -1,6 +1,7 @@
 import { Camera, Plus } from 'lucide-react';
 import type { Project, Slide } from '../shared/project';
 import { previewKey } from '../shared/preview';
+import { presentationTheme } from '../shared/presentation-theme';
 import type { usePreviews } from './usePreviews';
 
 interface Props {
@@ -22,6 +23,7 @@ export function SlideRail({
   add,
 }: Props): React.JSX.Element {
   const { pending } = previews;
+  const theme = presentationTheme(project.theme);
   return (
     <aside className="slide-rail" aria-label="Slides">
       <div className="panel-heading">
@@ -84,7 +86,14 @@ export function SlideRail({
                 }}
               >
                 <span className="slide-number">{(index + 1).toString().padStart(2, '0')}</span>
-                <span className="thumbnail">
+                <span
+                  className="thumbnail"
+                  style={{
+                    backgroundColor: theme.background,
+                    color: theme.foreground,
+                    borderColor: theme.border,
+                  }}
+                >
                   {image ? (
                     <img
                       className="rendered-thumbnail"
@@ -94,7 +103,7 @@ export function SlideRail({
                   ) : (
                     <>
                       <strong>{slide.title}</strong>
-                      <span className="mini-rule" />
+                      <span className="mini-rule" style={{ backgroundColor: theme.accent }} />
                     </>
                   )}
                 </span>
