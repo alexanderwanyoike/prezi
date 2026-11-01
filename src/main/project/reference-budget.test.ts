@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
@@ -109,6 +109,36 @@ it('counts retained reference source before installing a compiled scene', async 
     expect(result.ok).toBe(false);
     if (result.ok) throw Error('Expected content-budget rejection');
     expect(result.error.code).toBe('INVALID_INPUT');
+    expect(owner.snapshot()).toEqual(before);
+  } finally {
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it('rejects a save that would expand a compact opened project past the reader limit', async () => {
+  const { directory, owner, project, draft } = await largeProject();
+  try {
+    const slide = project.slides[7];
+    if (!slide) throw Error('No slide');
+    const tail = { ...draft(), metadata: '' };
+    const compact = { ...project, drafts: { ...project.drafts, [slide.id]: tail } };
+    const remaining = 8 * 1024 * 1024 - 1 - Buffer.byteLength(JSON.stringify(compact));
+    expect(remaining).toBeGreaterThan(0);
+    expect(remaining).toBeLessThan(1000000);
+    tail.metadata = 'x'.repeat(remaining);
+    const path = join(directory, 'compact.prezi.json');
+    await writeFile(path, JSON.stringify(compact));
+    expect((await owner.open(path, owner.snapshot().revision)).ok).toBe(true);
+    const destination = join(directory, 'keep.prezi.json');
+    expect((await writeProject(destination, createProject())).ok).toBe(true);
+    const previousBytes = await readFile(destination);
+    const before = owner.snapshot();
+    const result = await owner.save(destination);
+    expect(result.ok).toBe(false);
+    if (result.ok) throw Error('Expected content-budget rejection');
+    expect(result.error.code).toBe('INVALID_INPUT');
+    expect(await readFile(destination)).toEqual(previousBytes);
     expect(owner.snapshot()).toEqual(before);
   } finally {
     await owner.dispose();
