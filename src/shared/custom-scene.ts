@@ -44,7 +44,14 @@ export const compilationSchema = z.discriminatedUnion('ok', [
   z.object({
     ok: z.literal(false),
     error: z.object({
-      code: z.literal('INVALID_INPUT'),
+      code: z.enum([
+        'INVALID_INPUT',
+        'CONFLICT',
+        'REQUEST_REUSED',
+        'NOT_FOUND',
+        'IO_ERROR',
+        'CANCELLED',
+      ]),
       message: z.string(),
       diagnostics: z
         .array(

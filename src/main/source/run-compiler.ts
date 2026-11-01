@@ -11,13 +11,16 @@ export async function runCompiler(
   fields: SceneCandidate['fields'] = {},
   kind: CompilationKind = 'scene',
 ): Promise<Compilation> {
-  const failed = (message: string): Compilation => ({
+  const failed = (
+    message: string,
+    code: 'INVALID_INPUT' | 'IO_ERROR' | 'CANCELLED' = 'IO_ERROR',
+  ): Compilation => ({
     ok: false,
-    error: { code: 'INVALID_INPUT', message, diagnostics: [] },
+    error: { code, message, diagnostics: [] },
   });
-  if (signal.aborted) return failed('Scene compilation was cancelled.');
+  if (signal.aborted) return failed('Scene compilation was cancelled.', 'CANCELLED');
   if (!sceneSourceSchema.safeParse(source).success)
-    return failed('The scene source exceeds its limits.');
+    return failed('The scene source exceeds its limits.', 'INVALID_INPUT');
   const unit = `prezi-compile-${crypto.randomUUID()}`;
   const limitInput = Number(process.env.PREZI_WORKER_MEMORY_MB ?? 1024);
   const limit = Number.isFinite(limitInput)
@@ -90,7 +93,7 @@ export async function runCompiler(
       clearTimeout(timeout);
       signal.removeEventListener('abort', abort);
       if (stopped) {
-        resolve(failed(stopped));
+        resolve(failed(stopped, signal.aborted ? 'CANCELLED' : 'IO_ERROR'));
         return;
       }
       try {
