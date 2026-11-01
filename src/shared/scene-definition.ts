@@ -97,6 +97,8 @@ export function sceneDefinitionProblem(candidate: SceneCandidate): string | null
     !Object.hasOwn(candidate.source.files, candidate.source.entry)
   )
     return 'A scene needs an existing TSX entry file.';
+  if (candidate.layers.some((layer) => layer.id === 'media'))
+    return 'The layer ID media is reserved for attached slide media. Choose another layer ID.';
   const invalidDefault = Object.entries(candidate.fields).find(
     ([, field]) =>
       field.type === 'number' &&
