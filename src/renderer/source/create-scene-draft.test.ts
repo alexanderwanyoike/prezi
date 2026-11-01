@@ -11,3 +11,17 @@ it('seeds a new custom scene with the current deck text colour', () => {
   const metadata: unknown = JSON.parse(draft.metadata);
   expect(metadata).toMatchObject({ fields: { ink: { default: '#18221c' } } });
 });
+
+it('creates custom scenes without hard-coded show branding', () => {
+  const draft = createSceneDraft(
+    {
+      id: crypto.randomUUID(),
+      title: 'Heading',
+      body: '',
+      layout: 'title',
+      reveals: [],
+    },
+    undefined,
+  );
+  expect(draft.files[draft.entry]).not.toContain('THE 0SMOSYS SHOW');
+});

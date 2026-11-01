@@ -15,6 +15,7 @@ test('keeps editor panels focused on controls without decorative filler', async 
     const page = await desktop.firstWindow();
     const inspector = page.getByRole('complementary', { name: 'Slide properties' });
     await expect(inspector.getByLabel('Heading', { exact: true })).toBeEditable();
+    await expect(page.locator('body')).not.toContainText('THE 0SMOSYS SHOW');
     await expect(inspector).not.toContainText('A QUIET STAGE');
     await expect(inspector).not.toContainText('The story is yours.');
     await expect(page.getByRole('complementary', { name: 'Slides' })).not.toContainText(
