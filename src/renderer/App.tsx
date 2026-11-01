@@ -231,7 +231,7 @@ export function App(): React.JSX.Element {
             [
               {
                 type: 'addSlide',
-                slide: { id, title: 'Untitled slide', body: '', layout: 'content', reveals: [] },
+                slide: { id, title: '', body: '', layout: 'content', reveals: [] },
                 index: selectedIndex + 1,
               },
             ],

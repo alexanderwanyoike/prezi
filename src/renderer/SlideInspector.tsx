@@ -126,7 +126,7 @@ export function SlideInspector({
             <label htmlFor="slide-code">Code block</label>
             <EditableText
               id="slide-code"
-              value={slide.code ?? '// Add your code here.'}
+              value={slide.code ?? ''}
               rows={10}
               onFocus={() => {
                 selectField('code');

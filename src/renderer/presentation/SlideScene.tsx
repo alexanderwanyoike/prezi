@@ -88,7 +88,7 @@ export function SlideScene({
         {slide.layout === 'code' && (
           <CodeExplanation
             theme={theme}
-            code={slide.code ?? '// Add your code here.'}
+            code={slide.code ?? ''}
             notes={slide.reveals}
             reveal={reveal}
             progress={progress}

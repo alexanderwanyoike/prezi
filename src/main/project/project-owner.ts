@@ -322,7 +322,7 @@ export class ProjectOwner {
       slides: [
         {
           id: crypto.randomUUID(),
-          title: 'Untitled slide',
+          title: '',
           body: '',
           layout: 'title',
           reveals: [],

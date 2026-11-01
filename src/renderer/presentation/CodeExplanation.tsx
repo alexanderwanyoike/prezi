@@ -35,17 +35,6 @@ export function CodeExplanation({
           borderRadius: 8,
         }}
       >
-        <div
-          style={{
-            fontFamily: presentationFont(theme.monoFont),
-            fontSize: 14,
-            color: theme.accent,
-            letterSpacing: 2,
-            marginBottom: 24,
-          }}
-        >
-          SOURCE / WALKTHROUGH
-        </div>
         <SceneText
           field="code"
           value={code}
