@@ -88,3 +88,27 @@ it('installs source and instance properties atomically and restores both through
   ).toBe(false);
   expect(owner.snapshot()).toEqual(working);
 });
+
+it('rejects a custom layer that collides with attached-media selection without editing the deck', () => {
+  const owner = new ProjectOwner();
+  const initial = owner.snapshot();
+  const slideId = initial.project.slides[0]?.id;
+  if (!slideId) throw Error('No slide');
+  const result = owner.installScene({
+    requestId: 'media-layer',
+    expectedRevision: 0,
+    label: 'Install scene',
+    slideId,
+    definition: {
+      id: crypto.randomUUID(),
+      name: 'Media layer',
+      source: { entry: 'Scene.tsx', files: { 'Scene.tsx': 'export default()=>null' } },
+      code: 'export default()=>null',
+      fields: {},
+      layers: [{ id: 'media', label: 'Custom media layer' }],
+    },
+    properties: {},
+  });
+  expect(result.ok).toBe(false);
+  expect(owner.snapshot()).toEqual(initial);
+});
