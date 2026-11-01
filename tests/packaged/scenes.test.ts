@@ -18,6 +18,8 @@ test('compiles custom scenes in the installed application with portable fonts an
       PREZI_MCP_PORT: '0',
     },
   });
+  let completed = false;
+  const errors: string[] = [];
   try {
     await desktop.evaluate(
       ({ app, dialog }, paths) => {
@@ -40,6 +42,13 @@ test('compiles custom scenes in the installed application with portable fonts an
       },
     );
     const page = await desktop.firstWindow();
+    page.on('console', (message) => {
+      if (message.type() === 'error' && errors.length < 20)
+        errors.push(message.text().slice(0, 2000));
+    });
+    page.on('pageerror', (error) => {
+      if (errors.length < 20) errors.push(error.message.slice(0, 2000));
+    });
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     const imported = await page.evaluate(() => window.prezi.importFont());
     expect(imported.ok).toBe(true);
@@ -129,7 +138,30 @@ test('compiles custom scenes in the installed application with portable fonts an
       .poll(() => child.locator('video').evaluate((node: HTMLVideoElement) => node.currentTime))
       .toBeGreaterThan(0.4);
     await page.screenshot({ path: test.info().outputPath('installed-custom-scene.png') });
+    completed = true;
   } finally {
+    if (!completed) {
+      const page = desktop.windows()[0];
+      if (page) {
+        const body = await page
+          .locator('body')
+          .innerText({ timeout: 1500 })
+          .catch(() => 'Page text unavailable.');
+        await test
+          .info()
+          .attach('installed-state', {
+            body: JSON.stringify({
+              body,
+              errors,
+              frames: page.frames().map((frame) => frame.url()),
+            }),
+            contentType: 'application/json',
+          });
+        await page
+          .screenshot({ path: test.info().outputPath('installed-failure.png') })
+          .catch(() => undefined);
+      }
+    }
     await desktop.close();
   }
 });
