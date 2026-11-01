@@ -2,6 +2,7 @@ const sceneFiles = import.meta.glob<string>(
   [
     '../renderer/presentation/*.{ts,tsx}',
     '../renderer/useProjectFonts.ts',
+    '../renderer/load-project-font.ts',
     '../scene-runtime/**/*.{ts,tsx,css}',
     '../renderer/styles/{tokens,presentation,editor}.css',
     './*.ts',
