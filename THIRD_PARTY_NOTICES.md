@@ -99,3 +99,7 @@ Docker's rootless resource-limit documentation describes delegating cpu, memory 
 ## Editor history grouping
 
 ProseMirror History's MIT-licensed transaction grouping informs short-lived groups for adjacent edits: https://github.com/ProseMirror/prosemirror-history/blob/master/src/history.ts . The editor uses a 500 ms idle boundary and explicit target identities, while the project owner additionally checks consecutive revisions. No ProseMirror dependency or implementation code was copied. The existing Canvas layout-effect synchronization pattern is reused for rapidly acknowledged code drafts.
+
+## Video play interruption
+
+Chromium's documented play-Promise interruption behaviour informs expected cancellation when pause or a new load interrupts playback: https://developer.chrome.com/blog/play-request-was-interrupted . The documentation is CC BY 4.0 and its examples are Apache-2.0; no example code was copied. Only AbortError is treated as normal interruption; other failures retain the existing typed error.
