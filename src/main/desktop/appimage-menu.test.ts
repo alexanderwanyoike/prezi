@@ -114,7 +114,9 @@ it.skipIf(!hasGio)(
         ).ok,
       ).toBe(true);
       const entry = join(dataHome, 'applications/io.github.alexanderwanyoike.prezi.desktop');
-      await promisify(execFile)('dbus-run-session', ['--', 'gio', 'launch', entry]);
+      await promisify(execFile)('dbus-run-session', ['--', 'gio', 'launch', entry], {
+        env: { ...process.env, GIO_USE_VFS: 'local' },
+      });
       await expect
         .poll(() => readFile(marker, 'utf8').catch(() => ''), { timeout: 1000 })
         .toBe(appImage);
@@ -126,3 +128,82 @@ it.skipIf(!hasGio)(
     }
   },
 );
+
+it.each(['relative.AppImage', 'Prezi\nentry.AppImage', 'Prezi=entry.AppImage'])(
+  'rejects an invalid launcher executable before writing menu files: %j',
+  async (name) => {
+    const directory = await mkdtemp(join(tmpdir(), 'prezi-menu-invalid-'));
+    try {
+      const appImage = name.startsWith('relative') ? name : join(directory, name);
+      if (!name.startsWith('relative')) await writeFile(appImage, 'Invalid location fixture');
+      const dataHome = join(directory, 'data');
+      expect(
+        await integrateAppImage({
+          platform: 'linux',
+          packaged: true,
+          appImage,
+          home: directory,
+          dataHome,
+          icon: resolve('resources/icons/icon.png'),
+        }),
+      ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+      expect(await readdir(directory)).not.toContain('data');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+it.each([undefined, '', 'relative/data'])(
+  'uses the XDG default when data home is %j',
+  async (dataHome) => {
+    const directory = await mkdtemp(join(tmpdir(), 'prezi-menu-default-'));
+    try {
+      const appImage = join(directory, 'Prezi.AppImage');
+      await writeFile(appImage, 'AppImage fixture');
+      expect(
+        (
+          await integrateAppImage({
+            platform: 'linux',
+            packaged: true,
+            appImage,
+            home: directory,
+            dataHome,
+            icon: resolve('resources/icons/icon.png'),
+          })
+        ).ok,
+      ).toBe(true);
+      expect(
+        await readFile(
+          join(directory, '.local/share/applications/io.github.alexanderwanyoike.prezi.desktop'),
+          'utf8',
+        ),
+      ).toContain('Name=Prezi');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+it('returns a storage failure without changing a file occupying the data directory', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-menu-error-'));
+  try {
+    const appImage = join(directory, 'Prezi.AppImage');
+    const dataHome = join(directory, 'data');
+    await writeFile(appImage, 'AppImage fixture');
+    await writeFile(dataHome, 'Keep this file');
+    expect(
+      await integrateAppImage({
+        platform: 'linux',
+        packaged: true,
+        appImage,
+        home: directory,
+        dataHome,
+        icon: resolve('resources/icons/icon.png'),
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'IO_ERROR' } });
+    expect(await readFile(dataHome, 'utf8')).toBe('Keep this file');
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
