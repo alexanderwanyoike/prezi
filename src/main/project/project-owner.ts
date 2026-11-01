@@ -449,12 +449,18 @@ export class ProjectOwner {
     return { ok: true, value: snapshot };
   }
 
-  edit(input: unknown): Result<ProjectSnapshot> {
+  private editGroup: { id: string; revision: number } | null = null;
+
+  edit(input: unknown, historyGroup?: string): Result<ProjectSnapshot> {
+    if (historyGroup !== undefined && !z.uuid().safeParse(historyGroup).success)
+      return failure('INVALID_INPUT', 'The editor history group is invalid.');
     const parsed = editRequestSchema.safeParse(input);
     if (!parsed.success) return failure('INVALID_INPUT', 'The edit request is invalid.');
     if (this.pendingImports.has(parsed.data.requestId))
       return failure('REQUEST_REUSED', 'This request ID belongs to a pending import.');
-    const fingerprint = createHash('sha256').update(JSON.stringify(parsed.data)).digest('hex');
+    const fingerprint = createHash('sha256')
+      .update(JSON.stringify({ ...parsed.data, historyGroup }))
+      .digest('hex');
     const cached = this.requests.get(parsed.data.requestId);
     if (cached) {
       if (cached.fingerprint !== fingerprint)
@@ -470,11 +476,17 @@ export class ProjectOwner {
     if (!problem.ok) return problem;
     if (Buffer.byteLength(JSON.stringify(problem.value, null, 2)) > 8 * 1024 * 1024)
       return failure('INVALID_INPUT', 'The project exceeds its 8 MiB content budget.');
-    this.past.push({ project: this.project, label: parsed.data.label });
+    if (
+      !historyGroup ||
+      this.editGroup?.id !== historyGroup ||
+      this.editGroup.revision !== this.revision
+    )
+      this.past.push({ project: this.project, label: parsed.data.label });
     this.past = this.past.slice(-50);
     this.future = [];
     this.project = problem.value;
     this.revision += 1;
+    this.editGroup = historyGroup ? { id: historyGroup, revision: this.revision } : null;
     this.listeners.forEach((listener) => {
       listener(this.snapshot());
     });
