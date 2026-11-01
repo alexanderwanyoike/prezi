@@ -1,4 +1,7 @@
 import { expect, it } from 'vitest';
+import { mkdtemp, copyFile, rm, symlink } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { runCompiler } from './run-compiler';
 
 it('passes property declarations into the real isolated compiler', async () => {
@@ -61,4 +64,20 @@ it('reports a missing worker as an environment failure', async () => {
     `/nonexistent/prezi-worker-${crypto.randomUUID()}`,
   );
   expect(result).toMatchObject({ ok: false, error: { code: 'IO_ERROR' } });
+});
+
+it('preserves an isolated worker environment failure after it starts', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-worker-types-'));
+  try {
+    await copyFile(resolve('out/compiler/worker.cjs'), join(directory, 'worker.cjs'));
+    await symlink(resolve('node_modules'), join(directory, 'node_modules'), 'junction');
+    const result = await runCompiler(
+      { entry: 'Scene.tsx', files: { 'Scene.tsx': 'export default()=>null' } },
+      new AbortController().signal,
+      directory,
+    );
+    expect(result).toMatchObject({ ok: false, error: { code: 'IO_ERROR' } });
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
