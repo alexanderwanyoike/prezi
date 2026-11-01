@@ -21,7 +21,15 @@ test('opens an empty project on a fresh launch and through New presentation', as
     await expect(page.getByRole('button', { name: /^Slide \d+:/ })).toHaveCount(1);
     await expect(page.locator('video')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
+    const initial = await page.evaluate(() => window.prezi.snapshot());
+    if (!initial.ok) throw Error(initial.error.message);
     await fileCommand(page, 'newProject');
+    await expect
+      .poll(async () => {
+        const current = await page.evaluate(() => window.prezi.snapshot());
+        return current.ok ? current.value.project.id : null;
+      })
+      .not.toBe(initial.value.project.id);
     await expect(name).toHaveValue('Untitled presentation');
     await expect(heading).toHaveText('');
     await expect(page.getByRole('button', { name: /^Slide \d+:/ })).toHaveCount(1);
