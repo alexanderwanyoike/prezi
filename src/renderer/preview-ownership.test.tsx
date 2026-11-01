@@ -38,6 +38,7 @@ it('keeps agent previews shared without adopting their pending controls or error
   try {
     await act(async () => {
       receive(queued);
+      await Promise.resolve();
     });
     expect(view.result.current.jobs).toEqual([queued]);
     act(() => {
