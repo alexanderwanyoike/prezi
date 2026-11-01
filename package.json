@@ -27,7 +27,8 @@
     "release:verify": "node --experimental-strip-types scripts/verify-release.ts",
     "scene:types": "node --experimental-strip-types scripts/prepare-scene-types.ts",
     "scene:prepare": "yarn scene:types && node --experimental-strip-types scripts/build-scene-worker.ts",
-    "scene:runtime": "vite build --config scene-runtime.config.ts"
+    "scene:runtime": "vite build --config scene-runtime.config.ts",
+    "site:build": "esbuild scripts/build-site.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/site-build/build.mjs && node dist/site-build/build.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",
