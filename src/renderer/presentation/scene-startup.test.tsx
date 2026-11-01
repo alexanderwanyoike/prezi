@@ -50,12 +50,14 @@ it('waits for the isolated runtime to subscribe before delivering scene code', a
         return parsed.success && parsed.data.type === 'prezi:load';
       });
     fireEvent.load(iframe);
-    await waitFor(() => expect(prepare).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(prepare).toHaveBeenCalled();
+    });
     await act(async () => {
       await Promise.resolve();
     });
     expect(loaded()).toBe(false);
-    await act(async () => {
+    await act(() => {
       window.dispatchEvent(
         new MessageEvent('message', {
           source: child,
@@ -63,7 +65,9 @@ it('waits for the isolated runtime to subscribe before delivering scene code', a
         }),
       );
     });
-    await waitFor(() => expect(loaded()).toBe(true));
+    await waitFor(() => {
+      expect(loaded()).toBe(true);
+    });
   } finally {
     cleanup();
     vi.unstubAllGlobals();
