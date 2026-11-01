@@ -312,33 +312,40 @@ export class ProjectOwner {
     };
   }
 
-  reset(expectedRevision: number): Result<ProjectSnapshot> {
+  async reset(expectedRevision: number): Promise<Result<ProjectSnapshot>> {
     if (this.restarting || this.fileBusy || expectedRevision !== this.revision)
       return failure('CONFLICT', 'The project changed or a file operation is running.');
-    this.project = {
-      schemaVersion: 1,
-      id: crypto.randomUUID(),
-      name: 'Untitled presentation',
-      slides: [
-        {
-          id: crypto.randomUUID(),
-          title: '',
-          body: '',
-          layout: 'title',
-          reveals: [],
-        },
-      ],
-    };
-    this.savedContent = JSON.stringify(this.project);
-    this.filePath = null;
-    this.revision += 1;
-    this.past = [];
-    this.future = [];
-    this.requests.clear();
-    this.listeners.forEach((listener) => {
-      listener(this.snapshot());
-    });
-    return { ok: true, value: this.snapshot() };
+    this.fileBusy = true;
+    try {
+      this.project = {
+        schemaVersion: 1,
+        id: crypto.randomUUID(),
+        name: 'Untitled presentation',
+        slides: [
+          {
+            id: crypto.randomUUID(),
+            title: '',
+            body: '',
+            layout: 'title',
+            reveals: [],
+          },
+        ],
+      };
+      this.savedContent = JSON.stringify(this.project);
+      this.filePath = null;
+      this.revision += 1;
+      this.past = [];
+      this.future = [];
+      this.requests.clear();
+      this.listeners.forEach((listener) => {
+        listener(this.snapshot());
+      });
+      const released = await this.assets.releaseArchives();
+      if (!released.ok) process.stderr.write(`${released.error.message}\n`);
+      return { ok: true, value: this.snapshot() };
+    } finally {
+      this.fileBusy = false;
+    }
   }
 
   async save(path: string): Promise<Result<ProjectSnapshot>> {
