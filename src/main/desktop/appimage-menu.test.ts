@@ -85,3 +85,44 @@ it('refreshes its own launcher after a move and preserves a user-owned launcher'
     await rm(directory, { recursive: true, force: true });
   }
 });
+import { execFile, spawnSync } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const hasGio =
+  process.platform === 'linux' &&
+  spawnSync('gio', ['version']).status === 0 &&
+  spawnSync('dbus-run-session', ['--version']).status === 0;
+it.skipIf(!hasGio)(
+  'launches the exact AppImage path through GIO with desktop-entry metacharacters',
+  async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'prezi-menu-quote-'));
+    try {
+      const appImage = join(directory, 'Prezi\'s "mix" $cash `cut` 100% \\.AppImage');
+      const marker = join(directory, 'launched');
+      await writeFile(appImage, `#!/bin/sh\nprintf '%s' "$0" > '${marker}'\n`, { mode: 0o755 });
+      const dataHome = join(directory, 'data');
+      expect(
+        (
+          await integrateAppImage({
+            platform: 'linux',
+            packaged: true,
+            appImage,
+            home: directory,
+            dataHome,
+            icon: resolve('resources/icons/icon.png'),
+          })
+        ).ok,
+      ).toBe(true);
+      const entry = join(dataHome, 'applications/io.github.alexanderwanyoike.prezi.desktop');
+      await promisify(execFile)('dbus-run-session', ['--', 'gio', 'launch', entry]);
+      await expect
+        .poll(() => readFile(marker, 'utf8').catch(() => ''), { timeout: 1000 })
+        .toBe(appImage);
+      const validated = await promisify(execFile)('desktop-file-validate', [entry]);
+      expect(validated.stdout).toBe('');
+      expect(validated.stderr).toBe('');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  },
+);
