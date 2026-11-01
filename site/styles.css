@@ -96,14 +96,37 @@ h1 {
   font-weight: 550;
   letter-spacing: -3px;
 }
-.formats {
-  color: var(--muted);
-  margin: 12px 0 0;
-  font-size: 14px;
+.introduction {
+  max-width: 800px;
+  margin-bottom: 34px;
 }
-.formats span {
-  margin-inline: 10px;
-  color: var(--line);
+.introduction p {
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+.introduction .lead {
+  font-size: clamp(21px, 2.4vw, 28px);
+  line-height: 1.4;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+.features {
+  padding-top: 54px;
+  scroll-margin-top: 24px;
+}
+.feature-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 64px;
+  margin-top: 22px;
+}
+.feature-list article {
+  padding-block: 22px;
+  border-top: 1px solid var(--line);
+}
+.feature-list p {
+  margin: 8px 0 0;
+  color: var(--muted);
 }
 .hero-actions {
   display: flex;
@@ -308,6 +331,12 @@ details p {
   }
   .hero-heading {
     margin-bottom: 24px;
+  }
+  .features {
+    padding-top: 36px;
+  }
+  .feature-list {
+    grid-template-columns: 1fr;
   }
   .hero-actions {
     gap: 12px;

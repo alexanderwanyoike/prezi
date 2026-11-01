@@ -25,6 +25,40 @@ const release = {
   })),
 };
 
+it('explains the desktop editor and its supported workflows before asking visitors to download', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-site-copy-'));
+  try {
+    expect((await buildSite(release, directory)).ok).toBe(true);
+    const document = new DOMParser().parseFromString(
+      await readFile(join(directory, 'index.html'), 'utf8'),
+      'text/html',
+    );
+    const introduction = document.querySelector('.hero')?.textContent ?? '';
+    expect(introduction).toMatch(/desktop.*presentation editor/i);
+    expect(introduction).toContain('React and TypeScript');
+    const features = document.querySelector('section[aria-labelledby="features-title"]');
+    expect(features).not.toBeNull();
+    const content = features?.textContent ?? '';
+    [
+      'Canvas editing',
+      'Remotion scenes',
+      'Manual reveals',
+      'Portable projects',
+      'MCP collaboration',
+      'Undo and Redo',
+      'Colours and fonts',
+      'Desktop updates',
+    ].forEach((name) => {
+      expect(content).toContain(name);
+    });
+    expect(content).toContain('macOS');
+    expect(content).toContain('unsaved work');
+    expect(document.querySelector('nav a[href="#features"]')).not.toBeNull();
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 it('builds working native download links and local assets only for a complete published release', async () => {
   const root = await mkdtemp(join(tmpdir(), 'prezi-site-'));
   try {
