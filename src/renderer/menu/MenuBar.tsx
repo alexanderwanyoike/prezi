@@ -162,8 +162,8 @@ export function MenuBar({
               }
               if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
                 event.preventDefault();
-                const next =
-                  menuNames[(index + (event.key === 'ArrowLeft' ? 2 : 1)) % menuNames.length];
+                const direction = event.key === 'ArrowLeft' ? -1 : 1;
+                const next = menuNames[(index + direction + menuNames.length) % menuNames.length];
                 if (next) {
                   root.current
                     ?.querySelector<HTMLButtonElement>(`[data-menu-name="${next}"]`)
