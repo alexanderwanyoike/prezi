@@ -153,3 +153,37 @@ button.preview-restart {
   background: #101513;
   color: #edf2ec;
 }
+
+[data-frame][data-selected='true'] {
+  outline: 2px solid #00d970;
+  outline-offset: 2px;
+}
+button.frame-handle {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(24px / (100cqw / 1920px));
+  height: calc(24px / (100cqw / 1920px));
+  padding: 0;
+  border: 1px solid #00d970;
+  background: #101513;
+  color: #00d970;
+  touch-action: none;
+}
+.frame-handle svg {
+  width: 65%;
+  height: 65%;
+  pointer-events: none;
+}
+.frame-move {
+  top: 0;
+  left: 0;
+  cursor: move;
+}
+.frame-resize {
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+}

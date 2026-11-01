@@ -6,6 +6,7 @@ import type { CustomSceneDefinition } from '../../shared/scene-definition';
 import type { CustomSceneEditing } from './CustomScenePlayer';
 import type { Slide } from '../../shared/project';
 import { ScenePlayer } from './ScenePlayer';
+import type { FrameEditing } from './FrameEditor';
 import type { SceneEditing } from './SceneText';
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
   index: number;
   count: number;
   editing: SceneEditing;
+  mediaEditing?: FrameEditing | undefined;
   definition?: CustomSceneDefinition | undefined;
   customEditing?: CustomSceneEditing | undefined;
 }
@@ -29,6 +31,7 @@ export function SlideCanvas({
   pending,
   definition,
   customEditing,
+  mediaEditing,
 }: Props): React.JSX.Element {
   const [reveal, setReveal] = useState(0);
   const [run, setRun] = useState(0);
@@ -64,6 +67,7 @@ export function SlideCanvas({
               editing,
               definition,
               customEditing,
+              mediaEditing,
             }}
           />
         </div>

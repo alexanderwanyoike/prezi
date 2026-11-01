@@ -1,3 +1,4 @@
+import type { FrameEditing } from './FrameEditor';
 import type { ProjectFont } from '../../shared/fonts';
 import type { PresentationTheme } from '../../shared/presentation-theme';
 import type { Slide } from '../../shared/project';
@@ -15,6 +16,7 @@ export interface SceneProps extends Record<string, unknown> {
   editing?: SceneEditing;
   definition?: CustomSceneDefinition | undefined;
   customEditing?: CustomSceneEditing | undefined;
+  mediaEditing?: FrameEditing | undefined;
   mediaActive?: boolean;
   mediaAutoplay?: boolean;
 }

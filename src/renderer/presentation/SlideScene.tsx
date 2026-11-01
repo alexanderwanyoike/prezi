@@ -14,6 +14,7 @@ export function SlideScene({
   slideNumber,
   slideCount,
   editing,
+  mediaEditing,
   mediaActive = true,
   mediaAutoplay = false,
 }: SceneProps): React.JSX.Element {
@@ -141,6 +142,7 @@ export function SlideScene({
       </div>
       {slide.media && (
         <SceneMedia
+          editing={mediaEditing}
           key={slide.media.id}
           media={slide.media}
           active={mediaActive}

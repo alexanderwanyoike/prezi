@@ -290,6 +290,16 @@ export function App(): React.JSX.Element {
                   );
                 },
               }}
+              mediaEditing={{
+                selected: selectedField === 'media',
+                pending: busy,
+                select: () => setSelectedField('media'),
+                update: (frame) =>
+                  edit(
+                    [{ type: 'updateMedia', slideId: slide.id, patch: { frame } }],
+                    'Move or resize media',
+                  ),
+              }}
               pending={selectionPending}
               editing={{
                 pending: busy,

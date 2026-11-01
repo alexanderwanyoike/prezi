@@ -1,29 +1,25 @@
 import { useState } from 'react';
 import { mediaFrame, mediaUrl } from '../../shared/media';
 import type { MediaAsset } from '../../shared/media';
+import { FrameEditor } from './FrameEditor';
+import type { FrameEditing } from './FrameEditor';
 import { SceneVideo } from './SceneVideo';
 
 export function SceneMedia({
   media,
   active,
   autoplay,
+  editing,
 }: {
   media: MediaAsset;
   active: boolean;
   autoplay: boolean;
+  editing?: FrameEditing | undefined;
 }): React.JSX.Element {
   const frame = mediaFrame(media);
   const [failed, setFailed] = useState(false);
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: frame.x,
-        top: frame.y,
-        width: frame.width,
-        height: frame.height,
-      }}
-    >
+    <FrameEditor frame={frame} editing={editing} label="media">
       {failed && (
         <p role="alert" style={{ fontSize: 28, padding: 30 }}>
           Could not display {media.name}. Locate a replacement in Media properties, or choose a
@@ -51,6 +47,6 @@ export function SceneMedia({
           }}
         />
       )}
-    </div>
+    </FrameEditor>
   );
 }

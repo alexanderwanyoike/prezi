@@ -17,7 +17,8 @@ export function useWorkspaceSelection(
       window.prezi.subscribeSelection((selection) => {
         selectSlide(selection.slideId);
         const id = selection.elementId?.split(':')[1];
-        if (
+        if (id === 'media') selectField('media');
+        else if (
           id &&
           latest.current?.project.slides.find((slide) => slide.id === selection.slideId)?.scene
         )
