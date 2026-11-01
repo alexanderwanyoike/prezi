@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { LayoutPanelTop, Palette, Play, Redo2, Undo2 } from 'lucide-react';
 import { editPendingContext } from './edit-pending';
 import { usePreviews } from './usePreviews';
@@ -42,6 +42,9 @@ export function App(): React.JSX.Element {
   const [codeResource, setCodeResource] = useState<CodeResource>('scene');
   const [presenting, setPresenting] = useState(false);
   const [presentationError, setPresentationError] = useState<string | null>(null);
+  useEffect(() => {
+    setPresentationError(null);
+  }, [busy, snapshot?.revision]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [connectionOpen, setConnectionOpen] = useState(false);
@@ -49,7 +52,10 @@ export function App(): React.JSX.Element {
   const { actions, error: desktopError } = useApplicationActions({
     project,
     selectedId,
-    setPresenting,
+    setPresenting: (value) => {
+      setPresentationError(null);
+      setPresenting(value);
+    },
     setCodeVisible,
     setAppearanceOpen,
     setConnectionOpen,
@@ -392,12 +398,12 @@ export function App(): React.JSX.Element {
               presentationError || error || desktopError || fontStatus.error ? 'alert' : undefined
             }
           >
-            {presentationError ??
-              error ??
+            {error ??
               desktopError ??
               fontStatus.error ??
               workspaceError ??
               appearanceError ??
+              presentationError ??
               status}
           </span>
         </span>
