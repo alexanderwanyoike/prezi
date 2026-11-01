@@ -53,9 +53,9 @@ it('keeps agent previews shared without adopting their pending controls or error
     act(() => {
       view.result.current.capture(request);
     });
-    await waitFor(() =>
-      expect(view.result.current).toHaveProperty('pending.id', request.requestId),
-    );
+    await waitFor(() => {
+      expect(view.result.current).toHaveProperty('pending.id', request.requestId);
+    });
     act(() => {
       receive({
         ...queued,
