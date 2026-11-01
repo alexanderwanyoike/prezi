@@ -2,6 +2,8 @@ import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { expect, it } from 'vitest';
+import { execFile, spawnSync } from 'node:child_process';
+import { promisify } from 'node:util';
 import { integrateAppImage } from './appimage-menu';
 
 it('registers a packaged Linux AppImage and persistent icon in XDG user data', async () => {
@@ -85,8 +87,6 @@ it('refreshes its own launcher after a move and preserves a user-owned launcher'
     await rm(directory, { recursive: true, force: true });
   }
 });
-import { execFile, spawnSync } from 'node:child_process';
-import { promisify } from 'node:util';
 
 const hasGio =
   process.platform === 'linux' &&
