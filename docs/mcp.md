@@ -59,6 +59,8 @@ read_project lists registered font IDs, names, format, provenance and notice len
 
 ## Resource replacement
 
+Images are checked before import and resource serving: 32 MiB, 8192 pixels per side and 33,554,432 pixels overall, with at most 512 KiB of header data read. PNG/JPEG/WebP/GIF headers must match their extension. Invalid images leave the revision and history unchanged.
+
 import_media accepts optional credit {provenance, license} and replace: true. Replacement retains the old frame/playback/credits, requires the same image/video kind and registers a new resource identity. updateMedia can edit provenance and licence text. import_font accepts replaceFontId to replace one registration, retain its supplied credits and update body/detail theme references atomically. Both replacement routes use the same request-ID retry and revision rules as normal imports. Undo restores the original resource references.
 
 Focused editor text and numeric properties follow accepted MCP updates. Valid numeric values commit while typing; unfinished invalid drafts are retained with an explicit conflict notice. updateMedia.frame accepts partial coordinates and merges them with the current frame before validating bounds, so clients should send only the components they intend to change.

@@ -83,3 +83,7 @@ The W3C Pointer Events capture/cancellation pattern informs canvas gestures: htt
 ## Stalled scene recovery
 
 Electron's frame tree and process metrics identify the exact prepared scene renderer. Its documented PID plus creation-time identity prevents targeting a reused process ID: https://www.electronjs.org/docs/latest/api/structures/process-metric . The frame tree includes all application web contents before termination. Failed scenes detach before their process stops to avoid Chromium propagating a page-crash event. No upstream implementation code was copied.
+
+## Image resource limits
+
+image-size 2.0.2 supplies header-only image dimensions under MIT; its licence is retained at [licenses/image-size.txt](licenses/image-size.txt). Its documented buffer API and Forgecut's inspected image dimension limits inform validation before copying or serving image resources. Reads are bounded to 512 KiB; no dependency or reference-application source was copied. Reference: https://github.com/image-size/image-size/tree/v2.0.2 .
