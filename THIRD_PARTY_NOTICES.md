@@ -69,3 +69,7 @@ Electron's documented offscreen BrowserWindow, webContents.capturePage, nativeIm
 ## Isolated renderer setup
 
 The CSP sandbox response-header pattern follows the browser directive documented by Mozilla: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/sandbox . The existing restrictive network policy remains in document metadata. Electron's offscreen window, audio mute and post-navigation zoom APIs inform worker setup: https://www.electronjs.org/docs/latest/tutorial/offscreen-rendering . These references inform API use; no implementation code was copied.
+
+## Programmed transitions
+
+Remotion's custom presentation pattern supplies explicit progress, entering/exiting direction and passed properties: https://www.remotion.dev/docs/transitions/presentations/custom . This informs the transition function contract; Remotion interpolation/easing functions execute in the existing isolated worker. Bounded numeric samples are retained rather than evaluating project code in the editor. No upstream implementation code was copied; the existing Remotion licence applies to the dependency.
