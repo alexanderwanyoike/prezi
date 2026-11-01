@@ -4,7 +4,7 @@ Local Electron presentation editor built with TypeScript, React and Remotion. Pr
 
 Human and MCP clients edit the same project, including custom Remotion scenes, media, fonts and programmable transitions. Code drafts save with portable projects and use explicit Apply validation.
 
-[Website and downloads](https://alexanderwanyoike.github.io/prezi/) · [v0.1.0 release notes](docs/releases/v0.1.0.md)
+[Website and downloads](https://alexanderwanyoike.github.io/prezi/) · [v0.1.1 release notes](docs/releases/v0.1.1.md)
 
 ![Canvas editor](site/assets/canvas.png)
 
