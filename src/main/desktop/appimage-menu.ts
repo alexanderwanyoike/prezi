@@ -32,6 +32,18 @@ export async function integrateAppImage(
     options.dataHome && isAbsolute(options.dataHome)
       ? options.dataHome
       : join(options.home, '.local/share');
+  if (
+    ![appImage, dataHome, options.home, options.icon].every(
+      (path) =>
+        isAbsolute(path) &&
+        ![...path].some((character) => character < ' ' || character === '\u007f'),
+    ) ||
+    appImage.includes('=')
+  )
+    return failure(
+      'INVALID_INPUT',
+      'The AppImage or menu location cannot be used in a desktop launcher.',
+    );
   const applications = join(dataHome, 'applications');
   const icon = join(dataHome, 'icons/io.github.alexanderwanyoike.prezi.png');
   const entry = join(applications, 'io.github.alexanderwanyoike.prezi.desktop');
