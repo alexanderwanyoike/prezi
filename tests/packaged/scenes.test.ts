@@ -17,6 +17,7 @@ test('compiles custom scenes in the installed application with portable fonts an
         ),
       ),
       PREZI_MCP_PORT: '0',
+      XDG_DATA_HOME: test.info().outputPath('data'),
     },
   });
   let completed = false;
