@@ -47,7 +47,10 @@ it('builds working native download links and local assets only for a complete pu
     expect(images.length).toBeGreaterThan(0);
     await Promise.all(
       images.map(async (image) => {
-        const url = new URL(image.src, 'https://alexanderwanyoike.github.io/prezi/');
+        const url = new URL(
+          image.getAttribute('src') ?? '',
+          'https://alexanderwanyoike.github.io/prezi/',
+        );
         expect(url.pathname.startsWith('/prezi/assets/')).toBe(true);
         expect((await stat(join(directory, url.pathname.slice('/prezi/'.length)))).isFile()).toBe(
           true,
