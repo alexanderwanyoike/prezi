@@ -375,6 +375,7 @@ export class ProjectOwner {
     this.fileBusy = true;
     try {
       let project: Project;
+      let archiveDirectory: string | undefined;
       if (path.toLowerCase().endsWith('.prezi')) {
         const archived = await readArchive(path);
         if (!archived.ok) return archived;
@@ -383,6 +384,7 @@ export class ProjectOwner {
           return failure('CONFLICT', 'The project was edited while opening. Try again.');
         }
         project = archived.value.project;
+        archiveDirectory = archived.value.directory;
         this.assets.adopt(archived.value.directory, archived.value.assets);
       } else {
         const result = await readProject(path);
@@ -402,6 +404,8 @@ export class ProjectOwner {
       this.listeners.forEach((listener) => {
         listener(this.snapshot());
       });
+      const released = await this.assets.releaseArchives(archiveDirectory);
+      if (!released.ok) process.stderr.write(`${released.error.message}\n`);
       return { ok: true, value: this.snapshot() };
     } finally {
       this.fileBusy = false;

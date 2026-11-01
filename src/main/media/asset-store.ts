@@ -1,5 +1,5 @@
 import { copyFile, mkdir, rename, rm, stat } from 'node:fs/promises';
-import { basename, extname, join } from 'node:path';
+import { basename, dirname, extname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { StoredAsset } from '../../shared/project-assets';
 import type { FontCredit, ProjectFont } from '../../shared/fonts';
@@ -107,6 +107,27 @@ export class AssetStore {
       },
       Promise.resolve({ ok: true, value: undefined }),
     );
+  }
+
+  async releaseArchives(keepDirectory?: string): Promise<Result<void>> {
+    const directories = [...this.archiveDirectories].filter(
+      (directory) => directory !== keepDirectory,
+    );
+    const removed = await Promise.allSettled(
+      directories.map(async (directory) => {
+        await rm(directory, { recursive: true, force: true });
+        this.archiveDirectories.delete(directory);
+        this.paths.forEach((path, id) => {
+          if (dirname(path) === directory) this.paths.delete(id);
+        });
+      }),
+    );
+    return removed.some((result) => result.status === 'rejected')
+      ? failure(
+          'IO_ERROR',
+          'Could not release every previous project extraction. Cleanup will retry on quit.',
+        )
+      : { ok: true, value: undefined };
   }
 
   async dispose(): Promise<Result<void>> {
