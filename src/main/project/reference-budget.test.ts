@@ -58,18 +58,22 @@ it('counts retained reference source when accepting edits and keeps accepted sav
     if (result.ok) throw Error('Expected content-budget rejection');
     expect(result.error.code).toBe('INVALID_INPUT');
     expect(owner.snapshot()).toEqual(before);
-    for (const extension of ['prezi.json', 'prezi']) {
-      const saved = join(directory, `saved.${extension}`);
-      expect((await owner.save(saved)).ok).toBe(true);
-      const reopened = new ProjectOwner();
-      try {
-        expect((await reopened.open(saved, 0)).ok).toBe(true);
-        expect(reopened.snapshot().project).toEqual(before.project);
-        expect(reopened.sourceCatalog().files).toEqual(project.sources);
-      } finally {
-        await reopened.dispose();
-      }
-    }
+    await ['prezi.json', 'prezi'].reduce<Promise<void>>(
+      (previous, extension) =>
+        previous.then(async () => {
+          const saved = join(directory, `saved.${extension}`);
+          expect((await owner.save(saved)).ok).toBe(true);
+          const reopened = new ProjectOwner();
+          try {
+            expect((await reopened.open(saved, 0)).ok).toBe(true);
+            expect(reopened.snapshot().project).toEqual(before.project);
+            expect(reopened.sourceCatalog().files).toEqual(project.sources);
+          } finally {
+            await reopened.dispose();
+          }
+        }),
+      Promise.resolve(),
+    );
     const archive = await readArchive(join(directory, 'saved.prezi'));
     if (!archive.ok) throw Error(archive.error.message);
     extracted = archive.value.directory;
