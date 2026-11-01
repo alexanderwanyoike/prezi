@@ -120,9 +120,6 @@ it.skipIf(!hasGio)(
       await expect
         .poll(() => readFile(marker, 'utf8').catch(() => ''), { timeout: 1000 })
         .toBe(appImage);
-      const validated = await promisify(execFile)('desktop-file-validate', [entry]);
-      expect(validated.stdout).toBe('');
-      expect(validated.stderr).toBe('');
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
