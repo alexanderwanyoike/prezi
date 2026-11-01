@@ -51,7 +51,7 @@ test('moves and resizes attached media on the canvas with atomic undo and cancel
       .poll(() => page.evaluate(() => window.prezi.snapshot()))
       .toMatchObject({ ok: true, value: { project: { slides: initial.value.project.slides } } });
     await page.getByRole('button', { name: 'Redo', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Resize media', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Resize media', exact: true })).toBeEnabled();
     const resize = await page
       .getByRole('button', { name: 'Resize media', exact: true })
       .boundingBox();
