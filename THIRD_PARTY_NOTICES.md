@@ -95,3 +95,7 @@ Penpal's postMessage connection handshake provides an established reference for 
 ## Linux CI controller delegation
 
 Docker's rootless resource-limit documentation describes delegating cpu, memory and pids controllers to the user systemd manager: https://docs.docker.com/engine/security/rootless/tips/#limiting-resources . This informs the ephemeral CI fixture needed to exercise enforced renderer budgets. No Docker implementation code was copied or added as a dependency.
+
+## Editor history grouping
+
+ProseMirror History's MIT-licensed transaction grouping informs short-lived groups for adjacent edits: https://github.com/ProseMirror/prosemirror-history/blob/master/src/history.ts . The editor uses a 500 ms idle boundary and explicit target identities, while the project owner additionally checks consecutive revisions. No ProseMirror dependency or implementation code was copied. The existing Canvas layout-effect synchronization pattern is reused for rapidly acknowledged code drafts.
