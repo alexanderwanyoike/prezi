@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PreviewJob, PreviewRequest } from '../shared/preview';
 
 function retain(jobs: PreviewJob[]): PreviewJob[] {
@@ -11,13 +11,15 @@ function retain(jobs: PreviewJob[]): PreviewJob[] {
   return retained;
 }
 export function usePreviews() {
+  const owned = useRef(new Set<string>());
   const [jobs, setJobs] = useState<PreviewJob[]>([]);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
     const unsubscribe = window.prezi.subscribePreviews((job) => {
       setJobs((previous) => retain([...previous.filter((item) => item.id !== job.id), job]));
-      if (job.error) setError(job.error.message);
+      if (owned.current.has(job.id) && job.error) setError(job.error.message);
+      if (!['queued', 'rendering'].includes(job.state)) owned.current.delete(job.id);
     });
     void window.prezi.previews().then((result) => {
       if (!live) return;
@@ -37,12 +39,18 @@ export function usePreviews() {
   }, []);
   const capture = (request: PreviewRequest): void => {
     setError(null);
+    owned.current.add(request.requestId);
     void window.prezi.capturePreview(request).then((result) => {
       if (result.ok)
         setJobs((previous) =>
           retain([...previous.filter((item) => item.id !== result.value.id), result.value]),
         );
-      else setError(result.error.message);
+      else {
+        owned.current.delete(request.requestId);
+        setError(result.error.message);
+      }
+      if (result.ok && !['queued', 'rendering'].includes(result.value.state))
+        owned.current.delete(request.requestId);
     });
   };
   const cancel = (id: string): void => {
@@ -52,5 +60,8 @@ export function usePreviews() {
       else setError(result.error.message);
     });
   };
-  return { jobs, error, capture, cancel };
+  const pending = jobs.find(
+    (job) => owned.current.has(job.id) && ['queued', 'rendering'].includes(job.state),
+  );
+  return { jobs, pending, error, capture, cancel };
 }

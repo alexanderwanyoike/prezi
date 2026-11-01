@@ -21,7 +21,7 @@ export function SlideRail({
   select,
   add,
 }: Props): React.JSX.Element {
-  const pending = previews.jobs.find((job) => job.state === 'queued' || job.state === 'rendering');
+  const { pending } = previews;
   return (
     <aside className="slide-rail" aria-label="Slides">
       <div className="panel-heading">
