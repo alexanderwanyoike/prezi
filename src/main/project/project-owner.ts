@@ -377,6 +377,8 @@ export class ProjectOwner {
   async save(path: string): Promise<Result<ProjectSnapshot>> {
     if (this.restarting || this.fileBusy)
       return failure('CONFLICT', 'Another file operation or restart is still running.');
+    if (!this.withinContentBudget(this.project))
+      return failure('INVALID_INPUT', 'The project exceeds its 8 MiB content budget.');
     this.fileBusy = true;
     const content = structuredClone(this.project);
     const project: Project = this.referenceSources
