@@ -49,7 +49,7 @@ test('opens the isolated desktop with an editor ready for a local presentation',
       page.getByRole('button', { name: 'Slide 3: A working presentation', exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'Add slide', exact: true }).click();
-    await expect(title).toHaveValue('Untitled slide');
+    await expect(title).toHaveValue('');
     await title.fill('An edit still in focus');
     await expect
       .poll(

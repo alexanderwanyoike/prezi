@@ -33,3 +33,40 @@ test('keeps editor panels focused on controls without decorative filler', async 
     await desktop.close();
   }
 });
+
+test('keeps a new deck and its code layout free of generated slide text', async () => {
+  const desktop = await electron.launch({
+    args: [resolve('.'), '--mute-audio', `--user-data-dir=${test.info().outputPath('profile')}`],
+    env: {
+      ...Object.fromEntries(
+        Object.entries(process.env).filter(
+          (entry): entry is [string, string] =>
+            typeof entry[1] === 'string' && entry[0] !== 'ELECTRON_RUN_AS_NODE',
+        ),
+      ),
+      PREZI_MCP_PORT: '0',
+    },
+  });
+  try {
+    const page = await desktop.firstWindow();
+    await page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'New presentation', exact: true }).click();
+    await expect(page.getByRole('textbox', { name: 'Heading', exact: true })).toHaveValue('');
+    await page.getByLabel('Layout', { exact: true }).selectOption('code');
+    await expect(page.getByRole('textbox', { name: 'Code', exact: true })).toHaveValue('');
+    await page.getByRole('button', { name: 'Present', exact: true }).click();
+    const stage = page.getByRole('region', { name: 'Presentation stage' });
+    await expect(stage).toHaveAttribute('data-busy', 'false');
+    await expect(stage).not.toContainText('Untitled slide');
+    await expect(stage).not.toContainText('SOURCE / WALKTHROUGH');
+    await expect(stage).not.toContainText('Add your code here');
+    await page.keyboard.press('Escape');
+  } finally {
+    await desktop.evaluate(({ dialog }) =>
+      Object.assign(dialog, {
+        showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
+      }),
+    );
+    await desktop.close();
+  }
+});

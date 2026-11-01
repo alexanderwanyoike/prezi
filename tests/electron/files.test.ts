@@ -33,7 +33,7 @@ test('creates, saves and reopens a deck through desktop commands without discard
       timeout: 1500,
     });
     await fileCommand(page, 'newProject');
-    await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('Untitled slide');
+    await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('');
     await page.getByLabel('Presentation name', { exact: true }).fill('My local explanation');
     await page.getByLabel('Heading', { exact: true }).fill('An opening thought');
     await fileCommand(page, 'save');
@@ -43,7 +43,7 @@ test('creates, saves and reopens a deck through desktop commands without discard
       slides: [{ title: 'An opening thought' }],
     });
     await fileCommand(page, 'newProject');
-    await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('Untitled slide');
+    await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('');
     await fileCommand(page, 'open');
     await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('An opening thought');
     await expect(page.getByLabel('Presentation name', { exact: true })).toHaveValue(

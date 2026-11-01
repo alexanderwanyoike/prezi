@@ -54,7 +54,7 @@ test('uses application menus, desktop shortcuts and Canvas/Code workspace tabs',
     );
     await page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
     await page.getByRole('menuitem', { name: 'New presentation', exact: true }).click();
-    await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('Untitled slide');
+    await expect(page.getByLabel('Heading', { exact: true })).toHaveValue('');
     await page.keyboard.press('Control+o');
     await expect(page.getByLabel('Heading', { exact: true })).toHaveValue(
       'An application workspace',
