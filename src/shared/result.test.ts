@@ -5,6 +5,7 @@ import { updateResultSchema } from './updates';
 import { sceneJobResultSchema } from './scene-jobs';
 import { previewResultSchema, previewListResultSchema } from './preview';
 import { compilationSchema } from './custom-scene';
+import { mcpStatusSchema } from './mcp';
 
 it('preserves every typed failure across application result boundaries', () => {
   errorCodes.forEach((code) => {
@@ -16,6 +17,7 @@ it('preserves every typed failure across application result boundaries', () => {
       sceneJobResultSchema,
       previewResultSchema,
       previewListResultSchema,
+      mcpStatusSchema,
     ].forEach((schema) => {
       expect(schema.parse(result)).toEqual(result);
     });
