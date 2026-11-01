@@ -22,26 +22,32 @@ test('pauses a pending native play request without showing a codec failure', asy
     await video.evaluate((element) => {
       if (!(element instanceof HTMLVideoElement)) throw Error('No video');
       const nativePlay = element.play.bind(element);
-      element.play = () => {
-        element.dataset.playRequested = 'true';
-        const source = new URL(element.src);
-        source.searchParams.set('interruption', crypto.randomUUID());
-        element.src = source.toString();
-        element.load();
-        const request = nativePlay();
-        element.pause();
-        element.dataset.interrupted = 'true';
-        void request.then(
-          () => {
-            element.dataset.playResult = 'fulfilled';
-          },
-          (error: unknown) => {
-            element.dataset.playResult = error instanceof DOMException ? error.name : 'rejected';
-          },
-        );
-        return request;
-      };
-      element.preload = 'none';
+      Object.defineProperty(element, 'play', {
+        configurable: true,
+        value: () => {
+          element.setAttribute('data-play-requested', 'true');
+          const source = new URL(element.src);
+          source.searchParams.set('interruption', crypto.randomUUID());
+          element.setAttribute('src', source.toString());
+          element.load();
+          const request = nativePlay();
+          element.pause();
+          element.setAttribute('data-interrupted', 'true');
+          void request.then(
+            () => {
+              element.setAttribute('data-play-result', 'fulfilled');
+            },
+            (error: unknown) => {
+              element.setAttribute(
+                'data-play-result',
+                error instanceof DOMException ? error.name : 'rejected',
+              );
+            },
+          );
+          return request;
+        },
+      });
+      element.setAttribute('preload', 'none');
       element.load();
     });
     await video.hover();
@@ -50,16 +56,16 @@ test('pauses a pending native play request without showing a codec failure', asy
     await expect(video).toHaveAttribute('data-play-requested', 'true');
     await expect(video).toHaveAttribute('data-play-result', 'AbortError');
     await video.evaluate(async () => {
-      await new Promise<void>((resolve) =>
+      await new Promise<void>((finish) => {
         requestAnimationFrame(() => {
-          resolve();
-        }),
-      );
-      await new Promise<void>((resolve) =>
+          finish();
+        });
+      });
+      await new Promise<void>((finish) => {
         requestAnimationFrame(() => {
-          resolve();
-        }),
-      );
+          finish();
+        });
+      });
     });
     await expect(video).toHaveJSProperty('paused', true);
     await expect(page.locator('.scene-video')).toHaveAttribute('data-blocked', 'false');
