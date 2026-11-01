@@ -79,7 +79,7 @@ test('compiles custom scenes in the installed application with portable fonts an
         child
           .locator('body')
           .evaluate(
-            (id) =>
+            (_node, id) =>
               Array.from(document.fonts).some(
                 (face) => face.family === `PreziFont_${id}` && face.status === 'loaded',
               ),
@@ -105,7 +105,7 @@ test('compiles custom scenes in the installed application with portable fonts an
         child
           .locator('body')
           .evaluate(
-            (id) =>
+            (_node, id) =>
               Array.from(document.fonts).some(
                 (face) => face.family === `PreziFont_${id}` && face.status === 'loaded',
               ),
