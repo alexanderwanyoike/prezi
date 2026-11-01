@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { exampleOwner } from '../../../tests/fixtures/example-owner';
 import { ProjectOwner } from './project-owner';
 import { writeArchive } from '../archive/write-archive';
 
@@ -9,6 +10,7 @@ it('imports a real font with its notice, selects it through shared history and r
   const directory = await mkdtemp(join(tmpdir(), 'prezi-font-'));
   const owner = new ProjectOwner();
   const reopened = new ProjectOwner();
+  const initialTheme = owner.snapshot().project.theme;
   try {
     const fixture = resolve(
       'node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2',
@@ -48,7 +50,7 @@ it('imports a real font with its notice, selects it through shared history and r
     if (!recovered) throw Error('Missing portable font');
     expect(await readFile(recovered)).toEqual(await readFile(fixture));
     expect(owner.undo(2).ok).toBe(true);
-    expect(owner.snapshot().project.theme).toBeUndefined();
+    expect(owner.snapshot().project.theme).toEqual(initialTheme);
     expect(owner.undo(3).ok).toBe(true);
     expect(owner.snapshot().project.fonts).toBeUndefined();
   } finally {
@@ -85,15 +87,15 @@ it('rejects unsupported font bytes, oversized fonts and missing selected font id
   }
 });
 
-it('keeps font identities separate from existing media identities', () => {
-  const owner = new ProjectOwner(resolve('tests/fixtures/held-video.webm'));
+it('keeps font identities separate from existing media identities', async () => {
+  const owner = await exampleOwner();
   const initial = owner.snapshot();
   const media = initial.project.slides[2]?.media;
   if (!media) throw Error('Missing example media');
   expect(
     owner.edit({
       requestId: 'duplicate-asset',
-      expectedRevision: 0,
+      expectedRevision: 1,
       label: 'Conflicting font identity',
       operations: [
         { type: 'addFont', font: { id: media.id, name: 'Conflicting font', extension: 'woff2' } },

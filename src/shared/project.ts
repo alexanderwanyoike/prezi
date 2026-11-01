@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { referenceSourcesSchema } from './reference-sources';
 import { transitionDefinitionSchema, transitionDraftSchema } from './transition';
 import { fontSchema, fontCreditSchema } from './fonts';
-import { presentationThemeSchema } from './presentation-theme';
+import { presentationThemeSchema, defaultPresentationTheme } from './presentation-theme';
 import { sceneDraftSchema } from './scene-draft';
 import {
   sceneDefinitionProblem,
@@ -154,25 +154,21 @@ export function createProject(): Project {
   return {
     schemaVersion: 1,
     id: crypto.randomUUID(),
-    name: 'Vibez / how I built it',
+    name: 'Untitled presentation',
+    // Persist new defaults so theme-less saved projects keep their original appearance.
+    theme: {
+      ...defaultPresentationTheme,
+      background: '#ffffff',
+      foreground: '#171717',
+      muted: '#646464',
+      accent: '#404040',
+      surface: '#f2f2f2',
+      border: '#d4d4d4',
+    },
     slides: [
       {
         id: crypto.randomUUID(),
-        title: 'Vibez / how I built it',
-        body: '',
-        layout: 'title',
-        reveals: [],
-      },
-      {
-        id: crypto.randomUUID(),
-        title: 'Workflow',
-        body: '',
-        layout: 'process',
-        reveals: ['Planning', 'Implementation', 'Review', 'Human testing'],
-      },
-      {
-        id: crypto.randomUUID(),
-        title: 'Video demonstration',
+        title: '',
         body: '',
         layout: 'title',
         reveals: [],

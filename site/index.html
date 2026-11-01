@@ -6,7 +6,7 @@
     <title>Prezi</title>
     <meta
       name="description"
-      content="Local presentation editor with Remotion, Canvas, Code and MCP."
+      content="A local desktop presentation editor built with Remotion. Edit on the canvas, code animated scenes, present with manual reveals and save portable projects."
     />
     <meta name="theme-color" content="#f3f5f0" />
     <link rel="canonical" href="https://alexanderwanyoike.github.io/prezi/" />
@@ -28,21 +28,31 @@
         ><img src="assets/icon.svg" alt="" width="36" height="36" />Prezi</a
       >
       <nav aria-label="Main navigation">
-        <a href="#canvas">Canvas</a><a href="#code">Code</a
+        <a href="#features">Features</a><a href="#code">Code</a
         ><a class="nav-download" href="#downloads">Download <span aria-hidden="true">↓</span></a>
       </nav>
     </header>
     <main id="main">
       <section class="hero wrap" aria-labelledby="title">
         <div class="hero-heading">
-          <div>
-            <h1 id="title">Prezi</h1>
-            <p class="formats">Remotion <span> / </span> .prezi <span> / </span> MCP</p>
-          </div>
+          <h1 id="title">Prezi</h1>
           <div class="hero-actions">
             <span class="version" data-version>__VERSION__</span
             ><a class="button" href="#downloads">Download <span aria-hidden="true">↓</span></a>
           </div>
+        </div>
+        <div class="introduction">
+          <p class="lead">A local desktop presentation editor built with Remotion.</p>
+          <p>
+            Edit text and media on the canvas, write animated scenes in React and TypeScript, and
+            advance each reveal when you’re ready. Your deck, source, media and fonts stay together
+            in a portable <code>.prezi</code> project.
+          </p>
+          <p>
+            Use it for demos, code walkthroughs and narrated explanations. Present live or capture
+            your screen with OBS or another recorder. Ordinary editing and playback run locally,
+            without an account.
+          </p>
         </div>
         <figure class="product" id="canvas">
           <img
@@ -54,6 +64,68 @@
           />
           <figcaption><span>Canvas</span><span>__VERSION__</span></figcaption>
         </figure>
+      </section>
+      <section class="features wrap" id="features" aria-labelledby="features-title">
+        <h2 id="features-title">Features</h2>
+        <div class="feature-list">
+          <article>
+            <h3>Canvas editing</h3>
+            <p>
+              Type directly on a slide. Move and resize media on the canvas, use the inspector for
+              exact values, and arrange slides in the rail.
+            </p>
+          </article>
+          <article>
+            <h3>Remotion scenes</h3>
+            <p>
+              Edit TSX source in Code view, expose properties to the inspector, and program scenes
+              or transitions. Apply validates changes and retains the last working version if
+              validation fails.
+            </p>
+          </article>
+          <article>
+            <h3>Manual reveals</h3>
+            <p>
+              Advance reveals and slides with Space or the arrow keys. Video keeps playing while a
+              reveal holds. Present in a window or in fullscreen.
+            </p>
+          </article>
+          <article>
+            <h3>Portable projects</h3>
+            <p>
+              A <code>.prezi</code> file contains the deck, source, media, fonts and notices. Move
+              it between computers and keep editing locally.
+            </p>
+          </article>
+          <article>
+            <h3>MCP collaboration</h3>
+            <p>
+              Connect an agent through Model Context Protocol (MCP). Its edits appear in the same
+              canvas and project that you control.
+            </p>
+          </article>
+          <article>
+            <h3>Undo and Redo</h3>
+            <p>
+              Undo or redo your edits and agent changes. Each accepted agent batch is one history
+              action, so its changes can be undone together.
+            </p>
+          </article>
+          <article>
+            <h3>Colours and fonts</h3>
+            <p>
+              Set slide colours, typography and motion in Presentation theme. Import project fonts,
+              and choose the app’s light/dark mode and accent separately.
+            </p>
+          </article>
+          <article>
+            <h3>Desktop updates</h3>
+            <p>
+              Linux AppImage and Windows installations can download verified updates and restart
+              after protecting unsaved work. macOS installations use release downloads.
+            </p>
+          </article>
+        </div>
       </section>
       <section class="downloads wrap" id="downloads" aria-labelledby="download-title">
         <div class="section-heading">

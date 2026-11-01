@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
 import { z } from 'zod';
+import { openExample } from './open-example';
 import { connectDesktopMcp } from './mcp-client';
 
 test('compiles and validates shared scene source before atomically publishing it through MCP', async () => {
@@ -24,6 +25,7 @@ test('compiles and validates shared scene source before atomically publishing it
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     const initial = await page.evaluate(() => window.prezi.snapshot());
@@ -32,7 +34,7 @@ test('compiles and validates shared scene source before atomically publishing it
     if (!slide) throw Error('No slide');
     const request = {
       requestId: 'create-custom',
-      expectedRevision: 0,
+      expectedRevision: 1,
       slideId: slide.id,
       label: 'Build an editable scene',
       candidate: {
@@ -74,7 +76,7 @@ test('compiles and validates shared scene source before atomically publishing it
     const installed = await page.evaluate(() => window.prezi.snapshot());
     if (!installed.ok) throw Error(installed.error.message);
     expect(installed.value).toMatchObject({
-      revision: 1,
+      revision: 2,
       undoLabel: 'Agent: Build an editable scene',
       project: { scenes: { [request.candidate.id]: { source: request.candidate.source } } },
     });
@@ -88,7 +90,7 @@ test('compiles and validates shared scene source before atomically publishing it
     const bad = {
       ...request,
       requestId: 'invalid-custom',
-      expectedRevision: 1,
+      expectedRevision: 2,
       candidate: {
         ...request.candidate,
         source: {
@@ -116,7 +118,7 @@ test('compiles and validates shared scene source before atomically publishing it
     expect(await page.evaluate(() => window.prezi.snapshot())).toEqual(installed);
     await client.callTool({
       name: 'undo',
-      arguments: { requestId: 'undo-custom', expectedRevision: 1 },
+      arguments: { requestId: 'undo-custom', expectedRevision: 2 },
     });
     expect(await page.evaluate(() => window.prezi.snapshot())).toMatchObject({
       ok: true,

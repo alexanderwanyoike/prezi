@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('moves and resizes attached media on the canvas with atomic undo and cancelled gestures', async () => {
   const desktop = await electron.launch({
@@ -20,6 +21,7 @@ test('moves and resizes attached media on the canvas with atomic undo and cancel
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('button', { name: /^Slide 3:/ }).click();
     await page.locator('video').click();

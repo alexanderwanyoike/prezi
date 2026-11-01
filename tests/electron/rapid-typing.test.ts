@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('retains every character typed while accepted field updates are arriving', async () => {
   const desktop = await electron.launch({
@@ -15,6 +16,7 @@ test('retains every character typed while accepted field updates are arriving', 
     },
   });
   try {
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     const heading = page.getByRole('textbox', { name: 'Heading', exact: true });
     await expect(heading).toHaveValue('Vibez / how I built it');

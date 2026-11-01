@@ -21,6 +21,7 @@ test('ships a working Electron editor with fonts portable saving code and MCP', 
         ),
       ),
       PREZI_MCP_PORT: '0',
+      XDG_DATA_HOME: test.info().outputPath('data'),
     },
   });
   const client = new Client({ name: 'prezi-installed-test', version: '1.0.0' });
@@ -34,6 +35,12 @@ test('ships a working Electron editor with fonts portable saving code and MCP', 
       });
     }, path);
     const page = await desktop.firstWindow();
+    await expect(page.getByRole('textbox', { name: 'Presentation name', exact: true })).toHaveValue(
+      'Untitled presentation',
+    );
+    await expect(page.getByRole('textbox', { name: 'Canvas heading', exact: true })).toHaveText('');
+    await expect(page.getByRole('button', { name: /^Slide \d+:/ })).toHaveCount(1);
+    await expect(page.locator('video')).toHaveCount(0);
     await page
       .getByRole('textbox', { name: 'Canvas heading', exact: true })
       .fill('An installed presentation desk');

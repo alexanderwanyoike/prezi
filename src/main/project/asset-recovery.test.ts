@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { BlobWriter, TextReader, ZipWriter } from '@zip.js/zip.js';
+import { exampleOwner } from '../../../tests/fixtures/example-owner';
 import { ProjectOwner } from './project-owner';
 
 it('opens a portable deck with absent media and repairs it without losing placement, playback or credits', async () => {
@@ -11,7 +12,7 @@ it('opens a portable deck with absent media and repairs it without losing placem
   const reopened = new ProjectOwner();
   try {
     const fixture = resolve('tests/fixtures/held-video.webm');
-    const sample = new ProjectOwner(fixture).snapshot().project;
+    const sample = (await exampleOwner()).snapshot().project;
     const slide = sample.slides[2];
     if (!slide?.media) throw Error('Missing example media');
     slide.media = {

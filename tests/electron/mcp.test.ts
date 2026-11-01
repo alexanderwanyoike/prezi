@@ -3,6 +3,7 @@ import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/cli
 import { access, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { z } from 'zod';
+import { openExample } from './open-example';
 
 const summarySchema = z.object({
   result: z.object({
@@ -40,6 +41,7 @@ test('shares revisioned MCP edits and retry-safe undo with the live Electron edi
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page
       .getByRole('textbox', { name: 'Canvas heading', exact: true })

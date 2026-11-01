@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { fileCommand } from './file-command';
 
 test('retains code drafts in portable saves and applies only validated source to the viewer', async () => {
@@ -26,13 +27,14 @@ test('retains code drafts in portable saves and applies only validated source to
         }),
       path,
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('tab', { name: 'Code', exact: true }).click();
     await page.getByRole('button', { name: 'Create custom scene', exact: true }).click();
     const code = page.getByRole('textbox', { name: 'Scene source code' });
     await expect(code).toHaveAttribute('aria-readonly', 'false');
     await code.fill('export default function Scene(){return <div>Saved draft</div>;}');
-    await fileCommand(page, 'save');
+    await fileCommand(page, 'saveAs');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Canvas', exact: true }).click();
     await expect(page.getByRole('textbox', { name: 'Canvas heading', exact: true })).toHaveText(

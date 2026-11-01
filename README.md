@@ -4,7 +4,7 @@ Local Electron presentation editor built with TypeScript, React and Remotion. Pr
 
 Human and MCP clients edit the same project, including custom Remotion scenes, media, fonts and programmable transitions. Code drafts save with portable projects and use explicit Apply validation.
 
-[Website and downloads](https://alexanderwanyoike.github.io/prezi/) · [v0.1.0 release notes](docs/releases/v0.1.0.md)
+[Website and downloads](https://alexanderwanyoike.github.io/prezi/) · [v0.1.1 release notes](docs/releases/v0.1.1.md)
 
 ![Canvas editor](site/assets/canvas.png)
 
@@ -26,10 +26,12 @@ yarn start
 
 Build native installers with `yarn package:make --linux --x64`, `--win --x64` or `--mac --arm64` / `--mac --x64` on the matching platform. Output is written to `release/`. Linux uses AppImage, Windows uses a per-user NSIS installer and macOS uses a DMG. Preview Windows installers are unsigned; Mac bundles are ad-hoc signed and not notarized. See [installer verification and release workflow](docs/verification/desktop-installers.md).
 
+The first packaged Linux AppImage launch adds Prezi to the user's application menu with a persistent icon. Reopening a moved AppImage refreshes its managed launcher. See [menu integration verification](docs/verification/linux-appimage-menu.md).
+
 ## Work on a deck
 
 - Use the styled **File / Edit / View** application menu for document commands, editing and workspace views. The menus follow the selected theme; file pickers and save prompts use desktop dialogs.
-- **File > New presentation** creates a blank deck. The first launch includes a small Vibez text example.
+- Startup and **File > New presentation** create an untitled deck with one empty slide and a neutral white-and-grey theme.
 - Use the slide rail and inspector to add, duplicate, delete, reorder and edit slides. At least one slide remains in the deck.
 - Click a heading or body on the canvas to type directly. Selection follows the same text property in the inspector; Escape or Enter leaves heading editing. Body text supports line breaks.
 - Select attached media or a custom layer with mapped frame properties to reveal move/resize handles. Each completed gesture creates one shared Undo action; Escape cancels. The inspector retains exact numeric controls.
@@ -38,7 +40,7 @@ Build native installers with `yarn package:make --linux --x64`, `--win --x64` or
 - **File > Import font** adds TTF/OTF/WOFF/WOFF2 to the project. Choose it in Presentation theme and retain supplied source/attribution and licence text there. Fonts travel inside portable saves.
 - **View > Presentation theme** controls saved deck colours, fonts, canvas padding, entrance motion and crossfade timing. Reusable layouts use it directly; custom code receives `SceneProps.theme`. Application Appearance remains a local preference.
 - Undo and redo operate on content edits. Each accepted agent batch is one undo action. Continuous editor typing, source edits and colour changes share an Undo group; a pause, focus change, document action or intervening agent edit starts a fresh boundary. Content updates still reach the shared owner while editing. The Edit menu and button tooltips show the next action label, including agent batches. History holds up to 50 batches for the open deck and resets when opening or creating a project.
-- Choose **Title / chapter**, **Text / reveals**, **Code explanation** or **Process / workflow** in Layout. Diagram stages and code notes use manual reveal steps. The starting Vibez example includes a small generated video; portable saves include it.
+- Choose **Title / chapter**, **Text / reveals**, **Code explanation** or **Process / workflow** in Layout. Diagram stages and code notes use manual reveal steps.
 - The **Canvas / Code** tabs switch the workspace view. **Code** opens Remotion components, schemas and presentation styles. Choose **Create custom scene** or **Edit scene code** to edit TSX/TS/JSON drafts and declared properties. Drafts save with the project; **Apply scene code** validates before replacing the working scene. Invalid source preserves the last working version. Built-in references and **Slide properties** are read-only. See [code authoring](docs/verification/scene-code-editor.md).
 - **Code > Transition** edits transition source and staged properties. **Apply transition code** validates numeric motion samples; failed code retains the working transition. Space still controls progression. See [transition authoring](docs/verification/transition-code-editor.md).
 - **File > Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Use Canvas handles or the inspector to position/resize media and choose contain or cover. Video has autoplay, looping, mute and volume settings; hover it for play/pause/restart controls.
@@ -46,7 +48,7 @@ Build native installers with `yarn package:make --linux --x64`, `--win --x64` or
 - Default saves create a single `.prezi` file containing deck content, scene source, local media, built-in fonts and their licences. Move that file on its own. Legacy JSON projects still use an adjacent `<project path>.assets` directory.
 - **File > Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.
 - The app asks whether to save, discard or cancel before replacing or closing a changed deck. Failed saves and invalid imports leave the current deck open.
-- Appearance has Studio, Aluminium and Paper materials, light/dark modes and five accents. These preferences persist locally and do not change the deck's near-black/green visual theme.
+- Appearance has Studio, Aluminium and Paper materials, light/dark modes and five accents. These preferences persist locally and are separate from the deck's saved presentation theme.
 
 ## Application shortcuts
 

@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { fileCommand } from './file-command';
 
 ([false, true] as const).forEach((custom) => {
@@ -17,6 +18,7 @@ import { fileCommand } from './file-command';
       },
     });
     try {
+      await openExample(desktop);
       const page = await desktop.firstWindow();
       await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
       await desktop.evaluate(

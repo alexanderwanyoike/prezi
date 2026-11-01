@@ -38,6 +38,10 @@ test('edits deck styling through View, saves it portably and uses it in presenta
     await theme.getByRole('button', { name: 'Close presentation theme', exact: true }).click();
     const scene = page.locator('.slide-scene');
     await expect(scene).toHaveCSS('background-color', 'rgb(244, 240, 232)');
+    await expect(page.locator('.thumbnail').first()).toHaveCSS(
+      'background-color',
+      'rgb(244, 240, 232)',
+    );
     await expect(scene).toHaveCSS('padding', '96px');
     await expect(scene).toHaveCSS('font-family', '"IBM Plex Mono", monospace');
     const client = await connectDesktopMcp(test.info().outputPath('profile'));

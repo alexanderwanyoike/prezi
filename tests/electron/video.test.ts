@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { fileCommand } from './file-command';
 
 test('keeps video independent of held reveal frames and stops inactive slide media', async () => {
@@ -19,6 +20,7 @@ test('keeps video independent of held reveal frames and stops inactive slide med
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       });
     }, resolve('tests/fixtures/held-video.webm'));
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await fileCommand(page, 'importMedia');
     await page.getByLabel('Reveal text', { exact: false }).fill('First thought\nSecond thought');
@@ -98,6 +100,7 @@ test('configures playback and placement while media controls keep keyboard focus
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       });
     }, resolve('tests/fixtures/held-video.webm'));
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await fileCommand(page, 'importMedia');
     await page.getByLabel('Autoplay video', { exact: true }).uncheck({ timeout: 1500 });

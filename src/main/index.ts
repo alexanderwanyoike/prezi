@@ -1,5 +1,6 @@
 import { app, BrowserWindow, protocol } from 'electron';
 import { join } from 'node:path';
+import { integrateAppImage } from './desktop/appimage-menu';
 import { RenderWork } from './source/render-work';
 import { PreviewJobs } from './previews/preview-jobs';
 import { TransitionJobs } from './transitions/transition-jobs';
@@ -47,7 +48,7 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
-const owner = new ProjectOwner(join(import.meta.dirname, '../../resources/example.webm'));
+const owner = new ProjectOwner();
 const workspace = new WorkspaceOwner(owner);
 let mcp: McpConnection | undefined;
 let sceneJobs: SceneJobs | undefined;
@@ -160,6 +161,15 @@ async function openWindow(): Promise<void> {
 app
   .whenReady()
   .then(async () => {
+    const integrated = await integrateAppImage({
+      platform: process.platform,
+      packaged: app.isPackaged,
+      appImage: process.env.APPIMAGE,
+      dataHome: process.env.XDG_DATA_HOME,
+      home: app.getPath('home'),
+      icon: join(import.meta.dirname, '../../resources/icons/icon.png'),
+    });
+    if (!integrated.ok) process.stderr.write(`${integrated.error.message}\n`);
     const resume = await consumeResume(app.getPath('userData'));
     if (!resume.ok) process.stderr.write(`${resume.error.message}\n`);
     else if (resume.value) {

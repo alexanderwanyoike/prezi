@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { mediaFrame } from '../../src/shared/media';
 import { connectDesktopMcp } from './mcp-client';
 
@@ -24,6 +25,7 @@ test('keeps focused inspector and canvas text in sync with MCP while preserving 
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     const heading = page.getByLabel('Heading', { exact: true });
     const canvas = page.getByRole('textbox', { name: 'Canvas heading', exact: true });

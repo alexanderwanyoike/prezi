@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
 import { z } from 'zod';
+import { openExample } from './open-example';
 import { connectDesktopMcp } from './mcp-client';
 import { previewResultSchema } from '../../src/shared/preview';
 
@@ -18,6 +19,7 @@ test('captures a different slide from Code without changing the shared project o
       PREZI_MCP_PORT: '0',
     },
   });
+  await openExample(desktop);
   const page = await desktop.firstWindow();
   await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
   const client = await connectDesktopMcp(profile);
@@ -33,7 +35,7 @@ test('captures a different slide from Code without changing the shared project o
       name: 'capture_preview',
       arguments: {
         requestId: 'preview:code-test',
-        expectedRevision: 0,
+        expectedRevision: 1,
         slideId: slide.id,
         reveal: 4,
       },
@@ -51,7 +53,7 @@ test('captures a different slide from Code without changing the shared project o
       .toMatchObject({
         result: {
           ok: true,
-          value: { state: 'complete', revision: 0, image: { width: 960, height: 540 } },
+          value: { state: 'complete', revision: 1, image: { width: 960, height: 540 } },
         },
       });
     const image = await client.callTool({
@@ -95,6 +97,7 @@ test('captures the entire custom composition rather than its upper-left viewport
       PREZI_MCP_PORT: '0',
     },
   });
+  await openExample(desktop);
   const page = await desktop.firstWindow();
   await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
   const client = await connectDesktopMcp(profile);
@@ -112,7 +115,7 @@ test('captures the entire custom composition rather than its upper-left viewport
       name: 'compile_scene',
       arguments: {
         requestId: 'preview-scene',
-        expectedRevision: 0,
+        expectedRevision: 1,
         label: 'Preview frame',
         slideId: slide.id,
         candidate: {
@@ -143,7 +146,7 @@ test('captures the entire custom composition rather than its upper-left viewport
       name: 'capture_preview',
       arguments: {
         requestId: 'preview:full-frame',
-        expectedRevision: 1,
+        expectedRevision: 2,
         slideId: slide.id,
         reveal: 0,
       },
