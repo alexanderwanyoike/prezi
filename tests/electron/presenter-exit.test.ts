@@ -16,6 +16,8 @@ import { resolve } from 'node:path';
       },
     });
     try {
+      const page = await desktop.firstWindow();
+      await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
       await desktop.evaluate(({ ipcMain }) => {
         ipcMain.removeHandler('presentation:fullscreen');
         ipcMain.handle('presentation:fullscreen', () => ({
@@ -23,7 +25,6 @@ import { resolve } from 'node:path';
           error: { code: 'IO_ERROR', message: 'Fullscreen could not be changed.' },
         }));
       });
-      const page = await desktop.firstWindow();
       await page.getByRole('button', { name: 'Present', exact: true }).click();
       await expect(page.getByRole('region', { name: 'Presentation stage' })).toBeVisible();
       if (action === 'Escape') await page.keyboard.press('Escape');
