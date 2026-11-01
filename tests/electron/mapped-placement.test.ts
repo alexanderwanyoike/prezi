@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { connectDesktopMcp } from './mcp-client';
 
 test('positions mapped custom layers and media through shared canvas edits and portable saving', async () => {
@@ -23,6 +24,7 @@ test('positions mapped custom layers and media through shared canvas edits and p
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     const initial = await page.evaluate(() => window.prezi.snapshot());
@@ -57,7 +59,7 @@ test('positions mapped custom layers and media through shared canvas edits and p
       name: 'compile_scene',
       arguments: {
         requestId: 'mapped',
-        expectedRevision: 0,
+        expectedRevision: 1,
         label: 'Create mapped layer',
         slideId: slide.id,
         candidate,
@@ -86,7 +88,7 @@ test('positions mapped custom layers and media through shared canvas edits and p
     await page.mouse.up();
     await expect
       .poll(() => page.evaluate(() => window.prezi.snapshot()))
-      .toMatchObject({ ok: true, value: { revision: 2, undoLabel: 'Move or resize scene layer' } });
+      .toMatchObject({ ok: true, value: { revision: 3, undoLabel: 'Move or resize scene layer' } });
     const moved = await page.evaluate(() => window.prezi.snapshot());
     if (!moved.ok) throw Error(moved.error.message);
     const props = moved.value.project.slides[2]?.scene?.properties;

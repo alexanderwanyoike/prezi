@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('fits custom scenes to the real viewport with usable video controls after resizing', async () => {
   const desktop = await electron.launch({
@@ -20,6 +21,7 @@ test('fits custom scenes to the real viewport with usable video controls after r
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('button', { name: /^Slide 3:/ }).click();
     await page.getByLabel('Reveal text', { exact: false }).fill('Planning\nHuman testing');

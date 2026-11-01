@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('previews manually revealed process stages, edits a code layout and plays the bundled example video', async () => {
   const desktop = await electron.launch({
@@ -15,6 +16,7 @@ test('previews manually revealed process stages, edits a code layout and plays t
     },
   });
   try {
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('button', { name: /^Slide 2:/ }).click();
     const diagram = page.getByRole('group', { name: 'Workflow diagram' });

@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
-import { createProject } from '../project';
+import { exampleProject } from '../../../tests/fixtures/example-project';
 import { navigate, startPosition } from './navigation';
 
 it('holds each reveal until advanced, walks backwards and leaves the final slide visible', () => {
-  const project = createProject();
+  const project = exampleProject();
   const first = project.slides[0];
   const middle = project.slides[1];
   const last = project.slides[2];

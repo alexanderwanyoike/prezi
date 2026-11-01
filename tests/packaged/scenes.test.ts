@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { openExample } from '../electron/open-example';
 import { fileCommand } from '../electron/file-command';
 
 test('compiles custom scenes in the installed application with portable fonts and held video', async () => {
@@ -41,6 +42,7 @@ test('compiles custom scenes in the installed application with portable fonts an
         project: test.info().outputPath('installed-scene.prezi'),
       },
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     page.on('console', (message) => {
       if (message.type() === 'error' && errors.length < 20)

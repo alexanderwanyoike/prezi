@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { resolve } from 'node:path';
+import { exampleOwner } from '../../../tests/fixtures/example-owner';
 import { ProjectOwner } from './project-owner';
 
 it('edits reusable code and process layouts through shared atomic history', () => {
@@ -48,14 +48,13 @@ it('edits reusable code and process layouts through shared atomic history', () =
   ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
 });
 
-it('opens the Vibez example with a real process diagram and a managed tiny video', () => {
-  const fixture = resolve('tests/fixtures/held-video.webm');
-  const owner = new ProjectOwner(fixture);
+it('opens an explicit example with a real process diagram and a managed tiny video', async () => {
+  const owner = await exampleOwner();
   const { slides } = owner.snapshot().project;
   expect(slides[1]?.layout).toBe('process');
   const media = slides[2]?.media;
   expect(media?.kind).toBe('video');
   if (!media) throw Error('Missing example video');
-  expect(owner.mediaPath(media.id)).toBe(fixture);
-  expect(owner.snapshot()).toMatchObject({ revision: 0, dirty: false, canUndo: false });
+  expect(owner.mediaPath(media.id)).toContain(`${media.id}.webm`);
+  expect(owner.snapshot()).toMatchObject({ revision: 1, dirty: false, canUndo: false });
 });

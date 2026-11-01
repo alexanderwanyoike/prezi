@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('undoes a typing gesture once and retains the prior agent batch', async () => {
   const desktop = await electron.launch({
@@ -15,6 +16,7 @@ test('undoes a typing gesture once and retains the prior agent batch', async () 
     },
   });
   try {
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     await desktop.evaluate(({ dialog }) =>
@@ -71,6 +73,7 @@ test('groups code typing and live colour input without losing the previous undo 
     },
   });
   try {
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     await desktop.evaluate(({ dialog }) =>

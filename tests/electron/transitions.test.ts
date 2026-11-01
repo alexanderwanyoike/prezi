@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { connectDesktopMcp } from './mcp-client';
 
 test('applies sampled transition code once and preserves the working transition after a bad frame', async () => {
@@ -16,6 +17,7 @@ test('applies sampled transition code once and preserves the working transition 
       PREZI_MCP_PORT: '0',
     },
   });
+  await openExample(desktop);
   const page = await desktop.firstWindow();
   await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
   const client = await connectDesktopMcp(profile);
@@ -30,7 +32,7 @@ test('applies sampled transition code once and preserves the working transition 
     );
     const request = {
       requestId: 'transition:accepted',
-      expectedRevision: 0,
+      expectedRevision: 1,
       label: 'Program slide motion',
       candidate: {
         id: crypto.randomUUID(),
@@ -59,7 +61,7 @@ return {opacity:direction==='entering'?progress:1-progress,x:sign*props.distance
             .structuredContent,
         { timeout: 15000 },
       )
-      .toMatchObject({ result: { ok: true, value: { state: 'complete', revision: 1 } } });
+      .toMatchObject({ result: { ok: true, value: { state: 'complete', revision: 2 } } });
     const accepted = await page.evaluate(() => window.prezi.snapshot());
     if (!accepted.ok) throw Error(accepted.error.message);
     expect(accepted.value.project.transition).toMatchObject({
@@ -81,12 +83,12 @@ return {opacity:direction==='entering'?progress:1-progress,x:sign*props.distance
     });
     expect(
       (await client.callTool({ name: 'compile_transition', arguments: request })).structuredContent,
-    ).toMatchObject({ result: { ok: true, value: { state: 'complete', revision: 1 } } });
+    ).toMatchObject({ result: { ok: true, value: { state: 'complete', revision: 2 } } });
     expect(await page.evaluate(() => window.prezi.snapshot())).toEqual(accepted);
     const broken = {
       ...request,
       requestId: 'transition:broken',
-      expectedRevision: 1,
+      expectedRevision: 2,
       candidate: {
         ...request.candidate,
         source: {
@@ -121,7 +123,7 @@ return {opacity:direction==='entering'?progress:1-progress,x:sign*props.distance
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
     expect(await page.evaluate(() => window.prezi.snapshot())).toMatchObject({
       ok: true,
-      value: { revision: 2 },
+      value: { revision: 3 },
     });
     const undone = await page.evaluate(() => window.prezi.snapshot());
     if (!undone.ok) throw Error(undone.error.message);
@@ -129,7 +131,7 @@ return {opacity:direction==='entering'?progress:1-progress,x:sign*props.distance
     await page.getByRole('button', { name: 'Redo', exact: true }).click();
     expect(await page.evaluate(() => window.prezi.snapshot())).toMatchObject({
       ok: true,
-      value: { revision: 3, project: { transition: accepted.value.project.transition } },
+      value: { revision: 4, project: { transition: accepted.value.project.transition } },
     });
   } finally {
     await client.close();
@@ -151,6 +153,7 @@ test('holds the outgoing slide until a custom incoming scene is ready, then play
       PREZI_MCP_PORT: '0',
     },
   });
+  await openExample(desktop);
   const page = await desktop.firstWindow();
   await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
   const client = await connectDesktopMcp(profile);
@@ -169,7 +172,7 @@ test('holds the outgoing slide until a custom incoming scene is ready, then play
       name: 'compile_transition',
       arguments: {
         requestId: transitionId,
-        expectedRevision: 0,
+        expectedRevision: 1,
         label: 'Slide motion',
         candidate: {
           id: crypto.randomUUID(),
@@ -198,7 +201,7 @@ test('holds the outgoing slide until a custom incoming scene is ready, then play
       name: 'compile_scene',
       arguments: {
         requestId: 'slow-incoming',
-        expectedRevision: 1,
+        expectedRevision: 2,
         slideId: incoming.id,
         label: 'Incoming scene',
         candidate: {

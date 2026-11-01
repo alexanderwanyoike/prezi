@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { connectDesktopMcp } from './mcp-client';
 
 test('stops a property-dependent stalled scene and recovers with Undo without blocking the editor', async () => {
@@ -23,6 +24,7 @@ test('stops a property-dependent stalled scene and recovers with Undo without bl
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     const initial = await page.evaluate(() => window.prezi.snapshot());
@@ -45,7 +47,7 @@ test('stops a property-dependent stalled scene and recovers with Undo without bl
       name: 'compile_scene',
       arguments: {
         requestId: 'stall',
-        expectedRevision: 0,
+        expectedRevision: 1,
         label: 'Create scene',
         slideId: slide.id,
         candidate,

@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { fileCommand } from './file-command';
 
 test('inspects scene source and live instance properties without changing the deck', async () => {
@@ -19,6 +20,7 @@ test('inspects scene source and live instance properties without changing the de
         showOpenDialog: () => Promise.resolve({ canceled: false, filePaths: [filePath] }),
       });
     }, test.info().outputPath('source-deck.prezi'));
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('tab', { name: 'Code', exact: true }).click({ timeout: 1500 });
     const code = page.getByRole('textbox', { name: 'Scene source code', exact: true });

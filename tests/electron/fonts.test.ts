@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { openExample } from './open-example';
 import { connectDesktopMcp } from './mcp-client';
 import { fileCommand } from './file-command';
 
@@ -37,6 +38,7 @@ test('imports a decoded font, edits its credits and keeps it working after porta
         project: test.info().outputPath('font.prezi'),
       },
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('menuitem', { name: 'File', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Import font…', exact: true }).click();
