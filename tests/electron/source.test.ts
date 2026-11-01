@@ -50,7 +50,7 @@ test('inspects scene source and live instance properties without changing the de
       'Vibez / how I built it',
     );
     await page.getByRole('tab', { name: 'Code', exact: true }).click();
-    await fileCommand(page, 'save');
+    await fileCommand(page, 'saveAs');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     await fileCommand(page, 'newProject');
     await fileCommand(page, 'open');

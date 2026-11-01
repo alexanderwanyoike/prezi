@@ -86,7 +86,7 @@ test('imports a decoded font, edits its credits and keeps it working after porta
       'font-family',
       `PreziFont_${font.id}, sans-serif`,
     );
-    await fileCommand(page, 'save');
+    await fileCommand(page, 'saveAs');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     await fileCommand(page, 'newProject');
     await fileCommand(page, 'open');

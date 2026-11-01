@@ -34,7 +34,7 @@ test('retains code drafts in portable saves and applies only validated source to
     const code = page.getByRole('textbox', { name: 'Scene source code' });
     await expect(code).toHaveAttribute('aria-readonly', 'false');
     await code.fill('export default function Scene(){return <div>Saved draft</div>;}');
-    await fileCommand(page, 'save');
+    await fileCommand(page, 'saveAs');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Canvas', exact: true }).click();
     await expect(page.getByRole('textbox', { name: 'Canvas heading', exact: true })).toHaveText(

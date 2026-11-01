@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('releases presentation navigation when custom-scene preparation never replies', async () => {
   test.setTimeout(45000);
@@ -16,6 +17,7 @@ test('releases presentation navigation when custom-scene preparation never repli
     },
   });
   try {
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     await desktop.evaluate(({ dialog }) =>

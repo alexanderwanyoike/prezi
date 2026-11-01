@@ -1,6 +1,7 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { z } from 'zod';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { sceneJobResultSchema } from '../../src/shared/scene-jobs';
 import { connectDesktopMcp } from './mcp-client';
 
@@ -25,6 +26,7 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
     const initial = await page.evaluate(() => window.prezi.snapshot());
@@ -51,7 +53,7 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
       name: 'compile_scene',
       arguments: {
         requestId: 'viewer-source',
-        expectedRevision: 0,
+        expectedRevision: 1,
         label: 'Build editable scene',
         slideId: slide.id,
         candidate,
@@ -92,7 +94,7 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
       name: 'edit_project',
       arguments: {
         requestId: 'viewer-agent',
-        expectedRevision: 2,
+        expectedRevision: 3,
         label: 'Update selected heading',
         operations: [
           {
@@ -117,7 +119,7 @@ test('edits an agent-authored scene in the viewer and inspector with shared undo
       name: 'edit_project',
       arguments: {
         requestId: 'break-scene',
-        expectedRevision: 7,
+        expectedRevision: 8,
         label: 'An incorrect property edit',
         operations: [{ type: 'updateSceneProperties', slideId: slide.id, patch: { broken: true } }],
       },

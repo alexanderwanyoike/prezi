@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 import { fileCommand } from './file-command';
 
 test('authors transition code and properties while retaining bad drafts in portable projects', async () => {
@@ -26,6 +27,7 @@ test('authors transition code and properties while retaining bad drafts in porta
         }),
       projectPath,
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('tab', { name: 'Code', exact: true }).click();
     await page.getByRole('tab', { name: 'Transition code', exact: true }).click();

@@ -105,7 +105,7 @@ test('compiles custom scenes in the installed application with portable fonts an
       .toBeGreaterThan(0.4);
     await page.getByRole('button', { name: '01 Planning', exact: true }).click();
     await expect(child.getByText('Planning', { exact: true })).toBeVisible();
-    await fileCommand(page, 'save');
+    await fileCommand(page, 'saveAs');
     await expect(page.getByText('Saved on this computer', { exact: true })).toBeVisible();
     await fileCommand(page, 'newProject');
     await fileCommand(page, 'open');
