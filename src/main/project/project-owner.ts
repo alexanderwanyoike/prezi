@@ -278,6 +278,15 @@ export class ProjectOwner {
 
   private referenceSources: Project['sources'];
 
+  private referenceContentBytes = 0;
+
+  private withinContentBudget(project: Project): boolean {
+    return (
+      Buffer.byteLength(JSON.stringify(project, null, 2)) + this.referenceContentBytes + 1 <=
+      8 * 1024 * 1024
+    );
+  }
+
   private sourceCatalogId: string = crypto.randomUUID();
 
   sourceCatalog(): SourceCatalog {
@@ -332,6 +341,7 @@ export class ProjectOwner {
     this.fileBusy = true;
     try {
       this.referenceSources = undefined;
+      this.referenceContentBytes = 0;
       this.sourceCatalogId = crypto.randomUUID();
       this.project = {
         schemaVersion: 1,
@@ -422,6 +432,10 @@ export class ProjectOwner {
       }
       const { sources, ...content } = project;
       this.referenceSources = sources;
+      // Catalog fields share the document's root braces; account for their JSON once on open.
+      this.referenceContentBytes = sources
+        ? Buffer.byteLength(JSON.stringify({ sources }, null, 2)) - 2
+        : 0;
       this.sourceCatalogId = crypto.randomUUID();
       this.project = content;
       this.savedContent = JSON.stringify(this.project);
@@ -507,7 +521,7 @@ export class ProjectOwner {
       { ok: true, value: this.project },
     );
     if (!problem.ok) return problem;
-    if (Buffer.byteLength(JSON.stringify(problem.value, null, 2)) > 8 * 1024 * 1024)
+    if (!this.withinContentBudget(problem.value))
       return failure('INVALID_INPUT', 'The project exceeds its 8 MiB content budget.');
     if (
       !historyGroup ||
