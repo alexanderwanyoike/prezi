@@ -64,7 +64,7 @@ run().catch(async (error: unknown) => {
     JSON.stringify({
       ok: false,
       error: {
-        code: 'INVALID_INPUT',
+        code: error instanceof z.ZodError ? 'INVALID_INPUT' : 'IO_ERROR',
         message: error instanceof Error ? error.message : 'Compiler worker failed.',
         diagnostics: [],
       },
