@@ -84,3 +84,34 @@ it('counts retained reference source when accepting edits and keeps accepted sav
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+it('counts retained reference source before installing a compiled scene', async () => {
+  const { directory, owner, project } = await largeProject();
+  try {
+    const before = owner.snapshot();
+    const slide = project.slides[7];
+    if (!slide) throw Error('No slide');
+    const result = owner.installScene({
+      requestId: 'over-reference-scene-budget',
+      expectedRevision: before.revision,
+      slideId: slide.id,
+      label: 'Install scene',
+      definition: {
+        id: crypto.randomUUID(),
+        name: 'Scene',
+        fields: {},
+        layers: [],
+        source: { entry: 'Scene.tsx', files: { 'Scene.tsx': 'export default()=>null' } },
+        code: ' '.repeat(600000),
+      },
+      properties: {},
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) throw Error('Expected content-budget rejection');
+    expect(result.error.code).toBe('INVALID_INPUT');
+    expect(owner.snapshot()).toEqual(before);
+  } finally {
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
