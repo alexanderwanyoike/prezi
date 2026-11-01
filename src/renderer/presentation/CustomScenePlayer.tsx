@@ -1,5 +1,5 @@
-import type { FramePatch } from './FrameEditor';
 import { useEffect, useRef, useState } from 'react';
+import type { FramePatch } from './FrameEditor';
 import type { CustomSceneDefinition, SceneValues } from '../../shared/scene-definition';
 import { runtimeEventSchema } from '../../shared/scene-runtime';
 import type { RuntimeState } from '../../shared/scene-runtime';

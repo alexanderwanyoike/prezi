@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { CSSProperties, ReactNode, PointerEvent } from 'react';
+import type { CSSProperties, ReactNode, PointerEvent, KeyboardEvent } from 'react';
 import { Move, ArrowDownRight } from 'lucide-react';
 
 export interface Frame {
@@ -100,6 +100,13 @@ export function FrameEditor({
     cancel();
     if (Object.keys(patch).length) editing?.update(patch);
   }
+  function cancelKey(event: KeyboardEvent<HTMLButtonElement>): void {
+    if (event.key === 'Escape' && gesture.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      cancel();
+    }
+  }
   const shown = draft ?? frame;
   return (
     <div
@@ -119,32 +126,31 @@ export function FrameEditor({
       onPointerUp={finish}
       onPointerCancel={cancel}
       onLostPointerCapture={cancel}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && gesture.current) {
-          event.preventDefault();
-          event.stopPropagation();
-          cancel();
-        }
-      }}
     >
       {children}
       {editing?.selected && (
         <>
           <button
+            onKeyDown={cancelKey}
             className="frame-handle frame-move"
             type="button"
             aria-label={`Move ${label}`}
             disabled={pending}
-            onPointerDown={(event) => begin(event, false)}
+            onPointerDown={(event) => {
+              begin(event, false);
+            }}
           >
             <Move />
           </button>
           <button
+            onKeyDown={cancelKey}
             className="frame-handle frame-resize"
             type="button"
             aria-label={`Resize ${label}`}
             disabled={pending}
-            onPointerDown={(event) => begin(event, true)}
+            onPointerDown={(event) => {
+              begin(event, true);
+            }}
           >
             <ArrowDownRight />
           </button>

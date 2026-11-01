@@ -1,6 +1,6 @@
+import type { CSSProperties, ReactNode } from 'react';
 import { FrameEditor } from '../renderer/presentation/FrameEditor';
 import type { Frame, FrameLimits } from '../renderer/presentation/FrameEditor';
-import type { CSSProperties, ReactNode } from 'react';
 import { useScene } from './context';
 import { EditableText } from './EditableText';
 import { SceneMedia } from '../renderer/presentation/SceneMedia';
@@ -43,8 +43,12 @@ export function Layer({
             ? {
                 selected: state.selectedLayer === id,
                 pending: state.pending,
-                select: () => emit({ type: 'prezi:select', layer: id }),
-                update: (patch) => emit({ type: 'prezi:frame', layer: id, patch }),
+                select: () => {
+                  emit({ type: 'prezi:select', layer: id });
+                },
+                update: (patch) => {
+                  emit({ type: 'prezi:frame', layer: id, patch });
+                },
               }
             : undefined
         }
@@ -109,8 +113,12 @@ export function Media(): React.JSX.Element | null {
           ? {
               selected: state.selectedLayer === 'media',
               pending: state.pending,
-              select: () => emit({ type: 'prezi:select', layer: 'media' }),
-              update: (patch) => emit({ type: 'prezi:frame', layer: 'media', patch }),
+              select: () => {
+                emit({ type: 'prezi:select', layer: 'media' });
+              },
+              update: (patch) => {
+                emit({ type: 'prezi:frame', layer: 'media', patch });
+              },
             }
           : undefined
       }
