@@ -133,7 +133,13 @@ test('updates media properties atomically without replacing asset identity', asy
 test('retries the same media registration once even after its source is removed', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'prezi-media-retry-'));
   const source = join(directory, 'image.png');
-  await writeFile(source, Buffer.from('image fixture'));
+  await writeFile(
+    source,
+    Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  );
   const owner = new ProjectOwner();
   try {
     const slideId = owner.snapshot().project.slides[0]?.id;
@@ -161,7 +167,13 @@ test('retries the same media registration once even after its source is removed'
 test('reserves a pending import request ID against a different edit or history action', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'prezi-import-reservation-'));
   const source = join(directory, 'image.png');
-  await writeFile(source, 'image fixture');
+  await writeFile(
+    source,
+    Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  );
   const owner = new ProjectOwner();
   const slideId = owner.snapshot().project.slides[0]?.id;
   if (!slideId) throw new Error('Missing slide');
