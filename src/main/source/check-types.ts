@@ -38,9 +38,10 @@ export default component;`,
   files.set(
     '/prezi/node_modules/prezi/index.d.ts',
     `import type {ComponentType, CSSProperties, ReactNode} from 'react';
-export interface SceneProps {theme:{${themeType}fontFamily:string;monoFamily:string;}; title:string; body:string; reveal:number; props:{${propertyTypes}}; }
+export interface SceneProps {theme:{${themeType}fontFamily:string;monoFamily:string;}; title:string; body:string; reveal:number; reveals:readonly string[]; hasMedia:boolean; props:{${propertyTypes}}; }
 export const Text:ComponentType<{property:keyof SceneProps['props'];layer?:string;style?:CSSProperties}>;
 export const Layer:ComponentType<{id:string;children?:ReactNode;style?:CSSProperties}>;
+export const Media:ComponentType;
 export interface TransitionStyle {opacity?:number;x?:number;y?:number;scale?:number;rotate?:number;blur?:number;clipTop?:number;clipRight?:number;clipBottom?:number;clipLeft?:number;}
 export interface TransitionProps {progress:number;direction:'entering'|'exiting';navigation:'advance'|'back';props:SceneProps['props'];}
 export type TransitionFunction=(input:TransitionProps)=>TransitionStyle;
