@@ -139,10 +139,10 @@ it.each(['woff', 'woff2'] as const)(
         (await writeArchive(path, { ...initial.project, fonts: [font] }, () => source)).ok,
       ).toBe(true);
       const opened = await owner.open(path, initial.revision);
-      expect(opened).toMatchObject({
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: expect.stringContaining('decoded size') },
-      });
+      expect(opened.ok).toBe(false);
+      if (opened.ok) throw Error('Expected archived font rejection');
+      expect(opened.error.code).toBe('INVALID_INPUT');
+      expect(opened.error.message).toContain('decoded size');
       expect(owner.snapshot()).toEqual(initial);
     } finally {
       await owner.dispose();
