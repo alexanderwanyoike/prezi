@@ -69,18 +69,17 @@ function presetComponent(
   };
 }
 function Runtime(): React.JSX.Element | null {
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      emit({ type: 'prezi:heartbeat' });
-    }, 500);
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, []);
   const [loaded, setLoaded] = useState<{
     Component: ComponentType<SceneProps>;
     definition: RuntimeDefinition;
   } | null>(null);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      emit({ type: 'prezi:heartbeat' });
+      if (!loaded) emit({ type: 'prezi:boot', instance: window.location.hostname });
+    }, 500);
+    return () => window.clearInterval(timer);
+  }, [loaded]);
   const [state, setState] = useState<RuntimeState | null>(null);
   const fonts = useProjectFonts(state?.fonts, state?.theme);
   useEffect(() => {
@@ -138,6 +137,7 @@ function Runtime(): React.JSX.Element | null {
       }
     };
     window.addEventListener('message', receive);
+    emit({ type: 'prezi:boot', instance: window.location.hostname });
     return () => {
       live = false;
       window.removeEventListener('message', receive);

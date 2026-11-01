@@ -32,6 +32,10 @@ export function CustomScenePlayer({
   const current = useRef(scene);
   current.current = scene;
   const [prepared, setPrepared] = useState(false);
+  const [booted, setBooted] = useState<string | null>(null);
+  const loadedInstance = useRef<string | null>(null);
+  const currentInstance = useRef(instance);
+  currentInstance.current = instance;
   const [error, setError] = useState<string | null>(null);
   const state: RuntimeState = {
     fonts: scene.fonts?.map(({ id, name, extension }) => ({ id, name, extension })),
@@ -77,6 +81,8 @@ export function CustomScenePlayer({
       if (!parsed.success) return;
       const item = parsed.data;
       if (item.type === 'prezi:heartbeat') heartbeat();
+      if (item.type === 'prezi:boot' && item.instance === currentInstance.current)
+        setBooted(item.instance);
       if (item.type === 'prezi:status') {
         if (
           item.state === 'ready' &&
@@ -122,6 +128,26 @@ export function CustomScenePlayer({
         '*',
       );
   }, [prepared, message, error]);
+  useEffect(() => {
+    const target = iframe.current?.contentWindow;
+    if (!prepared || booted !== instance || loadedInstance.current === instance || !target || error)
+      return;
+    loadedInstance.current = instance;
+    target.postMessage(
+      {
+        type: 'prezi:load',
+        code: definition.code,
+        definition: {
+          id: definition.id,
+          name: definition.name,
+          fields: definition.fields,
+          layers: definition.layers,
+        },
+        state: latest.current,
+      },
+      '*',
+    );
+  }, [prepared, booted, instance, definition, error]);
   return (
     <div
       tabIndex={-1}
@@ -146,20 +172,6 @@ export function CustomScenePlayer({
                 ready.current?.();
                 return;
               }
-              iframe.current.contentWindow?.postMessage(
-                {
-                  type: 'prezi:load',
-                  code: definition.code,
-                  definition: {
-                    id: definition.id,
-                    name: definition.name,
-                    fields: definition.fields,
-                    layers: definition.layers,
-                  },
-                  state: latest.current,
-                },
-                '*',
-              );
               setPrepared(true);
             });
           }}

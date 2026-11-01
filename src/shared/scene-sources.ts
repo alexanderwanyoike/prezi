@@ -9,6 +9,7 @@ const sceneFiles = import.meta.glob<string>(
     './presentation/*.ts',
     '!./**/*.test.ts',
     '!../scene-runtime/**/*.test.{ts,tsx}',
+    '!../renderer/presentation/**/*.test.{ts,tsx}',
     '!./scene-sources.ts',
   ],
   { eager: true, query: '?raw', import: 'default' },
