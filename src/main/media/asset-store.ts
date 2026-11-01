@@ -111,11 +111,13 @@ export class AssetStore {
 
   async dispose(): Promise<Result<void>> {
     try {
-      await Promise.all(
+      const removed = await Promise.allSettled(
         [this.root, ...this.archiveDirectories].map((directory) =>
           rm(directory, { recursive: true, force: true }),
         ),
       );
+      if (removed.some((result) => result.status === 'rejected'))
+        return failure('IO_ERROR', 'Could not remove all temporary project resources.');
       this.archiveDirectories.clear();
       this.paths.clear();
       return { ok: true, value: undefined };
