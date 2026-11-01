@@ -32,9 +32,9 @@ The implementation is grouped around checkpoints 5, 8 and 14. Feature work targe
 - [x] Missing-asset recovery and retained media provenance/licences.
 - [x] Bounded preview capture, job status and static thumbnails.
 - [x] Programmable slide transitions with editable properties.
-- [ ] Direct media/custom-layer placement and stalled-scene recovery.
+- [x] Direct media/custom-layer placement and stalled-scene recovery.
 - [x] Update runtime: explicit download/progress, protected restart and saved-deck recovery.
 - [x] Desktop updates: release feeds, explicit download/restart, unsaved-change protection and platform installer/update metadata. Native cross-platform verification runs in CI; Linux update/restart was exercised locally.
-- [ ] Desktop packaging, memory/CPU verification and an OBS or ClipForge recording rehearsal.
+- [x] Desktop packaging, memory/CPU verification and an OBS recording rehearsal.
 
 Each checkpoint needs focused delivery, explicit dependencies if stacking becomes necessary, actual rendered screenshots in its PR and a user decision before any code review.

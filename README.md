@@ -30,6 +30,7 @@ Build native installers with `yarn package:make --linux --x64`, `--win --x64` or
 - **File > New presentation** creates a blank deck. The first launch includes a small Vibez text example.
 - Use the slide rail and inspector to add, duplicate, delete, reorder and edit slides. At least one slide remains in the deck.
 - Click a heading or body on the canvas to type directly. Selection follows the same text property in the inspector; Escape or Enter leaves heading editing. Body text supports line breaks.
+- Select attached media or a custom layer with mapped frame properties to reveal move/resize handles. Each completed gesture creates one shared Undo action; Escape cancels. The inspector retains exact numeric controls.
 - Edit the presentation name in the document bar. Text edits reach the backend while the field is still focused.
 - Missing media can be repaired with **Locate replacement…** in Media properties. **Locate font…** in Presentation theme repairs a font registration and its theme references. Replacements retain placement/playback and supplied credits, with shared Undo.
 - **File > Import font** adds TTF/OTF/WOFF/WOFF2 to the project. Choose it in Presentation theme and retain supplied source/attribution and licence text there. Fonts travel inside portable saves.
@@ -38,7 +39,8 @@ Build native installers with `yarn package:make --linux --x64`, `--win --x64` or
 - Choose **Title / chapter**, **Text / reveals**, **Code explanation** or **Process / workflow** in Layout. Diagram stages and code notes use manual reveal steps. The starting Vibez example includes a small generated video; portable saves include it.
 - The **Canvas / Code** tabs switch the workspace view. **Code** opens Remotion components, schemas and presentation styles. Choose **Create custom scene** or **Edit scene code** to edit TSX/TS/JSON drafts and declared properties. Drafts save with the project; **Apply scene code** validates before replacing the working scene. Invalid source preserves the last working version. Built-in references and **Slide properties** are read-only. See [code authoring](docs/verification/scene-code-editor.md).
 - **Code > Transition** edits transition source and staged properties. **Apply transition code** validates numeric motion samples; failed code retains the working transition. Space still controls progression. See [transition authoring](docs/verification/transition-code-editor.md).
-- **File > Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Use the inspector to position/resize media and choose contain or cover. Video has autoplay, looping, mute and volume settings; hover it for play/pause/restart controls.
+- **File > Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Use Canvas handles or the inspector to position/resize media and choose contain or cover. Video has autoplay, looping, mute and volume settings; hover it for play/pause/restart controls.
+- A stalled custom scene detaches after six seconds without a heartbeat while visible. Undo, correct its properties/source or choose Restart scene. Other slides and the editor remain usable.
 - Default saves create a single `.prezi` file containing deck content, scene source, local media, built-in fonts and their licences. Move that file on its own. Legacy JSON projects still use an adjacent `<project path>.assets` directory.
 - **File > Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.
 - The app asks whether to save, discard or cancel before replacing or closing a changed deck. Failed saves and invalid imports leave the current deck open.
@@ -74,7 +76,7 @@ Video keeps playing while reveals hold. Reveals retain the current video node; l
 
 The final slide stays visible. There is no automatic progression. Repeated keydown events and navigation during the brief 400 ms animation lock are ignored. Space cannot scroll the stage, and typing in the editor does not trigger presentation navigation.
 
-Fullscreen contains only the stage and any letterboxing. In windowed presentation mode, recording tools should capture the stage region rather than its separate presenter toolbar. Recording integration is outside this checkpoint.
+Fullscreen contains only the stage and any letterboxing. In windowed presentation mode, recording tools should capture the stage region rather than its separate presenter toolbar. Recording remains external.
 
 ## Agent collaboration
 
@@ -108,3 +110,5 @@ xvfb-run --auto-servernum yarn test:electron
 CI runs the same checks. `yarn format` formats code; `yarn test:watch` runs domain tests during development.
 
 See [verification evidence](docs/verification/checkpoint-1.md), the [checkpoint plan](docs/checkpoints.md), [architecture decisions](docs/adr/0001-local-desktop.md), the [product brief](docs/product-brief.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
+
+See [delivery and verification](docs/delivery.md) for the PR order, installed checks and recording evidence.

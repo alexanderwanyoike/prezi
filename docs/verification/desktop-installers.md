@@ -35,3 +35,9 @@ The update rehearsal additionally requires a baseline AppImage under `.scratch/u
 ## Yarn bootstrap registry
 
 The Intel macOS installer runner failed twice before dependency installation while Corepack fetched Yarn from registry.yarnpkg.com. The installer workflow now uses Corepack's documented COREPACK_NPM_REGISTRY override to retrieve the same pinned Yarn 1.22.22 from registry.npmjs.org. Integrity checks stay enabled. A fresh private Corepack cache successfully downloaded and ran the pinned Yarn locally; native CI confirms the runner path. See [Corepack environment variables](https://github.com/nodejs/corepack#environment-variables).
+
+## Final implementation verification
+
+The final combined application passed 75 unit tests and 38 real Electron journeys. Fresh Linux 0.1.0 and private 0.1.1 packages were built after scene editing, transitions, fonts, renderer recovery and image limits were complete. Both packaged journeys passed, including isolated custom compilation, imported fonts, pointer video controls and portable reopening. The latest AppImage update rehearsal passed checksum verification, replacement, restart and saved-project recovery again. See [recording rehearsal](recording-rehearsal.md) for the final capture and measured budgets.
+
+The application code at PR #35 passed Linux x64, Windows x64, macOS arm64 and macOS x64 installer jobs, plus assembly and verification. The final verification PR extends the installed journeys to cover custom scenes and fonts on those runners as well.
