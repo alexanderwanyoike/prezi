@@ -10,6 +10,7 @@ it('imports a real font with its notice, selects it through shared history and r
   const directory = await mkdtemp(join(tmpdir(), 'prezi-font-'));
   const owner = new ProjectOwner();
   const reopened = new ProjectOwner();
+  const initialTheme = owner.snapshot().project.theme;
   try {
     const fixture = resolve(
       'node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2',
@@ -49,7 +50,7 @@ it('imports a real font with its notice, selects it through shared history and r
     if (!recovered) throw Error('Missing portable font');
     expect(await readFile(recovered)).toEqual(await readFile(fixture));
     expect(owner.undo(2).ok).toBe(true);
-    expect(owner.snapshot().project.theme).toBeUndefined();
+    expect(owner.snapshot().project.theme).toEqual(initialTheme);
     expect(owner.undo(3).ok).toBe(true);
     expect(owner.snapshot().project.fonts).toBeUndefined();
   } finally {
