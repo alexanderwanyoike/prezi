@@ -1,18 +1,22 @@
 # Delivery
 
-All requested implementation checkpoints are complete. The application is available on feature/final-desktop-verification and as the locally built Linux AppImage in release/Prezi-0.1.0-linux-x64.AppImage. No PR has been merged and no release has been published. main and dev still point to the approved empty bootstrap commit.
+All requested checkpoints and all 22 marked review fixes are complete on feature/review-fix-verification. The rebuilt Linux AppImage is release/Prezi-0.1.0-linux-x64.AppImage. No PR has been merged and no release has been published. main and dev still point to the approved empty bootstrap commit.
 
 ## Verification
 
-- The combined application passed formatting, lint, strict types, 77 unit tests and its production build. All 38 real Electron journeys passed on private displays.
-- Both installed Linux journeys passed, including isolated compilation, imported fonts, media controls, shared MCP state and portable reopening. The custom scene was also manually presented with its imported font and playing video.
-- The latest 0.1.0 to 0.1.1 AppImage update passed download/checksum validation, replacement, restart and saved-project recovery.
-- Linux x64, Windows x64, macOS arm64 and macOS x64 installer journeys and complete release-set assembly are covered by the [final verification PR checks](https://github.com/alexanderwanyoike/prezi/pull/36/checks), including custom scenes and imported fonts.
-- An actual OBS recording was decoded and inspected. See [recording rehearsal](verification/recording-rehearsal.md) for frames, counters and measured resource limits.
+- Formatting, lint, strict types, all 99 unit tests and the production build pass.
+- All 54 real Electron journeys pass on private displays, including the review regressions and all original editing, presentation, media, source, MCP and recovery paths.
+- Both installed Linux journeys pass, including custom compilation, fonts, media, source catalog access, portable reopening and shared MCP state.
+- The latest 0.1.0 to 0.1.1 AppImage update passes download/checksum validation, replacement, restart and saved-project recovery.
+- Linux x64, Windows x64, macOS arm64 and macOS x64 installer journeys and release-set assembly pass in native CI. See the [application PR checks](https://github.com/alexanderwanyoike/prezi/pull/55/checks).
+- Actual rendered screenshots are embedded in each visual fix PR. Final installed screenshots and measured resource limits are in [review fix verification](verification/review-fixes.md).
+- The existing encoded OBS rehearsal remains verified; see [recording rehearsal](verification/recording-rehearsal.md).
+
+The [review fix ledger](verification/review-fix-ledger.md) maps every marked finding to its resolution. Verification used private displays, private profiles and disabled physical audio. No user desktop interaction was used.
 
 ## Scope and current limits
 
-Built-in layouts are read-only starting points. Project-owned Remotion scenes and transitions can be authored in Code or through MCP, expose declared properties and retain invalid drafts alongside the last accepted source. Canvas edits and agent batches use the same owner and Undo history. A portable .prezi includes source, attached assets, imported fonts and supplied notices.
+Built-in layouts are read-only starting points. Project-owned Remotion scenes and transitions can be authored in Code or through MCP, expose declared properties and retain invalid drafts alongside the last accepted source. Canvas edits and agent batches use the same owner and Undo history. Continuous human field/code/color gestures are grouped without merging independent agent batches. Read-only archived references live in a separately fetched source catalog; editable scene source and drafts remain document content. A portable .prezi includes source, attached assets, imported fonts and supplied notices.
 
 Entrance/reveal players currently use 12 frames at 30 fps; videos run on their own clock. Transition duration is 250 to 400 ms. Each slide has one attached media resource. Custom source runs without Node or network access, with bounded compilation and isolated rendering. Linux enforces cgroup memory/CPU/swap limits; other platforms retain process isolation and deadlines. Ad-hoc signed macOS previews have automatic updates disabled. Live updater replacement was rehearsed on Linux; Windows/macOS installation is verified by native CI.
 
@@ -58,3 +62,23 @@ Every feature PR targets dev. These PRs are stacked because dev remains unmerged
 | [#34](https://github.com/alexanderwanyoike/prezi/pull/34) | Recover stalled custom scenes without blocking the editor            | #33                |
 | [#35](https://github.com/alexanderwanyoike/prezi/pull/35) | Bound image resources before import and decoder access               | #34                |
 | [#36](https://github.com/alexanderwanyoike/prezi/pull/36) | Reliable installed custom scenes and final verification              | #35                |
+| [#37](https://github.com/alexanderwanyoike/prezi/pull/37) | Preserve typed compiler and queue failure codes                      | #36                |
+| [#38](https://github.com/alexanderwanyoike/prezi/pull/38) | Validate archived fonts before adopting portable projects            | #37                |
+| [#39](https://github.com/alexanderwanyoike/prezi/pull/39) | Remove injected show branding from slides and scene templates        | #38                |
+| [#40](https://github.com/alexanderwanyoike/prezi/pull/40) | Reserve the attached-media layer identity in custom scenes           | #39                |
+| [#41](https://github.com/alexanderwanyoike/prezi/pull/41) | Keep default slide layouts free of generated content                 | #40                |
+| [#42](https://github.com/alexanderwanyoike/prezi/pull/42) | Recover the editor after fullscreen exit failures                    | #41                |
+| [#43](https://github.com/alexanderwanyoike/prezi/pull/43) | Bound custom scene startup before presenter readiness                | #42                |
+| [#44](https://github.com/alexanderwanyoike/prezi/pull/44) | Preserve rapid typing during shared project updates                  | #43                |
+| [#45](https://github.com/alexanderwanyoike/prezi/pull/45) | Group continuous editor changes in shared Undo history               | #44                |
+| [#46](https://github.com/alexanderwanyoike/prezi/pull/46) | Await temporary-resource cleanup before quit and update handoff      | #45                |
+| [#47](https://github.com/alexanderwanyoike/prezi/pull/47) | Release extracted assets when project ownership changes              | #46                |
+| [#48](https://github.com/alexanderwanyoike/prezi/pull/48) | Handle interrupted video play requests without false codec errors    | #47                |
+| [#49](https://github.com/alexanderwanyoike/prezi/pull/49) | fix: resume presenter navigation after pointer media controls        | #48                |
+| [#50](https://github.com/alexanderwanyoike/prezi/pull/50) | fix: reconcile identical reveal rows without stale copies            | #49                |
+| [#51](https://github.com/alexanderwanyoike/prezi/pull/51) | fix: scale scene validation deadlines with reveal probes             | #50                |
+| [#52](https://github.com/alexanderwanyoike/prezi/pull/52) | fix: keep human preview controls scoped to their requests            | #51                |
+| [#53](https://github.com/alexanderwanyoike/prezi/pull/53) | refactor: share isolated renderer security and cleanup               | #52                |
+| [#54](https://github.com/alexanderwanyoike/prezi/pull/54) | fix: separate reference source from editable project snapshots       | #53                |
+| [#55](https://github.com/alexanderwanyoike/prezi/pull/55) | refactor: use consistent menu arrow wrapping                         | #54                |
+| [#56](https://github.com/alexanderwanyoike/prezi/pull/56) | Review fix verification, installers and delivery ledger              | #55                |
