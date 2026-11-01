@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 export function useSceneWatchdog(
   instance: string,
-  prepared: boolean,
+  ready: boolean,
   failed: boolean,
   failure: (message: string) => void,
 ): () => void {
@@ -20,23 +20,29 @@ export function useSceneWatchdog(
   }, [instance, failed]);
   useEffect(() => {
     last.current = performance.now();
-    if (!prepared || failed) return undefined;
+    if (failed) return undefined;
+    let started = performance.now();
     let live = true;
     let stopping = false;
     const timer = window.setInterval(() => {
       if (document.visibilityState !== 'visible') {
         last.current = performance.now();
+        started = performance.now();
         return;
       }
-      if (stopping || performance.now() - last.current < 6000) return;
+      const elapsed = performance.now() - (ready ? last.current : started);
+      if (stopping || elapsed < (ready ? 6000 : 10000)) return;
       stopping = true;
-      if (live) callback.current('Scene stopped responding.');
+      if (live)
+        callback.current(
+          ready ? 'Scene stopped responding.' : 'Scene did not become ready within 10 seconds.',
+        );
     }, 500);
     return () => {
       live = false;
       window.clearInterval(timer);
     };
-  }, [instance, prepared, failed]);
+  }, [instance, ready, failed]);
   return useCallback(() => {
     last.current = performance.now();
   }, []);

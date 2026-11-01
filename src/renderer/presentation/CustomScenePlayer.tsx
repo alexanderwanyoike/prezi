@@ -32,6 +32,7 @@ export function CustomScenePlayer({
   const current = useRef(scene);
   current.current = scene;
   const [prepared, setPrepared] = useState(false);
+  const [responsive, setResponsive] = useState(false);
   const [booted, setBooted] = useState<string | null>(null);
   const loadedInstance = useRef<string | null>(null);
   const currentInstance = useRef(instance);
@@ -64,7 +65,7 @@ export function CustomScenePlayer({
   });
   const currentContent = useRef(content);
   currentContent.current = content;
-  const heartbeat = useSceneWatchdog(instance, prepared, error !== null, (message) => {
+  const heartbeat = useSceneWatchdog(instance, responsive, error !== null, (message) => {
     failedContent.current = currentContent.current;
     if (document.activeElement === iframe.current)
       iframe.current?.parentElement?.focus({ preventScroll: true });
@@ -90,6 +91,7 @@ export function CustomScenePlayer({
           item.reveal !== latest.current.reveal
         )
           return;
+        if (item.state === 'ready') setResponsive(true);
         if (item.state === 'error') failedContent.current = currentContent.current;
         setError(item.state === 'error' ? (item.message ?? 'The scene could not render.') : null);
         ready.current?.();
@@ -117,6 +119,7 @@ export function CustomScenePlayer({
   useEffect(() => {
     if (error && failedContent.current !== content) {
       setPrepared(false);
+      setResponsive(false);
       setError(null);
       setInstance(crypto.randomUUID());
     }
@@ -195,6 +198,7 @@ export function CustomScenePlayer({
             type="button"
             onClick={() => {
               setPrepared(false);
+              setResponsive(false);
               setError(null);
               setInstance(crypto.randomUUID());
             }}
