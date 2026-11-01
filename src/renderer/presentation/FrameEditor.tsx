@@ -8,11 +8,12 @@ export interface Frame {
   width: number;
   height: number;
 }
+export type FramePatch = { [Key in keyof Frame]?: number | undefined };
 export interface FrameEditing {
   selected: boolean;
   pending: boolean;
   select: () => void;
-  update: (patch: Partial<Frame>) => void;
+  update: (patch: FramePatch) => void;
 }
 export type FrameLimits = Partial<Record<keyof Frame, { min?: number; max?: number }>>;
 const clamp = (value: number, min: number, max: number): number =>
@@ -24,13 +25,15 @@ export function FrameEditor({
   editing,
   label,
   limits = {},
+  layerId,
 }: {
   frame: Frame;
   children?: ReactNode;
-  style?: CSSProperties;
+  style?: CSSProperties | undefined;
   editing?: FrameEditing | undefined;
   label: string;
   limits?: FrameLimits;
+  layerId?: string;
 }): React.JSX.Element {
   const [draft, setDraft] = useState<Frame | null>(null);
   const gesture = useRef<{
@@ -100,6 +103,7 @@ export function FrameEditor({
   const shown = draft ?? frame;
   return (
     <div
+      data-layer={layerId}
       data-frame={label}
       data-selected={editing?.selected ?? false}
       style={{

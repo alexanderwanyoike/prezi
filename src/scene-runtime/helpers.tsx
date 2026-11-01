@@ -1,3 +1,5 @@
+import { FrameEditor } from '../renderer/presentation/FrameEditor';
+import type { Frame, FrameLimits } from '../renderer/presentation/FrameEditor';
 import type { CSSProperties, ReactNode } from 'react';
 import { useScene } from './context';
 import { EditableText } from './EditableText';
@@ -12,28 +14,50 @@ export function Layer({
   children?: ReactNode;
   style?: CSSProperties;
 }): React.JSX.Element {
-  const { definition, state } = useScene();
+  const { definition, state, emit } = useScene();
   const layer = definition.layers.find((item) => item.id === id);
-  const frame: CSSProperties = {};
   if (layer?.frame) {
-    const number = (property: string): number => {
-      const value = state.properties[property] ?? definition.fields[property]?.default;
-      return typeof value === 'number' ? value : 0;
-    };
-    Object.assign(frame, {
-      position: 'absolute',
-      left: number(layer.frame.x),
-      top: number(layer.frame.y),
-      width: number(layer.frame.width),
-      height: number(layer.frame.height),
+    const frame: Frame = { x: 0, y: 0, width: 0, height: 0 };
+    const limits: FrameLimits = {};
+    (['x', 'y', 'width', 'height'] as const).forEach((axis) => {
+      const property = layer.frame?.[axis];
+      if (!property) return;
+      const field = definition.fields[property];
+      const value = state.properties[property] ?? field?.default;
+      frame[axis] = typeof value === 'number' ? value : 0;
+      if (field?.type === 'number')
+        limits[axis] = {
+          ...(field.min !== undefined ? { min: field.min } : {}),
+          ...(field.max !== undefined ? { max: field.max } : {}),
+        };
     });
+    return (
+      <FrameEditor
+        frame={frame}
+        limits={limits}
+        label={layer.label}
+        layerId={id}
+        style={style}
+        editing={
+          state.editing
+            ? {
+                selected: state.selectedLayer === id,
+                pending: state.pending,
+                select: () => emit({ type: 'prezi:select', layer: id }),
+                update: (patch) => emit({ type: 'prezi:frame', layer: id, patch }),
+              }
+            : undefined
+        }
+      >
+        {children}
+      </FrameEditor>
+    );
   }
   return (
     <div
       data-layer={id}
       data-selected={state.editing && state.selectedLayer === id}
       style={{
-        ...frame,
         ...style,
         outline: state.editing && state.selectedLayer === id ? '2px solid #00d970' : undefined,
         outlineOffset: 6,
@@ -76,10 +100,20 @@ export function Text({
   return <span style={style}>{String(value)}</span>;
 }
 export function Media(): React.JSX.Element | null {
-  const { state } = useScene();
+  const { state, emit } = useScene();
   return state.media ? (
     <SceneMedia
       key={state.media.id}
+      editing={
+        state.editing
+          ? {
+              selected: state.selectedLayer === 'media',
+              pending: state.pending,
+              select: () => emit({ type: 'prezi:select', layer: 'media' }),
+              update: (patch) => emit({ type: 'prezi:frame', layer: 'media', patch }),
+            }
+          : undefined
+      }
       media={state.media}
       active={state.active}
       autoplay={state.autoplay}

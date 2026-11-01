@@ -277,6 +277,21 @@ export function App(): React.JSX.Element {
                 select: (id) => {
                   setSelectedField(`layer/${id}`);
                 },
+                frame: (id, frame) => {
+                  const mapping = snapshot.project.scenes?.[
+                    slide.scene?.definitionId ?? ''
+                  ]?.layers.find((layer) => layer.id === id)?.frame;
+                  if (!mapping) return;
+                  const patch: Record<string, number> = {};
+                  (['x', 'y', 'width', 'height'] as const).forEach((axis) => {
+                    const value = frame[axis];
+                    if (value !== undefined) patch[mapping[axis]] = value;
+                  });
+                  edit(
+                    [{ type: 'updateSceneProperties', slideId: slide.id, patch }],
+                    'Move or resize scene layer',
+                  );
+                },
                 update: (property, value) => {
                   edit(
                     [

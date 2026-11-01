@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { presentationThemeSchema } from './presentation-theme';
 import { sceneCandidateSchema, sceneValuesSchema } from './scene-definition';
 import { fontSchema } from './fonts';
-import { mediaSchema } from './media';
+import { mediaSchema, mediaPatchSchema } from './media';
 import { slideSchema } from './project';
 
 export const runtimeDefinitionSchema = sceneCandidateSchema.pick({
@@ -63,6 +63,11 @@ export const runtimeEventSchema = z.discriminatedUnion('type', [
     type: z.literal('prezi:edit'),
     property: z.string().max(32),
     value: z.union([z.string().max(10000), z.number(), z.boolean()]),
+  }),
+  z.object({
+    type: z.literal('prezi:frame'),
+    layer: z.string().max(32),
+    patch: mediaPatchSchema.shape.frame.unwrap(),
   }),
   z.object({
     type: z.literal('prezi:key'),

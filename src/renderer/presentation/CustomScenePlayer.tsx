@@ -1,3 +1,4 @@
+import type { FramePatch } from './FrameEditor';
 import { useEffect, useRef, useState } from 'react';
 import type { CustomSceneDefinition, SceneValues } from '../../shared/scene-definition';
 import { runtimeEventSchema } from '../../shared/scene-runtime';
@@ -8,6 +9,7 @@ export interface CustomSceneEditing {
   selected: string | null;
   pending: boolean;
   select: (layer: string) => void;
+  frame: (layer: string, patch: FramePatch) => void;
   update: (property: string, value: SceneValues[string]) => void;
 }
 export function CustomScenePlayer({
@@ -43,7 +45,7 @@ export function CustomScenePlayer({
     pending: scene.customEditing?.pending ?? false,
     active: !still,
     autoplay: !still && !scene.editing,
-    selectedLayer: scene.customEditing?.selected ?? null,
+    selectedLayer: scene.mediaEditing?.selected ? 'media' : (scene.customEditing?.selected ?? null),
     ...(still ? { probeFrame: 11 } : {}),
   };
   const content = JSON.stringify({
@@ -77,7 +79,14 @@ export function CustomScenePlayer({
         setError(item.state === 'error' ? (item.message ?? 'The scene could not render.') : null);
         ready.current?.();
       }
-      if (item.type === 'prezi:select') current.current.customEditing?.select(item.layer);
+      if (item.type === 'prezi:select') {
+        if (item.layer === 'media') current.current.mediaEditing?.select();
+        else current.current.customEditing?.select(item.layer);
+      }
+      if (item.type === 'prezi:frame') {
+        if (item.layer === 'media') current.current.mediaEditing?.update(item.patch);
+        else current.current.customEditing?.frame(item.layer, item.patch);
+      }
       if (item.type === 'prezi:edit')
         current.current.customEditing?.update(item.property, item.value);
       if (item.type === 'prezi:key' && !current.current.editing)
