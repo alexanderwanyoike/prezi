@@ -78,7 +78,9 @@ function Runtime(): React.JSX.Element | null {
       emit({ type: 'prezi:heartbeat' });
       if (!loaded) emit({ type: 'prezi:boot', instance: window.location.hostname });
     }, 500);
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearInterval(timer);
+    };
   }, [loaded]);
   const [state, setState] = useState<RuntimeState | null>(null);
   const fonts = useProjectFonts(state?.fonts, state?.theme);
