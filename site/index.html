@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prezi</title>
+    <meta
+      name="description"
+      content="Local presentation editor with Remotion, Canvas, Code and MCP."
+    />
+    <meta name="theme-color" content="#f3f5f0" />
+    <link rel="canonical" href="https://alexanderwanyoike.github.io/prezi/" />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <meta property="og:title" content="Prezi" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alexanderwanyoike.github.io/prezi/" />
+    <meta
+      property="og:image"
+      content="https://alexanderwanyoike.github.io/prezi/assets/canvas.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="header wrap">
+      <a class="brand" href="#main" aria-label="Prezi home"
+        ><img src="assets/icon.svg" alt="" width="36" height="36" />Prezi</a
+      >
+      <nav aria-label="Main navigation">
+        <a href="#canvas">Canvas</a><a href="#code">Code</a
+        ><a class="nav-download" href="#downloads">Download <span aria-hidden="true">↓</span></a>
+      </nav>
+    </header>
+    <main id="main">
+      <section class="hero wrap" aria-labelledby="title">
+        <div class="hero-heading">
+          <div>
+            <h1 id="title">Prezi</h1>
+            <p class="formats">Remotion <span> / </span> .prezi <span> / </span> MCP</p>
+          </div>
+          <div class="hero-actions">
+            <span class="version" data-version>__VERSION__</span
+            ><a class="button" href="#downloads">Download <span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+        <figure class="product" id="canvas">
+          <img
+            src="assets/canvas.png"
+            alt="Prezi Canvas with the Vibez workflow slide, editable properties and manual reveal steps"
+            width="1280"
+            height="920"
+            fetchpriority="high"
+          />
+          <figcaption><span>Canvas</span><span>__VERSION__</span></figcaption>
+        </figure>
+      </section>
+      <section class="downloads wrap" id="downloads" aria-labelledby="download-title">
+        <div class="section-heading">
+          <h2 id="download-title">Download</h2>
+          <time>__DATE__</time>
+        </div>
+        <div class="platforms">
+          <article>
+            <h3>Windows</h3>
+            <p>x64 <span>·</span> .exe</p>
+            <a
+              class="download-link"
+              data-installer
+              href="__WINDOWS_URL__"
+              aria-label="Download Prezi for Windows x64"
+              >Download <span aria-hidden="true">↗</span></a
+            ><span class="size">__WINDOWS_SIZE__</span>
+          </article>
+          <article>
+            <h3>macOS</h3>
+            <p>Apple silicon <span>·</span> .dmg</p>
+            <a
+              class="download-link"
+              data-installer
+              href="__MAC_ARM_URL__"
+              aria-label="Download Prezi for macOS Apple silicon"
+              >Download <span aria-hidden="true">↗</span></a
+            ><span class="size">__MAC_ARM_SIZE__</span>
+          </article>
+          <article>
+            <h3>macOS</h3>
+            <p>Intel <span>·</span> .dmg</p>
+            <a
+              class="download-link"
+              data-installer
+              href="__MAC_INTEL_URL__"
+              aria-label="Download Prezi for macOS Intel"
+              >Download <span aria-hidden="true">↗</span></a
+            ><span class="size">__MAC_INTEL_SIZE__</span>
+          </article>
+          <article>
+            <h3>Linux</h3>
+            <p>x64 <span>·</span> AppImage</p>
+            <a
+              class="download-link"
+              data-installer
+              href="__LINUX_URL__"
+              aria-label="Download Prezi AppImage for Linux x64"
+              >Download <span aria-hidden="true">↗</span></a
+            ><span class="size">__LINUX_SIZE__</span>
+          </article>
+        </div>
+        <div class="release-links">
+          <a href="__CHECKSUMS_URL__" data-checksums>SHA-256 checksums</a
+          ><a href="https://github.com/alexanderwanyoike/prezi/releases/tag/__VERSION__"
+            >Release notes</a
+          >
+        </div>
+        <details>
+          <summary>Installation notes</summary>
+          <p>Windows installers are unsigned. macOS apps are ad-hoc signed and not notarized.</p>
+        </details>
+      </section>
+      <section class="workspaces wrap" aria-label="Code and presentation views">
+        <figure class="product" id="code">
+          <img
+            src="assets/code.png"
+            alt="Prezi Code with project-owned Remotion source and editable scene properties"
+            width="1280"
+            height="920"
+            loading="lazy"
+          />
+          <figcaption><span>Code</span><span>TSX / Remotion</span></figcaption>
+        </figure>
+        <figure class="product">
+          <img
+            src="assets/present.png"
+            alt="Prezi presenter showing the Vibez title slide with manual navigation controls"
+            width="1280"
+            height="920"
+            loading="lazy"
+          />
+          <figcaption><span>Present</span><span>Manual reveals</span></figcaption>
+        </figure>
+      </section>
+    </main>
+    <footer class="footer wrap">
+      <a class="brand" href="#main"
+        ><img src="assets/icon.svg" alt="" width="28" height="28" />Prezi</a
+      >
+      <div>
+        <a href="https://github.com/alexanderwanyoike/prezi">GitHub</a
+        ><a href="https://github.com/alexanderwanyoike/prezi/blob/main/README.md">Documentation</a
+        ><a href="https://github.com/alexanderwanyoike/prezi/blob/main/THIRD_PARTY_NOTICES.md"
+          >Third-party notices</a
+        >
+      </div>
+    </footer>
+  </body>
+</html>

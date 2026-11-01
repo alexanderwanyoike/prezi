@@ -1,0 +1,120 @@
+import { z } from 'zod';
+import { sceneSourceSchema } from './custom-scene';
+
+export const propertyNameSchema = z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{0,31}$/);
+const label = { label: z.string().min(1).max(80) };
+export const sceneFieldSchema = z.discriminatedUnion('type', [
+  z.object({
+    ...label,
+    type: z.literal('text'),
+    default: z.string().max(10000),
+    multiline: z.boolean().optional(),
+  }),
+  z.object({ ...label, type: z.literal('color'), default: z.string().regex(/^#[0-9a-fA-F]{6}$/) }),
+  z.object({
+    ...label,
+    type: z.literal('number'),
+    default: z.number(),
+    min: z.number().optional(),
+    max: z.number().optional(),
+  }),
+  z.object({ ...label, type: z.literal('boolean'), default: z.boolean() }),
+]);
+export const sceneValuesSchema = z
+  .record(propertyNameSchema, z.union([z.string().max(10000), z.number(), z.boolean()]))
+  .refine((values) => Object.keys(values).length <= 32);
+export const sceneCandidateSchema = z.object({
+  id: z.uuid(),
+  name: z.string().min(1).max(100),
+  source: sceneSourceSchema,
+  fields: z
+    .record(propertyNameSchema, sceneFieldSchema)
+    .refine((fields) => Object.keys(fields).length <= 32),
+  layers: z
+    .array(
+      z.object({
+        id: propertyNameSchema,
+        label: z.string().min(1).max(80),
+        property: propertyNameSchema.optional(),
+        frame: z
+          .object({
+            x: propertyNameSchema,
+            y: propertyNameSchema,
+            width: propertyNameSchema,
+            height: propertyNameSchema,
+          })
+          .optional(),
+      }),
+    )
+    .max(32),
+});
+export const sceneDefinitionSchema = sceneCandidateSchema.extend({
+  version: z.uuid().optional(),
+  code: z
+    .string()
+    .min(1)
+    .max(2 * 1024 * 1024),
+});
+export const sceneInstanceSchema = z.object({
+  definitionId: z.uuid(),
+  properties: sceneValuesSchema,
+});
+export const sceneInstallationSchema = z.object({
+  consumeDraft: z.boolean().optional(),
+  requestId: z.string().min(1).max(100),
+  expectedRevision: z.number().int().nonnegative(),
+  label: z.string().min(1).max(100),
+  slideId: z.uuid(),
+  definition: sceneDefinitionSchema,
+  properties: sceneValuesSchema,
+});
+export type SceneCandidate = z.infer<typeof sceneCandidateSchema>;
+export type CustomSceneDefinition = z.infer<typeof sceneDefinitionSchema>;
+export type SceneValues = z.infer<typeof sceneValuesSchema>;
+export type SceneInstallation = z.infer<typeof sceneInstallationSchema>;
+
+export function validSceneValues(
+  definition: Pick<CustomSceneDefinition, 'fields'>,
+  values: SceneValues,
+): boolean {
+  return Object.entries(values).every(([key, value]) => {
+    const field = definition.fields[key];
+    if (!Object.hasOwn(definition.fields, key) || !field) return false;
+    if (field.type === 'boolean') return typeof value === 'boolean';
+    if (field.type === 'number')
+      return (
+        typeof value === 'number' &&
+        value >= (field.min ?? -Infinity) &&
+        value <= (field.max ?? Infinity)
+      );
+    return typeof value === 'string' && (field.type !== 'color' || /^#[0-9a-fA-F]{6}$/.test(value));
+  });
+}
+
+export function sceneDefinitionProblem(candidate: SceneCandidate): string | null {
+  if (
+    !candidate.source.entry.endsWith('.tsx') ||
+    !Object.hasOwn(candidate.source.files, candidate.source.entry)
+  )
+    return 'A scene needs an existing TSX entry file.';
+  if (candidate.layers.some((layer) => layer.id === 'media'))
+    return 'The layer ID media is reserved for attached slide media. Choose another layer ID.';
+  const invalidDefault = Object.entries(candidate.fields).find(
+    ([, field]) =>
+      field.type === 'number' &&
+      (field.default < (field.min ?? -Infinity) || field.default > (field.max ?? Infinity)),
+  );
+  if (invalidDefault) return `The default for ${invalidDefault[1].label} is outside its limits.`;
+  if (new Set(candidate.layers.map((layer) => layer.id)).size !== candidate.layers.length)
+    return 'Editable layer IDs must be unique.';
+  const invalidLayer = candidate.layers.find((layer) => {
+    if (layer.property && !Object.hasOwn(candidate.fields, layer.property)) return true;
+    return (
+      !!layer.frame &&
+      Object.values(layer.frame).some((name) => candidate.fields[name]?.type !== 'number')
+    );
+  });
+  return invalidLayer
+    ? `The editable properties for ${invalidLayer.label} are missing or have the wrong type.`
+    : null;
+}

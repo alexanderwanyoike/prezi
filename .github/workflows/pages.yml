@@ -1,0 +1,98 @@
+name: GitHub Pages
+on:
+  pull_request:
+    branches: [dev, main]
+    paths: ['site/**', 'scripts/*site*', 'package.json', 'yarn.lock', '.github/workflows/pages.yml']
+  push:
+    branches: [main]
+    paths: ['site/**', 'scripts/*site*', 'package.json', 'yarn.lock', '.github/workflows/pages.yml']
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.event.pull_request.number || 'production' }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22'
+          cache: yarn
+      - run: corepack enable && corepack prepare yarn@1.22.22 --activate
+      - run: yarn install --frozen-lockfile
+      - run: yarn vitest run scripts/build-site.test.ts
+      - run: yarn eslint scripts/build-site.ts scripts/site-release.ts scripts/build-site.test.ts --max-warnings 0
+      - run: yarn typecheck
+  refresh-release:
+    if: github.event_name == 'release' && !github.event.release.draft && !github.event.release.prerelease
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+    steps:
+      - name: Rebuild the published site from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
+  build:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.event_name != 'release'
+    needs: verify
+    runs-on: ubuntu-24.04
+    outputs:
+      available: ${{ steps.release.outputs.available }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22'
+          cache: yarn
+      - run: corepack enable && corepack prepare yarn@1.22.22 --activate
+      - run: yarn install --frozen-lockfile
+      - name: Read published release metadata
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh api "repos/$GITHUB_REPOSITORY/releases/latest" > "$RUNNER_TEMP/release.json" 2> "$RUNNER_TEMP/release-error.txt"; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+          elif grep -q 'HTTP 404' "$RUNNER_TEMP/release-error.txt"; then
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo 'No published release yet; deployment will start after publication.'
+          else
+            cat "$RUNNER_TEMP/release-error.txt" >&2
+            exit 1
+          fi
+      - name: Build validated downloads
+        if: steps.release.outputs.available == 'true'
+        run: yarn site:build "$RUNNER_TEMP/release.json" dist/site
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
+        if: steps.release.outputs.available == 'true'
+        with:
+          path: dist/site
+  deploy:
+    needs: build
+    if: needs.build.outputs.available == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+      - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+        id: deployment

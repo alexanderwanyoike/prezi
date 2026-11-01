@@ -1,0 +1,176 @@
+.source-browser {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 196px minmax(0, 1fr);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.source-files {
+  padding: 18px 10px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--line);
+  overflow: auto;
+}
+.source-files .eyebrow {
+  display: block;
+  margin: 0 10px 12px;
+}
+.source-files .eyebrow:not(:first-child) {
+  margin-top: 28px;
+}
+.source-files button {
+  width: 100%;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 10px;
+  border: 1px solid transparent;
+  text-align: left;
+  background: transparent;
+  font-size: 11px;
+}
+.source-files button svg {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.source-files button[aria-pressed='true'] {
+  border-color: var(--line);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.source-files button span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.source-files small {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  margin-top: 5px;
+}
+.source-document {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.source-file-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font:
+    10px 'IBM Plex Mono',
+    monospace;
+}
+.source-file-heading > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.source-file-heading > span:last-child {
+  flex-shrink: 0;
+}
+.source-code {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.source-hint {
+  color: var(--muted);
+  margin-top: 16px;
+  font-size: 10px;
+}
+@media (max-width: 1180px) {
+  .source-browser {
+    grid-template-columns: 154px minmax(0, 1fr);
+  }
+}
+
+.source-commands {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.source-commands button {
+  font-size: 10px;
+  padding: 6px 9px;
+}
+.source-commands span {
+  font-size: 8px;
+}
+.source-feedback {
+  flex-shrink: 0;
+  max-height: 130px;
+  overflow: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.source-feedback[role='alert'] {
+  border-color: var(--accent);
+}
+.source-new-file {
+  padding: 8px;
+  display: flex;
+  gap: 6px;
+  flex-direction: column;
+}
+.source-new-file input {
+  min-width: 0;
+  width: 100%;
+}
+.source-file-heading > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell.is-transition-code .workspace-area {
+  grid-column: 2 / -1;
+}
+.code-resource-tabs {
+  display: flex;
+  gap: 6px;
+}
+.code-resource-tabs button {
+  font-size: 10px;
+  background: transparent;
+  border-color: transparent;
+}
+.code-resource-tabs button[aria-selected='true'] {
+  color: var(--accent);
+  border-color: var(--line);
+}
+.transition-source-workspace {
+  padding: 0;
+}
+.transition-source-workspace > .canvas-heading {
+  padding-inline: 32px;
+}
+.transition-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 278px;
+}
+.transition-editor {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: 12px;
+  padding: 0 32px 24px;
+}
+.transition-inspector {
+  grid-area: auto;
+  overflow: auto;
+}

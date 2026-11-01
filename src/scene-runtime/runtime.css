@@ -1,0 +1,30 @@
+html,
+body,
+#root {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #101513;
+  color: #edf2ec;
+  font-family: 'Manrope Variable', sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+.editable-scene-text {
+  display: block;
+  min-height: 1em;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  outline: none;
+  cursor: text;
+}
+.editable-scene-text:focus {
+  outline: 2px solid #00d970;
+  outline-offset: 6px;
+}
+.editable-scene-text:empty::before {
+  content: 'Click to edit';
+  opacity: 0.4;
+}

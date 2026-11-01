@@ -1,0 +1,236 @@
+import { describe, expect, it } from 'vitest';
+import { ProjectOwner } from './project-owner';
+
+describe('project editing', () => {
+  it('keeps retry results private when a caller changes an accepted response', () => {
+    const owner = new ProjectOwner();
+    const request = {
+      requestId: 'private-retry',
+      expectedRevision: 0,
+      label: 'Rename',
+      operations: [{ type: 'renameProject', name: 'Accepted name' }],
+    };
+    const result = owner.edit(request);
+    if (!result.ok) throw new Error('Expected accepted edit');
+    result.value.project.name = 'Caller mutation';
+    expect(owner.edit(request)).toMatchObject({
+      ok: true,
+      value: { project: { name: 'Accepted name' }, revision: 1 },
+    });
+    const undone = owner.undo(1, 'private-undo');
+    if (!undone.ok) throw new Error('Expected undo');
+    undone.value.project.name = 'Another caller mutation';
+    expect(owner.undo(1, 'private-undo')).toMatchObject({
+      ok: true,
+      value: { project: { name: 'Vibez / how I built it' }, revision: 2 },
+    });
+    expect(owner.snapshot().project.name).toBe('Vibez / how I built it');
+  });
+  it('labels history and retries an undo or redo without restoring a second batch', () => {
+    const owner = new ProjectOwner();
+    const initial = owner.snapshot();
+    owner.edit({
+      requestId: 'manual',
+      expectedRevision: 0,
+      label: 'Manual title',
+      operations: [{ type: 'renameProject', name: 'My deck' }],
+    });
+    owner.edit({
+      requestId: 'agent',
+      expectedRevision: 1,
+      label: 'Agent: rebuild opening',
+      operations: [{ type: 'renameProject', name: 'Agent version' }],
+    });
+    expect(owner.snapshot()).toMatchObject({
+      undoLabel: 'Agent: rebuild opening',
+      redoLabel: null,
+    });
+    const undone = owner.undo(2, 'undo-agent');
+    expect(undone).toMatchObject({
+      ok: true,
+      value: {
+        project: { name: 'My deck' },
+        undoLabel: 'Manual title',
+        redoLabel: 'Agent: rebuild opening',
+      },
+    });
+    expect(owner.undo(2, 'undo-agent')).toEqual(undone);
+    expect(owner.snapshot().revision).toBe(3);
+    expect(owner.redo(3, 'undo-agent')).toMatchObject({
+      ok: false,
+      error: { code: 'REQUEST_REUSED' },
+    });
+    const redone = owner.redo(3, 'redo-agent');
+    expect(redone).toMatchObject({
+      ok: true,
+      value: {
+        project: { name: 'Agent version' },
+        undoLabel: 'Agent: rebuild opening',
+        redoLabel: null,
+      },
+    });
+    expect(owner.redo(3, 'redo-agent')).toEqual(redone);
+    owner.undo(4);
+    owner.undo(5);
+    expect(owner.snapshot().project).toEqual(initial.project);
+    expect(owner.undo(0, 'stale')).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+  });
+  it('builds a deck by adding, duplicating, reordering and deleting slides with stable IDs', () => {
+    const owner = new ProjectOwner();
+    const originalIds = owner.snapshot().project.slides.map((slide) => slide.id);
+    const opening = owner.snapshot().project.slides[0];
+    if (!opening) throw new Error('Expected an initial slide');
+    const newId = crypto.randomUUID();
+    const duplicateId = crypto.randomUUID();
+    expect(
+      owner.edit({
+        requestId: 'arrange',
+        expectedRevision: 0,
+        label: 'Arrange deck',
+        operations: [
+          { type: 'addSlide', slide: { ...opening, id: newId, title: 'A new thought' }, index: 1 },
+          { type: 'duplicateSlide', slideId: newId, newId: duplicateId },
+          { type: 'moveSlide', slideId: duplicateId, index: 0 },
+          { type: 'deleteSlide', slideId: newId },
+          { type: 'renameProject', name: 'My explanation' },
+        ],
+      }).ok,
+    ).toBe(true);
+    expect(owner.snapshot().project.name).toBe('My explanation');
+    expect(owner.snapshot().project.slides.map((slide) => slide.id)).toEqual([
+      duplicateId,
+      ...originalIds,
+    ]);
+    expect(owner.snapshot().project.slides).toHaveLength(4);
+    expect(owner.snapshot().project.slides[0]?.title).toBe('A new thought');
+    expect(
+      owner.edit({
+        requestId: 'duplicate-id',
+        expectedRevision: 1,
+        label: 'Invalid addition',
+        operations: [{ type: 'addSlide', slide: opening, index: 0 }],
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    owner.undo(1);
+    expect(owner.snapshot().project.slides).toHaveLength(3);
+  });
+  it('undoes a labelled batch as one action and clears redo after a new edit', () => {
+    const owner = new ProjectOwner();
+    const before = owner.snapshot();
+    const slide = before.project.slides[0];
+    if (!slide) throw new Error('Expected an initial slide');
+    owner.edit({
+      requestId: 'batch',
+      expectedRevision: 0,
+      label: 'Opening text',
+      operations: [
+        { type: 'updateSlide', slideId: slide.id, patch: { title: 'Changed title' } },
+        { type: 'updateSlide', slideId: slide.id, patch: { body: 'Changed body' } },
+      ],
+    });
+    expect(owner.undo(owner.snapshot().revision).ok).toBe(true);
+    expect(owner.snapshot().project).toEqual(before.project);
+    expect(owner.snapshot().canRedo).toBe(true);
+    expect(owner.redo(owner.snapshot().revision).ok).toBe(true);
+    expect(owner.snapshot().project.slides[0]).toMatchObject({
+      title: 'Changed title',
+      body: 'Changed body',
+    });
+    owner.undo(owner.snapshot().revision);
+    owner.edit({
+      requestId: 'different',
+      expectedRevision: owner.snapshot().revision,
+      label: 'Another title',
+      operations: [{ type: 'updateSlide', slideId: slide.id, patch: { title: 'Different' } }],
+    });
+    expect(owner.snapshot().canRedo).toBe(false);
+    expect(owner.undo(0)).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+    expect(owner.snapshot().revision).toBe(5);
+  });
+  it('applies a batch once and leaves content unchanged after stale or invalid requests', () => {
+    const owner = new ProjectOwner();
+    const before = owner.snapshot();
+    const slide = before.project.slides[0];
+    if (!slide) throw new Error('Expected an initial slide');
+    const request = {
+      requestId: 'batch',
+      label: 'Opening',
+      expectedRevision: 0,
+      operations: [{ type: 'updateSlide', slideId: slide.id, patch: { title: 'New opening' } }],
+    };
+    expect(owner.edit(request).ok).toBe(true);
+    const after = owner.snapshot();
+    expect(owner.edit(request)).toEqual({ ok: true, value: after });
+    expect(owner.snapshot()).toEqual(after);
+    expect(owner.edit({ ...request, requestId: 'stale' })).toMatchObject({
+      ok: false,
+      error: { code: 'CONFLICT' },
+    });
+    expect(owner.edit({ ...request, label: 'Changed payload' })).toMatchObject({
+      ok: false,
+      error: { code: 'REQUEST_REUSED' },
+    });
+    expect(
+      owner.edit({
+        ...request,
+        requestId: 'invalid-batch',
+        expectedRevision: after.revision,
+        operations: [
+          ...request.operations,
+          { type: 'updateSlide', slideId: crypto.randomUUID(), patch: { title: 'Missing' } },
+        ],
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'NOT_FOUND' } });
+    expect(owner.snapshot()).toEqual(after);
+  });
+  it('publishes a text edit through the same owner observed by every client', () => {
+    const owner = new ProjectOwner();
+    const before = owner.snapshot();
+    const slide = before.project.slides[0];
+    if (!slide) throw new Error('Expected an initial slide');
+    const observed: string[] = [];
+    owner.subscribe((snapshot) => {
+      observed.push(snapshot.project.slides[0]?.title ?? '');
+    });
+    const edited = owner.edit({
+      requestId: 'first-edit',
+      expectedRevision: before.revision,
+      label: 'Rename opening slide',
+      operations: [
+        { type: 'updateSlide', slideId: slide.id, patch: { title: 'A quieter opening' } },
+      ],
+    });
+    expect(edited.ok).toBe(true);
+    expect(owner.snapshot().project.slides[0]?.title).toBe('A quieter opening');
+    expect(owner.snapshot().revision).toBe(before.revision + 1);
+    expect(observed).toEqual(['A quieter opening']);
+    expect(owner.snapshot().dirty).toBe(true);
+    expect(before.project.slides[0]?.title).not.toBe('A quieter opening');
+  });
+});
+
+it('blocks new content changes during update handoff and unlocks after an installation failure', () => {
+  const owner = new ProjectOwner();
+  const initial = owner.snapshot();
+  const locked = owner.beginRestart();
+  expect(locked.ok).toBe(true);
+  expect(
+    owner.edit({
+      requestId: 'during-update',
+      expectedRevision: 0,
+      label: 'Agent edit',
+      operations: [{ type: 'renameProject', name: 'Must not disappear' }],
+    }),
+  ).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+  expect(owner.snapshot()).toEqual(initial);
+  if (!locked.ok) throw new Error('Missing restart lock');
+  locked.value();
+  expect(
+    owner.edit({
+      requestId: 'after-failure',
+      expectedRevision: 0,
+      label: 'Recovered',
+      operations: [{ type: 'renameProject', name: 'Can keep working' }],
+    }).ok,
+  ).toBe(true);
+});

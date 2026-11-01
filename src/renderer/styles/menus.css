@@ -1,0 +1,225 @@
+.app-shell {
+  grid-template-rows: 52px 40px minmax(0, 1fr) 30px;
+}
+.application-navigation {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.application-menubar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.application-menu-group {
+  position: relative;
+}
+.application-menu-group > button {
+  border: 0;
+  padding: 8px 11px;
+  background: transparent;
+  border-radius: 3px;
+}
+.application-menu-group > button[aria-expanded='true'] {
+  background: var(--sidebar);
+  color: var(--accent);
+}
+.application-menu-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 260px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--sidebar);
+  box-shadow: 0 12px 35px #0004;
+  z-index: 8;
+}
+.application-menu-popup button {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  min-height: 32px;
+  padding: 5px 10px 5px 6px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  font-size: 11px;
+  text-align: left;
+}
+.application-menu-popup button:hover,
+.application-menu-popup button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  outline: none;
+}
+.application-menu-popup kbd {
+  margin-left: auto;
+  padding-left: 20px;
+  font:
+    10px 'IBM Plex Mono',
+    monospace;
+  color: var(--muted);
+}
+.menu-check {
+  width: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.application-menu-separator {
+  margin: 5px 7px;
+  border-top: 1px solid var(--line);
+}
+.workspace-area {
+  grid-area: workspace;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--panel);
+}
+.workspace-tabs {
+  display: flex;
+  min-height: 42px;
+  padding: 0 32px;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.workspace-tabs button {
+  min-width: 104px;
+  justify-content: center;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+}
+.workspace-tabs button[aria-selected='true'] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.workspace-panel {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.workspace-panel > .workspace {
+  flex: 1;
+}
+@media (max-width: 1180px) {
+  .workspace-tabs {
+    padding: 0 22px;
+  }
+}
+.connection-dialog {
+  width: min(480px, calc(100vw - 48px));
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 24px 64px #0006;
+}
+.connection-dialog::backdrop {
+  background: #0006;
+}
+.connection-dialog h2 {
+  margin: 0;
+  font-size: 16px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.connection-dialog p {
+  line-height: 1.7;
+  margin: 18px 0;
+}
+.connection-dialog code {
+  display: block;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 12px;
+}
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connection-dialog progress {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--accent);
+}
+.update-notice {
+  margin-left: auto;
+  margin-right: 18px;
+  padding: 2px 8px;
+  color: var(--accent);
+  font-size: 10px;
+  border-color: var(--line);
+}
+
+.presentation-theme-dialog {
+  width: min(600px, calc(100vw - 48px));
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+}
+.theme-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.theme-fields label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+.theme-fields input,
+.theme-fields select {
+  width: 100%;
+}
+.theme-fields input[type='color'] {
+  height: 34px;
+  padding: 3px;
+}
+
+.font-credits {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 8px;
+}
+.font-credits fieldset {
+  border: 1px solid var(--line);
+  padding: 14px;
+  margin: 14px 0;
+}
+.font-credits legend {
+  font-size: 11px;
+  padding: 0 6px;
+}
+.font-credits label {
+  display: block;
+  font-size: 11px;
+  margin: 12px 0 6px;
+}
+.font-credits input,
+.font-credits textarea {
+  width: 100%;
+}
+.presentation-theme-dialog > button {
+  margin-top: 20px;
+}
+
+.presentation-theme-dialog .panel-heading {
+  position: sticky;
+  top: -24px;
+  z-index: 2;
+  background: var(--panel);
+  margin: -24px -24px 0;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+}

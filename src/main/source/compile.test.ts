@@ -1,0 +1,121 @@
+import { expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
+import { z } from 'zod';
+import { compileScene } from './compile';
+
+it('types editable scene properties from their declared fields', async () => {
+  const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
+  const libraries = z.record(z.string(), z.string()).parse(input);
+  const source = {
+    entry: 'Scene.tsx',
+    files: {
+      'Scene.tsx': `import type {SceneProps} from 'prezi';
+import {Text, Layer} from 'prezi';
+export default function Scene({props}:SceneProps){return <Layer id="heading"><Text property="headline" style={{fontSize:props.size}}/></Layer>;}`,
+    },
+  };
+  const fields = {
+    headline: { type: 'text' as const, label: 'Heading', default: 'Editable' },
+    size: { type: 'number' as const, label: 'Size', default: 80 },
+  };
+  const result = await compileScene(source, libraries, fields);
+  expect(result.ok).toBe(true);
+});
+
+it('requires a default component and rejects dynamic module loading', async () => {
+  const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
+  const libraries = z.record(z.string(), z.string()).parse(input);
+  const missing = await compileScene(
+    { entry: 'Scene.tsx', files: { 'Scene.tsx': 'export const message = "No component";' } },
+    libraries,
+  );
+  expect(missing.ok).toBe(false);
+  const dynamic = await compileScene(
+    {
+      entry: 'Scene.tsx',
+      files: {
+        'Scene.tsx':
+          'const path = "react"; import(path); export default function Scene() { return <div/>; }',
+      },
+    },
+    libraries,
+  );
+  expect(dynamic.ok).toBe(false);
+});
+
+it('rejects type errors and unapproved imports with useful diagnostics', async () => {
+  const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
+  const libraries = z.record(z.string(), z.string()).parse(input);
+  const invalid = await compileScene(
+    {
+      entry: 'Scene.tsx',
+      files: {
+        'Scene.tsx':
+          'const count: number = "wrong"; export default function Scene() { return <div>{count}</div>; }',
+      },
+    },
+    libraries,
+  );
+  expect(invalid.ok).toBe(false);
+  if (invalid.ok) throw new Error('Expected a type error');
+  expect(
+    invalid.error.diagnostics.some(
+      (item) =>
+        item.file === 'Scene.tsx' && item.line === 1 && item.message.includes('not assignable'),
+    ),
+  ).toBe(true);
+  const denied = await compileScene(
+    {
+      entry: 'Scene.tsx',
+      files: {
+        'Scene.tsx':
+          'import fs from "node:fs"; export default function Scene() { return <div>{fs.readFileSync("/etc/passwd", "utf8")}</div>; }',
+      },
+    },
+    libraries,
+  );
+  expect(denied.ok).toBe(false);
+});
+
+it('bundles a React/Remotion scene and reports source locations without executing it', async () => {
+  const compiled = await compileScene({
+    entry: 'Scene.tsx',
+    files: {
+      'Scene.tsx': `import React from 'react';
+import {AbsoluteFill, useCurrentFrame} from 'remotion';
+import {message} from './message';
+export default function Scene() { return <AbsoluteFill>{message} {useCurrentFrame()}</AbsoluteFill>; }`,
+      'message.ts': 'export const message = "A working scene";',
+    },
+  });
+  expect(compiled.ok).toBe(true);
+  if (!compiled.ok) throw new Error('Expected a compiled scene');
+  expect(compiled.value.code).toContain('A working scene');
+  expect(compiled.value.code).toMatch(/export\s*\{/);
+  const invalid = await compileScene({
+    entry: 'Scene.tsx',
+    files: { 'Scene.tsx': 'export default function Scene() { return <div>;' },
+  });
+  expect(invalid).toMatchObject({
+    ok: false,
+    error: { diagnostics: [expect.objectContaining({ file: 'Scene.tsx', line: 1 })] },
+  });
+});
+
+it('types the shared presentation theme for custom scene authors', async () => {
+  const input: unknown = JSON.parse(await readFile('out/compiler/types.json', 'utf8'));
+  const libraries = z.record(z.string(), z.string()).parse(input);
+  expect(
+    (
+      await compileScene(
+        {
+          entry: 'Scene.tsx',
+          files: {
+            'Scene.tsx': `import type {SceneProps} from 'prezi'; export default function Scene({theme}:SceneProps){return <div style={{background:theme.background,color:theme.foreground,padding:theme.padding,fontFamily:theme.fontFamily}}>Shared theme</div>;}`,
+          },
+        },
+        libraries,
+      )
+    ).ok,
+  ).toBe(true);
+});
