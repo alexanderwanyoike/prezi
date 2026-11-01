@@ -20,6 +20,10 @@ test('opens an empty project on a fresh launch and through New presentation', as
     await expect(heading).toHaveText('');
     await expect(page.getByRole('button', { name: /^Slide \d+:/ })).toHaveCount(1);
     await expect(page.locator('video')).toHaveCount(0);
+    const thumbnail = page.getByRole('button', { name: /^Slide 1:/ }).locator('.thumbnail');
+    await expect(thumbnail).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+    await expect(thumbnail).toHaveCSS('color', 'rgb(23, 23, 23)');
+    await expect(thumbnail.locator('.mini-rule')).toHaveCSS('background-color', 'rgb(64, 64, 64)');
     await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
     const initial = await page.evaluate(() => window.prezi.snapshot());
     if (!initial.ok) throw Error(initial.error.message);
