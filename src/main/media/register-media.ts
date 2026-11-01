@@ -1,10 +1,10 @@
 import { dialog, ipcMain, net, protocol } from 'electron';
 import type { BrowserWindow } from 'electron';
 import { extname } from 'node:path';
-import { validateImage } from './validate-image';
 import { stat } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
+import { validateImage } from './validate-image';
 import { byteRange } from './byte-range';
 import type { ProjectOwner } from '../project/project-owner';
 import { failure } from '../../shared/result';
