@@ -22,7 +22,7 @@
     "test:electron": "playwright test",
     "verify": "yarn format:check && yarn lint && yarn typecheck && yarn test && yarn build",
     "package:make": "yarn build && electron-builder --publish never",
-    "package:test": "playwright test --config playwright.packaged.config.ts tests/packaged/desktop.test.ts",
+    "package:test": "playwright test --config playwright.packaged.config.ts tests/packaged/desktop.test.ts tests/packaged/scenes.test.ts",
     "package:update:test": "playwright test --config playwright.packaged.config.ts tests/packaged/updates.test.ts",
     "release:verify": "node --experimental-strip-types scripts/verify-release.ts",
     "scene:types": "node --experimental-strip-types scripts/prepare-scene-types.ts",
