@@ -39,7 +39,6 @@ test('retains attached video and real reveal content when creating an editable c
       .poll(() => video.evaluate((node: HTMLVideoElement) => node.currentTime))
       .toBeGreaterThan(0.3);
     const handle = await video.elementHandle();
-    if (!handle) throw Error('No video');
     await page.getByRole('button', { name: '01 Planning', exact: true }).click();
     await expect(child.getByText('Planning', { exact: true })).toBeVisible();
     expect(
@@ -51,12 +50,12 @@ test('retains attached video and real reveal content when creating an editable c
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     const stage = page.getByRole('region', { name: 'Presentation stage' });
     await expect(stage).toHaveAttribute('data-busy', 'false');
-    async function advance(remaining: number): Promise<void> {
+    const advance = async (remaining: number): Promise<void> => {
       if (remaining === 0) return;
       await page.keyboard.press('Space');
       await expect(stage).toHaveAttribute('data-busy', 'false');
       await advance(remaining - 1);
-    }
+    };
     await advance(6);
     await expect(stage).toHaveAttribute('data-slide', '3');
     const presented = page.frameLocator('iframe[title="Custom scene"]');
@@ -66,7 +65,6 @@ test('retains attached video and real reveal content when creating an editable c
       .poll(() => presentedVideo.evaluate((node: HTMLVideoElement) => node.currentTime))
       .toBeGreaterThan(0.4);
     const presentedHandle = await presentedVideo.elementHandle();
-    if (!presentedHandle) throw Error('No presented video');
     await advance(1);
     await expect(presented.getByText('Planning', { exact: true })).toBeVisible();
     expect(
