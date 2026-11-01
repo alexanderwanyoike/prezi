@@ -79,3 +79,7 @@ Presentation applies those samples through the browser Web Animations API. The e
 ## Canvas frame editing
 
 The W3C Pointer Events capture/cancellation pattern informs canvas gestures: https://www.w3.org/TR/pointerevents3/ . Movement stays local until pointer release and uses the existing revisioned project commands. No implementation code or additional gesture library was copied. Declared layer frames take precedence over source styles; numeric field limits and composition bounds constrain gestures.
+
+## Stalled scene recovery
+
+Electron's frame tree and process metrics identify the exact prepared scene renderer. Its documented PID plus creation-time identity prevents targeting a reused process ID: https://www.electronjs.org/docs/latest/api/structures/process-metric . The frame tree includes all application web contents before termination. Failed scenes detach before their process stops to avoid Chromium propagating a page-crash event. No upstream implementation code was copied.
