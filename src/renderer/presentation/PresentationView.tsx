@@ -12,7 +12,7 @@ import type { SceneProps } from './SlideScene';
 
 interface Props {
   project: Project;
-  exit: () => void;
+  exit: (error?: string) => void;
 }
 export function PresentationView({ project, exit }: Props): React.JSX.Element {
   const { transitionMs } = presentationTheme(project.theme);
@@ -64,10 +64,14 @@ export function PresentationView({ project, exit }: Props): React.JSX.Element {
   );
 
   const leave = useCallback((): void => {
-    void window.prezi.fullscreen(false).then((result) => {
-      if (result.ok) exit();
-      else setError(result.error.message);
-    });
+    void window.prezi
+      .fullscreen(false)
+      .then((result) => {
+        exit(result.ok ? undefined : result.error.message);
+      })
+      .catch(() => {
+        exit('Fullscreen could not be changed. The editor is available.');
+      });
   }, [exit]);
   const move = useCallback(
     (direction: 'advance' | 'back'): void => {

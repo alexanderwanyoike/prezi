@@ -41,6 +41,7 @@ export function App(): React.JSX.Element {
   const [codeVisible, setCodeVisible] = useState(false);
   const [codeResource, setCodeResource] = useState<CodeResource>('scene');
   const [presenting, setPresenting] = useState(false);
+  const [presentationError, setPresentationError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [connectionOpen, setConnectionOpen] = useState(false);
@@ -75,7 +76,8 @@ export function App(): React.JSX.Element {
     return (
       <PresentationView
         project={snapshot.project}
-        exit={() => {
+        exit={(message) => {
+          setPresentationError(message ?? null);
           setPresenting(false);
         }}
       />
@@ -384,8 +386,13 @@ export function App(): React.JSX.Element {
       <footer className="status-bar">
         <span>
           <span className="status-dot" />
-          <span role={error || desktopError || fontStatus.error ? 'alert' : undefined}>
-            {error ??
+          <span
+            role={
+              presentationError || error || desktopError || fontStatus.error ? 'alert' : undefined
+            }
+          >
+            {presentationError ??
+              error ??
               desktopError ??
               fontStatus.error ??
               workspaceError ??
