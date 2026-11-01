@@ -12,7 +12,7 @@ Scenes are native browser modules loaded through an import map inside a separate
 
 Linux applies a 512 MiB cgroup memory limit, zero swap and one CPU to each scene renderer, retaining the same boundary if Chromium reuses that process. Its warm-up allocations precede attachment, so cgroup charge is not the complete renderer footprint. Compilation has the separate 1 GiB process-tree limit documented in scene-compiler.md. Other platforms do not have Linux's hard cgroup limits.
 
-A hidden offscreen renderer checks every frame 0-11 at every declared reveal before source is accepted, with a 20-second validation deadline. Validation runs at 960 x 540 without opening a visible window. Frame checks do not prove arbitrary future property combinations safe; runtime errors remain isolated and recover through Undo. Live-stall monitoring and bounded image previews follow in the performance/preview slice. Restart preview currently recreates a stalled live scene.
+A hidden offscreen renderer checks every frame 0-11 at every declared reveal before source is accepted, with a validation deadline of 20 seconds plus 100 ms per probe (at most 57.2 seconds for 30 reveals). Validation runs at 960 x 540 without opening a visible window. Frame checks do not prove arbitrary future property combinations safe; runtime errors remain isolated and recover through Undo. Live-stall monitoring and bounded image previews follow in the performance/preview slice. Restart preview currently recreates a stalled live scene.
 
 ## Verification
 
