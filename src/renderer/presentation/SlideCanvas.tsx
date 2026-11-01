@@ -105,7 +105,7 @@ export function SlideCanvas({
             <button
               type="button"
               className={`reveal-chip ${step === order + 1 ? 'active' : ''}`}
-              key={text}
+              key={`${order.toString()}:${text}`}
               aria-pressed={step === order + 1}
               onClick={() => {
                 preview(order + 1);

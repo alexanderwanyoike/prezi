@@ -101,7 +101,7 @@ export function SlideScene({
               const opacity = index === reveal - 1 ? progress : 1;
               return (
                 <div
-                  key={text}
+                  key={`${index.toString()}:${text}`}
                   style={{
                     display: 'flex',
                     alignItems: 'baseline',
