@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ZipReader } from '@zip.js/zip.js';
 import { z } from 'zod';
+import { fontHeader } from '../media/font-header';
 import { projectAssets } from '../../shared/project-assets';
 import { BoundedBlobReader } from './bounded-blob-reader';
 import { readTextEntry } from './read-text-entry';
@@ -90,6 +91,19 @@ export async function readArchive(path: string): Promise<Result<OpenedArchive>> 
               );
             } finally {
               await output.close();
+            }
+            if (['ttf', 'otf', 'woff', 'woff2'].includes(asset.extension)) {
+              const input = await open(destination, 'r');
+              try {
+                const header = Buffer.alloc(48);
+                const { bytesRead } = await input.read(header, 0, 48, 0);
+                const checked = fontHeader(header.subarray(0, bytesRead), written);
+                if (!checked.ok) throw new Error(checked.error.message);
+                if (checked.value !== asset.extension)
+                  throw new Error('The archived font format does not match its registration.');
+              } finally {
+                await input.close();
+              }
             }
             return [...current, { id: asset.id, path: destination }];
           }),

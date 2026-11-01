@@ -1,5 +1,6 @@
 import { mkdir, open, rm } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import { fontHeader } from './font-header';
 import { fontSchema } from '../../shared/fonts';
 import type { FontCredit, ProjectFont } from '../../shared/fonts';
 import { failure } from '../../shared/result';
@@ -20,30 +21,13 @@ export async function importFontFile(
         return failure('INVALID_INPUT', 'Choose a font between 12 bytes and 16 MiB.');
       const header = Buffer.alloc(48);
       const { bytesRead: headerBytes } = await input.read(header, 0, 48, 0);
-      const formats: Record<string, ProjectFont['extension']> = {
-        OTTO: 'otf',
-        wOFF: 'woff',
-        wOF2: 'woff2',
-        true: 'ttf',
-        '00010000': 'ttf',
-      };
-      const extension =
-        formats[header.toString('ascii', 0, 4)] ?? formats[header.toString('hex', 0, 4)];
-      if (
-        (extension === 'woff' || extension === 'woff2') &&
-        (headerBytes < (extension === 'woff2' ? 48 : 44) ||
-          header.readUInt32BE(16) > 64 * 1024 * 1024 ||
-          header.readUInt32BE(16) < 12)
-      )
-        return failure(
-          'INVALID_INPUT',
-          'Compressed fonts must declare a decoded size within 64 MiB.',
-        );
+      const checked = fontHeader(header.subarray(0, headerBytes), info.size);
+      if (!checked.ok) return checked;
       const parsed = fontSchema.safeParse({
         ...credit,
         id: crypto.randomUUID(),
         name: basename(path),
-        extension,
+        extension: checked.value,
       });
       if (!parsed.success)
         return failure('INVALID_INPUT', 'Choose a valid TTF, OTF, WOFF or WOFF2 font.');
