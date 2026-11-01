@@ -75,9 +75,10 @@ export function SceneVideo({ media, active, autoplay, failed }: Props): React.JS
             type="button"
             aria-label={playing ? 'Pause video' : 'Play video'}
             title={playing ? 'Pause video' : 'Play video'}
-            onClick={() => {
+            onClick={(event) => {
               if (playing) element.current?.pause();
               else play();
+              if (event.detail > 0) event.currentTarget.blur();
             }}
           >
             {playing ? <Pause /> : <Play />}
@@ -86,12 +87,13 @@ export function SceneVideo({ media, active, autoplay, failed }: Props): React.JS
             type="button"
             aria-label="Restart video"
             title="Restart video"
-            onClick={() => {
+            onClick={(event) => {
               const video = element.current;
               if (video) {
                 video.currentTime = 0;
                 play();
               }
+              if (event.detail > 0) event.currentTarget.blur();
             }}
           >
             <RotateCcw />
