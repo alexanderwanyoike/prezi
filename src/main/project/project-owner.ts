@@ -84,7 +84,7 @@ export class ProjectOwner {
     };
     if (!projectSchema.safeParse(draft).success)
       return failure('INVALID_INPUT', 'The scene properties do not match its definition.');
-    if (Buffer.byteLength(JSON.stringify(draft, null, 2)) > 8 * 1024 * 1024)
+    if (!this.withinContentBudget(draft))
       return failure('INVALID_INPUT', 'The project exceeds its 8 MiB content budget.');
     this.past.push({ project: this.project, label: request.label });
     this.past = this.past.slice(-50);
