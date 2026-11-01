@@ -118,10 +118,9 @@ export async function bindRendererBudget(pid: number): Promise<Result<RendererBo
         : failure('IO_ERROR', 'The scene resource boundary could not be verified.');
     }
     return failure('IO_ERROR', 'The scene resource boundary did not become ready.');
-  } catch {
-    return failure(
-      'IO_ERROR',
-      'A user systemd session with cgroup limits is required for custom scenes.',
-    );
+  } catch (error) {
+    const detail =
+      error instanceof Error ? error.message.slice(0, 1000) : 'Unknown resource-boundary failure.';
+    return failure('IO_ERROR', `Could not apply the scene resource boundary. ${detail}`);
   }
 }
