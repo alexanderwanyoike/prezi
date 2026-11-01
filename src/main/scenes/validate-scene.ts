@@ -33,6 +33,7 @@ export async function validateScene(
   fonts?: ProjectFont[],
 ): Promise<Result<void>> {
   if (signal.aborted) return failure('CANCELLED', 'Scene validation was cancelled.');
+  const deadline = 20000 + (slide.reveals.length + 1) * 12 * 100;
   const window = new BrowserWindow({
     show: false,
     width: 960,
@@ -65,12 +66,12 @@ export async function validateScene(
         signal.aborted ? 'CANCELLED' : 'INVALID_INPUT',
         signal.aborted
           ? 'Scene validation was cancelled.'
-          : 'The scene exceeded its 20-second validation limit.',
+          : `The scene exceeded its ${(deadline / 1000).toString()}-second validation limit.`,
       ),
     );
   };
   signal.addEventListener('abort', stop, { once: true });
-  const timer = setTimeout(stop, 20000);
+  const timer = setTimeout(stop, deadline);
   const work = async (): Promise<Result<void>> => {
     try {
       await window.loadURL(`prezi-scene://${crypto.randomUUID()}/index.html`);
