@@ -47,7 +47,7 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
-const owner = new ProjectOwner(join(import.meta.dirname, '../../resources/example.webm'));
+const owner = new ProjectOwner();
 const workspace = new WorkspaceOwner(owner);
 let mcp: McpConnection | undefined;
 let sceneJobs: SceneJobs | undefined;
