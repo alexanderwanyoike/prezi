@@ -53,7 +53,7 @@ test('keeps a new deck and its code layout free of generated slide text', async 
     await page.getByRole('menuitem', { name: 'New presentation', exact: true }).click();
     await expect(page.getByRole('textbox', { name: 'Heading', exact: true })).toHaveValue('');
     await page.getByLabel('Layout', { exact: true }).selectOption('code');
-    await expect(page.getByRole('textbox', { name: 'Code', exact: true })).toHaveValue('');
+    await expect(page.getByRole('textbox', { name: 'Code block', exact: true })).toHaveValue('');
     await page.getByRole('button', { name: 'Present', exact: true }).click();
     const stage = page.getByRole('region', { name: 'Presentation stage' });
     await expect(stage).toHaveAttribute('data-busy', 'false');
