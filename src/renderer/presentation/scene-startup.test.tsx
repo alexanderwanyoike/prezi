@@ -57,7 +57,7 @@ it('waits for the isolated runtime to subscribe before delivering scene code', a
       await Promise.resolve();
     });
     expect(loaded()).toBe(false);
-    await act(() => {
+    act(() => {
       window.dispatchEvent(
         new MessageEvent('message', {
           source: child,
