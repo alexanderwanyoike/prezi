@@ -33,6 +33,7 @@ it('compiles in a separate bounded process and cancels before spawning', async (
   expect(cancelledResult.ok).toBe(false);
   if (cancelledResult.ok) throw Error('Expected cancellation');
   expect(cancelledResult.error.message).toContain('cancelled');
+  expect(cancelledResult.error.code).toBe('CANCELLED');
 }, 30000);
 
 it('cancels a running compiler and returns its resource boundary', async () => {
@@ -50,4 +51,5 @@ it('cancels a running compiler and returns its resource boundary', async () => {
   expect(result.ok).toBe(false);
   if (result.ok) throw Error('Expected a cancelled worker');
   expect(result.error.message).toContain('cancelled');
+  expect(result.error.code).toBe('CANCELLED');
 });
