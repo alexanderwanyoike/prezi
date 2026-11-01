@@ -46,6 +46,7 @@
     "@zip.js/zip.js": "^2.24.0",
     "electron-updater": "6.8.11",
     "esbuild": "0.28.2",
+    "image-size": "2.0.2",
     "lucide-react": "^1.61.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

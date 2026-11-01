@@ -3,6 +3,7 @@ import { basename, extname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { StoredAsset } from '../../shared/project-assets';
 import type { FontCredit, ProjectFont } from '../../shared/fonts';
+import { validateImage } from './validate-image';
 import { importFontFile } from './import-font';
 import { mediaSchema } from '../../shared/media';
 import type { MediaAsset } from '../../shared/media';
@@ -58,6 +59,10 @@ export class AssetStore {
       const info = await stat(path);
       if (!info.isFile() || info.size === 0)
         return failure('INVALID_INPUT', 'Choose a non-empty media file.');
+      if (parsed.data.kind === 'image') {
+        const checked = await validateImage(path, info.size);
+        if (!checked.ok) return checked;
+      }
       await mkdir(this.root, { recursive: true });
       const target = join(this.root, `${parsed.data.id}.${parsed.data.extension}`);
       await copyFile(path, target);
