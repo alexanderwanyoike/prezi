@@ -57,3 +57,37 @@ it('retains current extraction after failed opening and releases it after anothe
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+it('releases an extracted project when a new presentation replaces its history', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-new-lifetime-'));
+  const owner = new ProjectOwner();
+  try {
+    const image = join(directory, 'image.png');
+    await writeFile(
+      image,
+      Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+        'base64',
+      ),
+    );
+    const slide = owner.snapshot().project.slides[0];
+    if (!slide) throw Error('No slide');
+    expect((await owner.importMedia(image, slide.id, 0)).ok).toBe(true);
+    const path = join(directory, 'deck.prezi');
+    expect((await owner.save(path)).ok).toBe(true);
+    expect((await owner.open(path, 1)).ok).toBe(true);
+    const id = owner.snapshot().project.slides[0]?.media?.id;
+    const extracted = id ? owner.mediaPath(id) : null;
+    if (!extracted) throw Error('No extraction');
+    expect((await owner.reset(2)).ok).toBe(true);
+    expect(
+      await access(dirname(extracted)).then(
+        () => true,
+        () => false,
+      ),
+    ).toBe(false);
+  } finally {
+    await owner.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
