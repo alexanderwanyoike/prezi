@@ -2,7 +2,7 @@
 
 ## Auto Digger and Muzo
 
-Tooling configuration adapted from https://github.com/alexanderwanyoike/auto-digger. Appearance tokens adapted from https://github.com/alexanderwanyoike/muzo. The following MIT licence applies to both portions.
+Tooling configuration and Linux AppImage menu registration adapted from https://github.com/alexanderwanyoike/auto-digger. Appearance tokens, launcher ownership checks and desktop-entry quoting adapted from https://github.com/alexanderwanyoike/muzo. The following MIT licence applies to these portions.
 
 MIT License
 

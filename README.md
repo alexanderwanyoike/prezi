@@ -26,6 +26,8 @@ yarn start
 
 Build native installers with `yarn package:make --linux --x64`, `--win --x64` or `--mac --arm64` / `--mac --x64` on the matching platform. Output is written to `release/`. Linux uses AppImage, Windows uses a per-user NSIS installer and macOS uses a DMG. Preview Windows installers are unsigned; Mac bundles are ad-hoc signed and not notarized. See [installer verification and release workflow](docs/verification/desktop-installers.md).
 
+The first packaged Linux AppImage launch adds Prezi to the user's application menu with a persistent icon. Reopening a moved AppImage refreshes its managed launcher. See [menu integration verification](docs/verification/linux-appimage-menu.md).
+
 ## Work on a deck
 
 - Use the styled **File / Edit / View** application menu for document commands, editing and workspace views. The menus follow the selected theme; file pickers and save prompts use desktop dialogs.
