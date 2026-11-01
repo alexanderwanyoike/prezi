@@ -326,20 +326,7 @@ export class ProjectOwner {
       this.referenceSources = undefined;
       this.referenceContentBytes = 0;
       this.sourceCatalogId = crypto.randomUUID();
-      this.project = {
-        schemaVersion: 1,
-        id: crypto.randomUUID(),
-        name: 'Untitled presentation',
-        slides: [
-          {
-            id: crypto.randomUUID(),
-            title: '',
-            body: '',
-            layout: 'title',
-            reveals: [],
-          },
-        ],
-      };
+      this.project = createProject();
       this.savedContent = JSON.stringify(this.project);
       this.filePath = null;
       this.revision += 1;
