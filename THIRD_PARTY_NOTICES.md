@@ -72,4 +72,6 @@ The CSP sandbox response-header pattern follows the browser directive documented
 
 ## Programmed transitions
 
-Remotion's custom presentation pattern supplies explicit progress, entering/exiting direction and passed properties: https://www.remotion.dev/docs/transitions/presentations/custom . This informs the transition function contract; Remotion interpolation/easing functions execute in the existing isolated worker. Bounded numeric samples are retained rather than evaluating project code in the editor. No upstream implementation code was copied; the existing Remotion licence applies to the dependency.
+Remotion's custom presentation pattern supplies explicit progress, entering/exiting direction and passed properties: https://www.remotion.dev/docs/transitions/presentations/custom . This informs the transition function contract; Remotion interpolation/easing functions execute in the existing isolated worker. Editor playback uses the retained bounded numeric samples. No upstream implementation code was copied; the existing Remotion licence applies to the dependency.
+
+Presentation applies those samples through the browser Web Animations API. The existing Remotion progress/direction pattern informs the two scene roles; no additional animation library or upstream code was added.
