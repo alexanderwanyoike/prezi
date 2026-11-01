@@ -36,6 +36,7 @@ export function CustomScenePlayer({
     title: scene.slide.title,
     body: scene.slide.body,
     reveal: scene.reveal,
+    reveals: scene.slide.reveals,
     properties: scene.slide.scene?.properties ?? {},
     media: scene.slide.media ?? null,
     editing: !!scene.editing,
@@ -51,6 +52,8 @@ export function CustomScenePlayer({
     title: state.title,
     body: state.body,
     reveal: state.reveal,
+    reveals: state.reveals,
+    media: state.media,
   });
   const currentContent = useRef(content);
   currentContent.current = content;

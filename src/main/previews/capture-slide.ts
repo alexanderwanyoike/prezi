@@ -87,6 +87,7 @@ export async function captureSlide(
         title: slide.title,
         body: slide.body,
         reveal,
+        reveals: slide.reveals,
         probeFrame: 11,
         properties: slide.scene?.properties ?? {},
         media: slide.media ?? null,

@@ -20,6 +20,7 @@ export const runtimeStateSchema = z.object({
   title: z.string().max(200),
   body: z.string().max(10000),
   reveal: z.number().int().min(0).max(30),
+  reveals: z.array(z.string().max(2000)).max(30).optional(),
   probeFrame: z.number().int().min(0).max(11).optional(),
   properties: sceneValuesSchema,
   media: mediaSchema.nullable(),

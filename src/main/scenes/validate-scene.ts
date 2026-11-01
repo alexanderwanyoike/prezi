@@ -83,6 +83,7 @@ export async function validateScene(
         title: slide.title,
         body: slide.body,
         reveal: 0,
+        reveals: slide.reveals,
         probeFrame: 0,
         properties: request.properties,
         media: slide.media ?? null,

@@ -24,6 +24,8 @@ interface SceneProps extends Record<string, unknown> {
   title: string;
   body: string;
   reveal: number;
+  reveals: readonly string[];
+  hasMedia: boolean;
   props: RuntimeState['properties'];
 }
 const moduleSchema = z.object({
@@ -231,6 +233,8 @@ function Runtime(): React.JSX.Element | null {
             title: state.title,
             body: state.body,
             reveal: state.reveal,
+            reveals: state.reveals ?? [],
+            hasMedia: state.media !== null,
             props: properties,
           }}
           compositionWidth={1920}
