@@ -73,3 +73,77 @@ it('waits for the isolated runtime to subscribe before delivering scene code', a
     vi.unstubAllGlobals();
   }
 });
+
+it.each(['never loads', 'preparation stalls', 'only heartbeats'])(
+  'recovers when a custom scene %s',
+  async (mode) => {
+    vi.useFakeTimers();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    const stopped = vi.fn(() => Promise.resolve({ ok: true, value: true }));
+    vi.stubGlobal('prezi', {
+      prepareScene: () =>
+        mode === 'preparation stalls'
+          ? new Promise<never>(() => undefined)
+          : Promise.resolve({ ok: true, value: true }),
+      stopScene: stopped,
+    });
+    const ready = vi.fn();
+    try {
+      const id = crypto.randomUUID();
+      const definition = {
+        id,
+        name: 'Scene',
+        fields: {},
+        layers: [],
+        source: { entry: 'Scene.tsx', files: { 'Scene.tsx': 'export default()=>null' } },
+        code: 'export default()=>null',
+      };
+      const view = render(
+        <CustomScenePlayer
+          definition={definition}
+          still={false}
+          onReady={ready}
+          scene={{
+            slide: {
+              id,
+              title: '',
+              body: '',
+              reveals: [],
+              layout: 'title',
+              scene: { definitionId: id, properties: {} },
+            },
+            reveal: 0,
+            slideNumber: 1,
+            slideCount: 1,
+          }}
+        />,
+      );
+      const iframe = view.getByTitle('Custom scene');
+      if (!(iframe instanceof HTMLIFrameElement)) throw Error('Missing frame');
+      if (mode !== 'never loads') fireEvent.load(iframe);
+      await act(async () => {
+        await Promise.resolve();
+      });
+      await act(async () => {
+        for (let index = 0; index < 22; index += 1) {
+          if (mode === 'only heartbeats')
+            window.dispatchEvent(
+              new MessageEvent('message', {
+                source: iframe.contentWindow,
+                data: { type: 'prezi:heartbeat' },
+              }),
+            );
+          await vi.advanceTimersByTimeAsync(500);
+        }
+      });
+      expect(view.getByRole('alert').textContent).toContain('did not become ready');
+      expect(view.queryByTitle('Custom scene')).toBeNull();
+      expect(ready).toHaveBeenCalledTimes(1);
+      expect(stopped).toHaveBeenCalledWith(new URL(iframe.src).hostname);
+    } finally {
+      cleanup();
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  },
+);
