@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { useEditPending } from './edit-pending';
 
 interface Props {
@@ -23,7 +23,7 @@ export function EditableText({
 }: Props): React.JSX.Element {
   const [draft, setDraft] = useState(value);
   const pending = useEditPending();
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!pending) setDraft(value);
   }, [value, pending]);
   if (rows !== undefined)
