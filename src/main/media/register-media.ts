@@ -1,0 +1,99 @@
+import { dialog, ipcMain, net, protocol } from 'electron';
+import type { BrowserWindow } from 'electron';
+import { extname } from 'node:path';
+import { stat } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
+import { z } from 'zod';
+import { validateImage } from './validate-image';
+import { byteRange } from './byte-range';
+import type { ProjectOwner } from '../project/project-owner';
+import { failure } from '../../shared/result';
+
+export function registerMedia(window: BrowserWindow, owner: ProjectOwner): void {
+  protocol.handle('prezi-media', async (request) => {
+    const url = new URL(request.url);
+    const id = z.uuid().safeParse(url.pathname.slice(1));
+    if (url.hostname !== 'asset' || !id.success || !['GET', 'HEAD'].includes(request.method))
+      return new Response('Invalid media request', { status: 400 });
+    const path = owner.mediaPath(id.data);
+    if (!path) return new Response('Media not found', { status: 404 });
+    try {
+      const { size } = await stat(path);
+      if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(extname(path).toLowerCase())) {
+        const checked = await validateImage(path, size);
+        if (!checked.ok)
+          return new Response(request.method === 'HEAD' ? null : checked.error.message, {
+            status: 400,
+          });
+      }
+      const range = byteRange(request.headers.get('Range'), size);
+      if (!range.ok)
+        return new Response(null, {
+          status: 416,
+          headers: { 'Content-Range': `bytes */${size.toString()}` },
+        });
+      const headers = new Headers(request.headers);
+      headers.delete('Range');
+      if (range.value)
+        headers.set('Range', `bytes=${range.value.start.toString()}-${range.value.end.toString()}`);
+      const response = await net.fetch(pathToFileURL(path).toString(), {
+        method: request.method,
+        headers,
+      });
+      const outputHeaders = new Headers(response.headers);
+      outputHeaders.set('Accept-Ranges', 'bytes');
+      outputHeaders.set('Access-Control-Allow-Origin', '*');
+      outputHeaders.set('Content-Length', size.toString());
+      if (range.value) {
+        outputHeaders.set(
+          'Content-Range',
+          `bytes ${range.value.start.toString()}-${range.value.end.toString()}/${size.toString()}`,
+        );
+        outputHeaders.set('Content-Length', (range.value.end - range.value.start + 1).toString());
+      }
+      return new Response(request.method === 'HEAD' ? null : response.body, {
+        status: range.value ? 206 : 200,
+        headers: outputHeaders,
+      });
+    } catch {
+      return new Response('Media is missing or unreadable', { status: 404 });
+    }
+  });
+  (['importMedia', 'replaceMedia'] as const).forEach((command) => {
+    ipcMain.handle(`project:${command}`, async (event, input: unknown) => {
+      if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame)
+        return failure('INVALID_INPUT', 'Untrusted media request.');
+      const slideId = z.uuid().safeParse(input);
+      if (!slideId.success)
+        return failure('INVALID_INPUT', 'Choose a slide before importing media.');
+      const snapshot = owner.snapshot();
+      const replace = command === 'replaceMedia';
+      const media = snapshot.project.slides.find((slide) => slide.id === slideId.data)?.media;
+      if (replace && !media) return failure('NOT_FOUND', 'This slide has no media to replace.');
+      try {
+        const chosen = await dialog.showOpenDialog(window, {
+          title: replace ? 'Locate media' : 'Import media',
+          properties: ['openFile'],
+          filters: [
+            {
+              name: 'Images and video',
+              extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'webm'],
+            },
+          ],
+        });
+        const path = chosen.filePaths[0];
+        if (chosen.canceled || !path) return failure('CANCELLED', 'Media selection was cancelled.');
+        return await owner.importMedia(
+          path,
+          slideId.data,
+          snapshot.revision,
+          undefined,
+          {},
+          replace,
+        );
+      } catch {
+        return failure('IO_ERROR', 'The media file dialog could not be opened.');
+      }
+    });
+  });
+}

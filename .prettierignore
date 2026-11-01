@@ -1,0 +1,6 @@
+node_modules/
+out/
+yarn.lock
+coverage/
+test-results/
+playwright-report/

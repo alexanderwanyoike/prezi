@@ -1,0 +1,11 @@
+# Slide previews
+
+Captured all three starter slides through the real MCP SDK while Code remained open. Inspected the JPEGs, including the complete workflow diagram, footer and paused video frame. Captured the selected thumbnail through the native editor control. Selection, revision, dirty state and Undo history stayed unchanged; the worker window closed after completion. A separate capture left the same video element connected and playing, advancing from 0.35 to 0.74 seconds. The hidden worker reported audio muted and only the editor window remained afterward.
+
+A pixel regression checks the lower-right corner of a custom 1920 × 1080 scene in the 960 × 540 JPEG. This caught a navigation reset of Electron's zoom level during manual verification; zoom is now applied after loading the isolated origin. Separate queue tests cover serialized work, cancellation, retries and immutable capture snapshots. A content-key test covers snapshot validation reordering fields.
+
+The manual idle sample after four completed captures reported one BrowserWindow and one Tab process. Electron working-set readings totalled about 707 MiB across browser/GPU/utility/editor processes; that sum double-counts shared pages. A separate in-flight sample reported about 101 MiB for the preview renderer. These are observed working sets, not exclusive-memory guarantees. Linux preparation enforces 512 MiB, zero swap and one CPU for each scene renderer; allocations during runtime warmup precede that scope.
+
+Captures are explicit, muted, serial and cancellable, with a 10-second deadline. Images are bounded to 1 MiB. Main-process records retain at most 16 jobs/4 MiB of image text; the editor retains at most 2 MiB. No thumbnail mounts a Player, and edits do not trigger rendering jobs. All desktop verification used private Xvfb displays and profiles.
+
+`yarn verify` passed with 65 tests. All 28 real Electron journeys passed, including custom-source compilation, focused shared fields, complete-frame previews and native video. MCP connection publication is atomic in the preceding change, addressing the startup race encountered during this verification.

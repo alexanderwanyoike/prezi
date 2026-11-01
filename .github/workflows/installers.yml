@@ -1,0 +1,192 @@
+name: Desktop installers
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  COREPACK_NPM_REGISTRY: https://registry.npmjs.org
+concurrency:
+  group: installers-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  context:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      next: ${{ steps.version.outputs.next }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22'
+      - name: Resolve versions and require annotated main-branch release tags
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_version=$(node -p 'JSON.parse(require("node:fs").readFileSync("package.json", "utf8")).version')
+          [[ "$release_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          next_version=$(node -p 'const parts=JSON.parse(require("node:fs").readFileSync("package.json","utf8")).version.split("."); parts[2]=String(Number(parts[2])+1); parts.join(".")')
+          echo "version=$release_version" >> "$GITHUB_OUTPUT"
+          echo "next=$next_version" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            test "$GITHUB_REF_NAME" = "v$release_version"
+            test "$(git cat-file -t "$GITHUB_REF")" = tag
+            git merge-base --is-ancestor HEAD origin/main
+          fi
+  package:
+    name: Installer (${{ matrix.target }})
+    needs: context
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x64
+            os: ubuntu-latest
+            flags: --linux --x64
+            suffix: linux-x64.AppImage
+          - target: windows-x64
+            os: windows-2025
+            flags: --win --x64
+            suffix: windows-x64-setup.exe
+          - target: macos-arm64
+            os: macos-15
+            flags: --mac --arm64
+            suffix: macos-arm64.dmg
+            architecture: arm64
+          - target: macos-x64
+            os: macos-15-intel
+            flags: --mac --x64
+            suffix: macos-x64.dmg
+            architecture: x86_64
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22'
+          cache: yarn
+      - name: Prepare Yarn
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare yarn@1.22.22 --activate
+      - run: yarn install --frozen-lockfile
+      - name: Prepare the Linux worker resource boundary
+        if: matrix.target == 'linux-x64'
+        run: bash .github/scripts/prepare-worker-session.sh
+      - run: yarn package:make ${{ matrix.flags }}
+      - name: Exercise the packaged Linux editor
+        if: matrix.target == 'linux-x64'
+        run: xvfb-run --auto-servernum yarn package:test
+      - name: Build a private candidate and rehearse a verified update
+        if: matrix.target == 'linux-x64'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .scratch/update-fixtures
+          cp release/Prezi-${{ needs.context.outputs.version }}-linux-x64.AppImage .scratch/update-fixtures/
+          yarn package:make --linux --x64 -c.extraMetadata.version=${{ needs.context.outputs.next }} -c.directories.output=.scratch/update-fixtures/next
+          xvfb-run --auto-servernum yarn package:update:test
+      - name: Install and exercise the Windows payload
+        if: matrix.target == 'windows-x64'
+        shell: pwsh
+        env:
+          INSTALLER: ${{ github.workspace }}/release/Prezi-${{ needs.context.outputs.version }}-windows-x64-setup.exe
+        run: |
+          $destination = Join-Path $env:RUNNER_TEMP 'prezi-installed'
+          $installed = Start-Process -FilePath $env:INSTALLER -ArgumentList '/S', "/D=$destination" -Wait -PassThru
+          if ($installed.ExitCode -ne 0) { throw "Installer exited $($installed.ExitCode)" }
+          $env:PREZI_PACKAGED_EXECUTABLE = Join-Path $destination 'prezi.exe'
+          if (!(Test-Path $env:PREZI_PACKAGED_EXECUTABLE)) { throw 'Installed executable missing' }
+          yarn package:test
+          if ($LASTEXITCODE -ne 0) { throw 'Installed application verification failed' }
+      - name: Mount and exercise the Mac payload
+        if: startsWith(matrix.target, 'macos-')
+        shell: bash
+        env:
+          INSTALLER: ${{ github.workspace }}/release/Prezi-${{ needs.context.outputs.version }}-${{ matrix.suffix }}
+          ARCHITECTURE: ${{ matrix.architecture }}
+        run: |
+          set -euo pipefail
+          hdiutil verify "$INSTALLER"
+          volume="$RUNNER_TEMP/prezi-volume"
+          mkdir "$volume"
+          hdiutil attach "$INSTALLER" -readonly -nobrowse -mountpoint "$volume" -quiet
+          trap 'hdiutil detach "$volume" -quiet' EXIT
+          executable="$volume/Prezi.app/Contents/MacOS/Prezi"
+          lipo "$executable" -verify_arch "$ARCHITECTURE"
+          PREZI_PACKAGED_EXECUTABLE="$executable" yarn package:test
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: installer-${{ matrix.target }}
+          path: |
+            release/Prezi-${{ needs.context.outputs.version }}-${{ matrix.suffix }}
+            release/latest*.yml
+            release/*.exe.blockmap
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: failure()
+        with:
+          name: installer-failure-${{ matrix.target }}
+          path: |
+            test-results/**/*.png
+            test-results/**/trace.zip
+          retention-days: 7
+  assemble:
+    needs: [context, package]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22'
+          cache: yarn
+      - run: corepack enable && corepack prepare yarn@1.22.22 --activate
+      - run: yarn install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: installer-*
+          path: release-set
+          merge-multiple: true
+      - run: yarn release:verify release-set ${{ needs.context.outputs.version }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: prezi-release-set
+          path: release-set/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+  draft:
+    if: github.ref_type == 'tag'
+    needs: [context, assemble]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: prezi-release-set
+          path: release-set
+      - name: Create a draft without replacing an existing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" release-set/* --verify-tag --draft --title "$RELEASE_TAG" --notes 'Windows, macOS and Linux preview installers. Windows builds are unsigned. macOS builds are ad-hoc signed and not notarized. Verify downloads against SHA256SUMS. Downloads and restart remain explicit in the application.'

@@ -1,0 +1,57 @@
+{
+  "appId": "io.github.alexanderwanyoike.prezi",
+  "productName": "Prezi",
+  "asar": false,
+  "directories": {
+    "output": "release",
+    "buildResources": "resources"
+  },
+  "files": [
+    "out/**/*",
+    "resources/**/*",
+    "package.json",
+    "THIRD_PARTY_NOTICES.md",
+    "licenses/**/*"
+  ],
+  "icon": "resources/icons/icon.png",
+  "publish": {
+    "provider": "github",
+    "owner": "alexanderwanyoike",
+    "repo": "prezi",
+    "releaseType": "draft"
+  },
+  "npmRebuild": false,
+  "linux": {
+    "target": ["AppImage"],
+    "executableName": "prezi",
+    "category": "AudioVideo",
+    "artifactName": "Prezi-${version}-linux-x64.AppImage",
+    "desktop": {
+      "entry": {
+        "StartupWMClass": "prezi"
+      }
+    },
+    "syncDesktopName": true
+  },
+  "win": {
+    "target": ["nsis"],
+    "executableName": "prezi",
+    "artifactName": "Prezi-${version}-windows-${arch}-setup.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true
+  },
+  "mac": {
+    "target": ["dmg"],
+    "category": "public.app-category.productivity",
+    "identity": "-",
+    "notarize": false,
+    "artifactName": "Prezi-${version}-macos-${arch}.${ext}",
+    "publish": null
+  },
+  "dmg": {
+    "sign": false
+  }
+}
