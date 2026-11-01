@@ -59,7 +59,7 @@ test('validates a full-size muted composition with script dialogs blocked by the
             entry: 'Scene.tsx',
             files: {
               'Scene.tsx':
-                "export default function Scene(){if(window.innerWidth!==1920||window.innerHeight!==1080)throw Error('Incorrect composition viewport');if(window.confirm('Dialog must be blocked'))throw Error('Dialog was allowed');return <div>Scene boundary</div>;}",
+                "import {useVideoConfig} from 'remotion';export default function Scene(){const {width,height}=useVideoConfig();if(width!==1920||height!==1080||(window.parent===window&&(window.innerWidth!==1920||window.innerHeight!==1080)))throw Error('Incorrect composition viewport');if(window.confirm('Dialog must be blocked'))throw Error('Dialog was allowed');return <div>Scene boundary</div>;}",
             },
           },
         },
