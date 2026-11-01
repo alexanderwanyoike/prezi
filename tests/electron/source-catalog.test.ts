@@ -31,6 +31,7 @@ test('reads archived reference code separately from edits and retains it across 
       path,
       JSON.stringify({
         ...initial.value.project,
+        slides: initial.value.project.slides.slice(0, 1),
         sources: { 'renderer/presentation/SlideScene.tsx': source },
       }),
     );
