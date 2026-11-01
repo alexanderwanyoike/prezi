@@ -1,5 +1,7 @@
 import { dialog, ipcMain, net, protocol } from 'electron';
 import type { BrowserWindow } from 'electron';
+import { extname } from 'node:path';
+import { validateImage } from './validate-image';
 import { stat } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
@@ -17,6 +19,13 @@ export function registerMedia(window: BrowserWindow, owner: ProjectOwner): void 
     if (!path) return new Response('Media not found', { status: 404 });
     try {
       const { size } = await stat(path);
+      if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(extname(path).toLowerCase())) {
+        const checked = await validateImage(path, size);
+        if (!checked.ok)
+          return new Response(request.method === 'HEAD' ? null : checked.error.message, {
+            status: 400,
+          });
+      }
       const range = byteRange(request.headers.get('Range'), size);
       if (!range.ok)
         return new Response(null, {
