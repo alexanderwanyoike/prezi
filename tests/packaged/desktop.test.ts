@@ -21,6 +21,7 @@ test('ships a working Electron editor with fonts portable saving code and MCP', 
         ),
       ),
       PREZI_MCP_PORT: '0',
+      XDG_DATA_HOME: test.info().outputPath('data'),
     },
   });
   const client = new Client({ name: 'prezi-installed-test', version: '1.0.0' });
