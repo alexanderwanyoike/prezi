@@ -28,6 +28,7 @@ function inspect(bytes: Buffer, extension: string): Result<void> {
   }
 }
 export async function validateImage(path: string, size: number): Promise<Result<void>> {
+  if (size > 32 * 1024 * 1024) return failure('INVALID_INPUT', 'Images must be at most 32 MiB.');
   try {
     const file = await open(path, 'r');
     try {
