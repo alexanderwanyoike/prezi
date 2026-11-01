@@ -1,7 +1,7 @@
-import { BrowserWindow } from 'electron';
+import type { BrowserWindow } from 'electron';
 import { setTimeout as pause } from 'node:timers/promises';
 import { z } from 'zod';
-import { prepareSceneFrame } from '../scenes/register-runtime';
+import { withIsolatedRenderer } from '../rendering/with-isolated-renderer';
 import { transitionSamplesSchema } from '../../shared/transition-style';
 import type { TransitionSamples } from '../../shared/transition-style';
 import type { SceneValues } from '../../shared/scene-definition';
@@ -38,64 +38,28 @@ export async function evaluateTransition(
   editorPid: number,
 ): Promise<Result<TransitionSamples>> {
   if (signal.aborted) return failure('CANCELLED', 'Transition evaluation was cancelled.');
-  const window = new BrowserWindow({
-    show: false,
-    width: 960,
-    height: 540,
-    useContentSize: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: true,
-      backgroundThrottling: false,
-      offscreen: true,
+  return withIsolatedRenderer(
+    signal,
+    {
+      deadline: 10000,
+      frameRate: 30,
+      useContentSize: true,
+      editorPid,
+      cancelled: 'Transition evaluation was cancelled.',
+      timeout: {
+        code: 'INVALID_INPUT',
+        message: 'The transition exceeded its 10-second evaluation limit.',
+      },
+      failed: {
+        code: 'INVALID_INPUT',
+        message: 'The isolated transition evaluator could not finish.',
+      },
     },
-  });
-  window.webContents.setAudioMuted(true);
-  window.webContents.setFrameRate(30);
-  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  window.webContents.on('will-navigate', (event) => {
-    event.preventDefault();
-  });
-  let resolveStopped: (result: Result<TransitionSamples>) => void = () => undefined;
-  const stopped = new Promise<Result<TransitionSamples>>((resolve) => {
-    resolveStopped = resolve;
-  });
-  const stop = (): void => {
-    if (!window.isDestroyed()) {
-      window.webContents.forcefullyCrashRenderer();
-      window.destroy();
-    }
-    resolveStopped(
-      failure(
-        signal.aborted ? 'CANCELLED' : 'INVALID_INPUT',
-        signal.aborted
-          ? 'Transition evaluation was cancelled.'
-          : 'The transition exceeded its 10-second evaluation limit.',
-      ),
-    );
-  };
-  signal.addEventListener('abort', stop, { once: true });
-  const timer = setTimeout(stop, 10000);
-  const evaluate = async (): Promise<Result<TransitionSamples>> => {
-    try {
-      await window.loadURL(`prezi-scene://${crypto.randomUUID()}/index.html`);
-      window.webContents.setZoomFactor(0.5);
-      const prepared = await prepareSceneFrame(window.webContents.mainFrame, editorPid);
-      if (!prepared.ok) return prepared;
+    async (window) => {
       await window.webContents.executeJavaScript(
         `window.postMessage(${JSON.stringify({ type: 'prezi:transition', code, properties })},'*');`,
       );
       return await readSamples(window);
-    } catch {
-      return failure('INVALID_INPUT', 'The isolated transition evaluator could not finish.');
-    }
-  };
-  try {
-    return await Promise.race([evaluate(), stopped]);
-  } finally {
-    clearTimeout(timer);
-    signal.removeEventListener('abort', stop);
-    if (!window.isDestroyed()) window.destroy();
-  }
+    },
+  );
 }

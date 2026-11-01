@@ -1,11 +1,11 @@
-import { BrowserWindow } from 'electron';
+import type { BrowserWindow } from 'electron';
 import { setTimeout as pause } from 'node:timers/promises';
 import { z } from 'zod';
 import type { Project } from '../../shared/project';
 import type { PreviewImage } from '../../shared/preview';
 import { failure } from '../../shared/result';
 import type { Result } from '../../shared/result';
-import { prepareSceneFrame } from '../scenes/register-runtime';
+import { withIsolatedRenderer } from '../rendering/with-isolated-renderer';
 
 const readiness = z.object({
   state: z.string().optional(),
@@ -36,51 +36,18 @@ export async function captureSlide(
   if (signal.aborted) return failure('CANCELLED', 'Preview capture was cancelled.');
   const slide = project.slides.find((item) => item.id === slideId);
   if (!slide) return failure('NOT_FOUND', 'The slide no longer exists.');
-  const window = new BrowserWindow({
-    show: false,
-    width: 960,
-    height: 540,
-    useContentSize: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: true,
-      backgroundThrottling: false,
-      offscreen: true,
+  return withIsolatedRenderer(
+    signal,
+    {
+      deadline: 10000,
+      frameRate: 30,
+      useContentSize: true,
+      editorPid,
+      cancelled: 'Preview capture was cancelled.',
+      timeout: { code: 'IO_ERROR', message: 'The preview exceeded its 10-second limit.' },
+      failed: { code: 'IO_ERROR', message: 'The isolated preview renderer could not finish.' },
     },
-  });
-  window.webContents.setAudioMuted(true);
-  window.webContents.setFrameRate(30);
-  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  window.webContents.on('will-navigate', (event) => {
-    event.preventDefault();
-  });
-  let resolveStopped: (result: Result<PreviewImage>) => void = () => undefined;
-  const stopped = new Promise<Result<PreviewImage>>((resolve) => {
-    resolveStopped = resolve;
-  });
-  const stop = (): void => {
-    if (!window.isDestroyed()) {
-      window.webContents.forcefullyCrashRenderer();
-      window.destroy();
-    }
-    resolveStopped(
-      failure(
-        signal.aborted ? 'CANCELLED' : 'IO_ERROR',
-        signal.aborted
-          ? 'Preview capture was cancelled.'
-          : 'The preview exceeded its 10-second limit.',
-      ),
-    );
-  };
-  signal.addEventListener('abort', stop, { once: true });
-  const timer = setTimeout(stop, 10000);
-  const capture = async (): Promise<Result<PreviewImage>> => {
-    try {
-      await window.loadURL(`prezi-scene://${crypto.randomUUID()}/index.html`);
-      window.webContents.setZoomFactor(0.5);
-      const prepared = await prepareSceneFrame(window.webContents.mainFrame, editorPid);
-      if (!prepared.ok) return prepared;
+    async (window) => {
       const state = {
         theme: project.theme,
         fonts: project.fonts?.map(({ id, name, extension }) => ({ id, name, extension })),
@@ -130,15 +97,6 @@ export async function captureSlide(
           height: 540,
         },
       };
-    } catch {
-      return failure('IO_ERROR', 'The isolated preview renderer could not finish.');
-    }
-  };
-  try {
-    return await Promise.race([capture(), stopped]);
-  } finally {
-    clearTimeout(timer);
-    signal.removeEventListener('abort', stop);
-    if (!window.isDestroyed()) window.destroy();
-  }
+    },
+  );
 }

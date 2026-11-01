@@ -1,9 +1,9 @@
-import { BrowserWindow } from 'electron';
+import type { BrowserWindow } from 'electron';
 import { setTimeout as pause } from 'node:timers/promises';
 import { z } from 'zod';
 import type { ProjectFont } from '../../shared/fonts';
 import type { PresentationTheme } from '../../shared/presentation-theme';
-import { prepareSceneFrame } from './register-runtime';
+import { withIsolatedRenderer } from '../rendering/with-isolated-renderer';
 import type { SceneJobRequest } from '../../shared/scene-jobs';
 import type { Slide } from '../../shared/project';
 import { failure } from '../../shared/result';
@@ -34,50 +34,24 @@ export async function validateScene(
 ): Promise<Result<void>> {
   if (signal.aborted) return failure('CANCELLED', 'Scene validation was cancelled.');
   const deadline = 20000 + (slide.reveals.length + 1) * 12 * 100;
-  const window = new BrowserWindow({
-    show: false,
-    width: 960,
-    height: 540,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: true,
-      backgroundThrottling: false,
-      offscreen: true,
+  return withIsolatedRenderer(
+    signal,
+    {
+      deadline,
+      frameRate: 60,
+      useContentSize: false,
+      editorPid,
+      cancelled: 'Scene validation was cancelled.',
+      timeout: {
+        code: 'INVALID_INPUT',
+        message: `The scene exceeded its ${(deadline / 1000).toString()}-second validation limit.`,
+      },
+      failed: {
+        code: 'INVALID_INPUT',
+        message: 'The scene renderer could not complete validation.',
+      },
     },
-  });
-  window.webContents.setAudioMuted(true);
-  window.webContents.setFrameRate(60);
-  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  window.webContents.on('will-navigate', (event) => {
-    event.preventDefault();
-  });
-  let resolveCancelled: (result: Result<void>) => void = () => undefined;
-  const cancelled = new Promise<Result<void>>((resolve) => {
-    resolveCancelled = resolve;
-  });
-  const stop = (): void => {
-    if (!window.isDestroyed()) {
-      window.webContents.forcefullyCrashRenderer();
-      window.destroy();
-    }
-    resolveCancelled(
-      failure(
-        signal.aborted ? 'CANCELLED' : 'INVALID_INPUT',
-        signal.aborted
-          ? 'Scene validation was cancelled.'
-          : `The scene exceeded its ${(deadline / 1000).toString()}-second validation limit.`,
-      ),
-    );
-  };
-  signal.addEventListener('abort', stop, { once: true });
-  const timer = setTimeout(stop, deadline);
-  const work = async (): Promise<Result<void>> => {
-    try {
-      await window.loadURL(`prezi-scene://${crypto.randomUUID()}/index.html`);
-      window.webContents.setZoomFactor(0.5);
-      const prepared = await prepareSceneFrame(window.webContents.mainFrame, editorPid);
-      if (!prepared.ok) return prepared;
+    async (window) => {
       const state = {
         theme,
         fonts: fonts?.map(({ id, name, extension }) => ({ id, name, extension })),
@@ -110,15 +84,6 @@ export async function validateScene(
         return { ok: true, value: undefined };
       };
       return await probe(0, 1);
-    } catch {
-      return failure('INVALID_INPUT', 'The scene renderer could not complete validation.');
-    }
-  };
-  try {
-    return await Promise.race([work(), cancelled]);
-  } finally {
-    clearTimeout(timer);
-    signal.removeEventListener('abort', stop);
-    if (!window.isDestroyed()) window.destroy();
-  }
+    },
+  );
 }
