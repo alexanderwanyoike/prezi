@@ -14,7 +14,7 @@ All 28 embedded images in the individual fix PRs were checked and returned HTTP 
 
 ## Installed manual workflow
 
-A separate private-display manual run used the rebuilt installed application. It imported a font and notice, compiled a custom scene, edited canvas text, played video while reveals held, saved a portable project, created a fresh deck and reopened the saved project. It checked the retained source catalog, opened Code, entered native fullscreen, advanced from the first slide to the custom video slide, verified visible content and playing video, then returned with Escape. Screenshots show the reopened canvas, accepted source and fullscreen presenter. The update images show the verified download and recovered deck after restart.
+A separate private-display manual run used the rebuilt installed application. It imported a font and notice, compiled a custom scene, edited canvas text, played video while reveals held, saved a portable project, created a fresh deck and reopened the saved project. It checked the retained source catalog, opened Code, entered native fullscreen, advanced from the first slide to the custom video slide, verified visible content and playing video, then returned with Escape. Screenshots show the reopened canvas, accepted source and fullscreen presenter. Xvfb verifies Electron's fullscreen state without the user's window manager; the native resize regression separately checks frame fitting when resize observations are missed. The update images show the verified download and recovered deck after restart.
 
 ![Installed canvas](../screenshots/review-installed-canvas.png)
 
