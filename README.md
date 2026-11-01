@@ -4,7 +4,9 @@ Local Electron presentation editor built with TypeScript, React and Remotion. Pr
 
 Human and MCP clients edit the same project, including custom Remotion scenes, media, fonts and programmable transitions. Code drafts save with portable projects and use explicit Apply validation.
 
-![Dark editor](docs/screenshots/editor-without-filler.png)
+[Website and downloads](https://alexanderwanyoike.github.io/prezi/) · [v0.1.0 release notes](docs/releases/v0.1.0.md)
+
+![Canvas editor](site/assets/canvas.png)
 
 ## Run
 
@@ -88,7 +90,7 @@ Agents can compile React/Remotion components with declared editable properties a
 
 ## Desktop updates
 
-Choose **View > Application updates**. Installed Windows/Linux builds offer explicit download, verification and restart; the app protects unsaved work and reopens the saved deck afterward. Other installed formats use the stable release page. Development builds explain that updates require installation. Releases require reviewed promotion to main, an annotated version tag and a draft release; no release has been published by this implementation. See [runtime verification](docs/verification/desktop-updates.md) and [installer verification](docs/verification/desktop-installers.md).
+Choose **View > Application updates**. Installed Windows/Linux builds offer explicit download, verification and restart; the app protects unsaved work and reopens the saved deck afterward. Other installed formats use the stable release page. Development builds explain that updates require installation. Releases require promotion to main, an annotated version tag and publication of the verified draft. See [runtime verification](docs/verification/desktop-updates.md) and [installer verification](docs/verification/desktop-installers.md).
 
 ## Renderer limits
 
