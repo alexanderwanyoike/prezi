@@ -119,8 +119,8 @@ export class ProjectOwner {
       : undefined;
   }
 
-  async dispose(): Promise<void> {
-    await this.assets.dispose();
+  dispose(): Promise<Result<void>> {
+    return this.assets.dispose();
   }
 
   private pendingImports = new Map<

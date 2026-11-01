@@ -176,11 +176,22 @@ app.on('window-all-closed', () => {
   app.quit();
 });
 
-app.on('will-quit', () => {
+let quitting = false;
+app.on('will-quit', (event) => {
+  event.preventDefault();
+  if (quitting) return;
+  quitting = true;
   installedUpdates?.stop();
   sceneJobs?.dispose();
   previewJobs?.dispose();
   transitionJobs?.dispose();
-  void mcp?.close();
-  void owner.dispose();
+  void Promise.allSettled([mcp?.close(), owner.dispose()]).then((results) => {
+    results.forEach((result) => {
+      if (result.status === 'rejected')
+        process.stderr.write('Prezi could not finish all shutdown cleanup.\n');
+      else if (result.value && !result.value.ok)
+        process.stderr.write(`${result.value.error.message}\n`);
+    });
+    app.exit(0);
+  });
 });

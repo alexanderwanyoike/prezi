@@ -109,12 +109,18 @@ export class AssetStore {
     );
   }
 
-  async dispose(): Promise<void> {
-    await Promise.all(
-      [this.root, ...this.archiveDirectories].map((directory) =>
-        rm(directory, { recursive: true, force: true }),
-      ),
-    );
-    this.archiveDirectories.clear();
+  async dispose(): Promise<Result<void>> {
+    try {
+      await Promise.all(
+        [this.root, ...this.archiveDirectories].map((directory) =>
+          rm(directory, { recursive: true, force: true }),
+        ),
+      );
+      this.archiveDirectories.clear();
+      this.paths.clear();
+      return { ok: true, value: undefined };
+    } catch {
+      return failure('IO_ERROR', 'Could not remove all temporary project resources.');
+    }
   }
 }
