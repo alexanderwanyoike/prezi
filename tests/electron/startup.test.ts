@@ -24,7 +24,6 @@ test('opens an empty project on a fresh launch and through New presentation', as
     const initial = await page.evaluate(() => window.prezi.snapshot());
     if (!initial.ok) throw Error(initial.error.message);
     const previousHeading = await heading.elementHandle();
-    if (!previousHeading) throw Error('Missing original heading');
     await fileCommand(page, 'newProject');
     await expect
       .poll(async () => {

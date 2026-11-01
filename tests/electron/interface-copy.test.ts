@@ -54,7 +54,6 @@ test('keeps a new deck and its code layout free of generated slide text', async 
     const previousHeading = await page
       .getByRole('textbox', { name: 'Heading', exact: true })
       .elementHandle();
-    if (!previousHeading) throw Error('Missing original heading');
     await page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
     await page.getByRole('menuitem', { name: 'New presentation', exact: true }).click();
     await expect
