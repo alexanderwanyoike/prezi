@@ -58,12 +58,16 @@ it.skipIf(process.platform !== 'linux')(
   'reports the underlying resource-boundary failure',
   async () => {
     vi.stubEnv('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/nonexistent/prezi-budget-bus');
+    vi.stubEnv('LC_ALL', 'C');
     const child = spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { stdio: 'ignore' });
     try {
       if (!child.pid) throw Error('No process');
       const result = await bindRendererBudget(child.pid);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.error.message).toContain('busctl');
+      if (!result.ok) {
+        expect(result.error.message).toContain('busctl');
+        expect(result.error.message).toContain('No such file or directory');
+      }
     } finally {
       child.kill();
       vi.unstubAllEnvs();
