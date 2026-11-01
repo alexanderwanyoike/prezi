@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { ProjectOwner } from './project-owner';
+import { writeArchive } from '../archive/write-archive';
 
 it('imports a real font with its notice, selects it through shared history and reopens portable bytes', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'prezi-font-'));
@@ -119,3 +120,33 @@ it('rejects a compressed font that declares an excessive decoded size', async ()
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+it.each(['woff', 'woff2'] as const)(
+  'rejects archived %s expansion before replacing the open deck',
+  async (extension) => {
+    const directory = await mkdtemp(join(tmpdir(), 'prezi-archived-font-'));
+    const owner = new ProjectOwner();
+    try {
+      const initial = owner.snapshot();
+      const font = { id: crypto.randomUUID(), name: 'Oversized font', extension };
+      const header = Buffer.alloc(48);
+      header.write(extension === 'woff2' ? 'wOF2' : 'wOFF');
+      header.writeUInt32BE(1024 * 1024 * 1024, 16);
+      const source = join(directory, `oversized.${extension}`);
+      await writeFile(source, header);
+      const path = join(directory, 'oversized.prezi');
+      expect(
+        (await writeArchive(path, { ...initial.project, fonts: [font] }, () => source)).ok,
+      ).toBe(true);
+      const opened = await owner.open(path, initial.revision);
+      expect(opened).toMatchObject({
+        ok: false,
+        error: { code: 'INVALID_INPUT', message: expect.stringContaining('decoded size') },
+      });
+      expect(owner.snapshot()).toEqual(initial);
+    } finally {
+      await owner.dispose();
+      await rm(directory, { recursive: true, force: true });
+    }
+  },
+);
