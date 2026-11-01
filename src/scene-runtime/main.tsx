@@ -220,37 +220,41 @@ function Runtime(): React.JSX.Element | null {
   return (
     <sceneContext.Provider value={context}>
       <SceneBoundary failed={failed}>
-        <Player
-          ref={player}
-          component={Scene}
-          errorFallback={sceneError}
-          inputProps={{
-            theme: {
-              ...presentationTheme(state.theme),
-              fontFamily: presentationFont(presentationTheme(state.theme).bodyFont),
-              monoFamily: presentationFont(presentationTheme(state.theme).monoFont),
-            },
-            title: state.title,
-            body: state.body,
-            reveal: state.reveal,
-            reveals: state.reveals ?? [],
-            hasMedia: state.media !== null,
-            props: properties,
-          }}
-          compositionWidth={1920}
-          compositionHeight={1080}
-          durationInFrames={12}
-          fps={30}
-          autoPlay={probeFrame === undefined}
-          initialFrame={probeFrame ?? 0}
-          moveToBeginningWhenEnded={false}
-          controls={false}
-          numberOfSharedAudioTags={0}
-          clickToPlay={false}
-          doubleClickToFullscreen={false}
-          spaceKeyToPlayOrPause={false}
-          style={{ width: 1920, height: 1080 }}
-        />
+        <div className="composition-viewport">
+          <div className="composition-transform">
+            <Player
+              ref={player}
+              component={Scene}
+              errorFallback={sceneError}
+              inputProps={{
+                theme: {
+                  ...presentationTheme(state.theme),
+                  fontFamily: presentationFont(presentationTheme(state.theme).bodyFont),
+                  monoFamily: presentationFont(presentationTheme(state.theme).monoFont),
+                },
+                title: state.title,
+                body: state.body,
+                reveal: state.reveal,
+                reveals: state.reveals ?? [],
+                hasMedia: state.media !== null,
+                props: properties,
+              }}
+              compositionWidth={1920}
+              compositionHeight={1080}
+              durationInFrames={12}
+              fps={30}
+              autoPlay={probeFrame === undefined}
+              initialFrame={probeFrame ?? 0}
+              moveToBeginningWhenEnded={false}
+              controls={false}
+              numberOfSharedAudioTags={0}
+              clickToPlay={false}
+              doubleClickToFullscreen={false}
+              spaceKeyToPlayOrPause={false}
+              style={{ width: 1920, height: 1080 }}
+            />
+          </div>
+        </div>
       </SceneBoundary>
     </sceneContext.Provider>
   );

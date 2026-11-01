@@ -133,6 +133,9 @@ button.preview-restart {
   opacity: 1;
 }
 .media-controls button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
   width: calc(32px / (100cqw / 1920px));
   height: calc(32px / (100cqw / 1920px));
   padding: 0;

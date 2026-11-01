@@ -105,7 +105,7 @@ export function CustomScenePlayer({
       );
   }, [prepared, message, error]);
   return (
-    <div style={{ width: 1920, height: 1080, position: 'relative' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <iframe
         key={instance}
         ref={iframe}
@@ -113,7 +113,7 @@ export function CustomScenePlayer({
         src={`prezi-scene://${instance}/index.html`}
         sandbox="allow-scripts allow-same-origin"
         allow="autoplay"
-        style={{ width: 1920, height: 1080, border: 0, display: 'block' }}
+        style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
         onLoad={(event) => {
           const target = event.currentTarget;
           void window.prezi.prepareScene(instance).then((result) => {
@@ -150,8 +150,8 @@ export function CustomScenePlayer({
             inset: 0,
             background: '#101513',
             color: '#edf2ec',
-            padding: 128,
-            fontSize: 36,
+            padding: 24,
+            fontSize: 16,
           }}
         >
           {error}

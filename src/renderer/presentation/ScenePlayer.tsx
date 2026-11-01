@@ -33,20 +33,20 @@ export function ScenePlayer({
   }, [scene.reveal, still]);
   return (
     <div className="composition-viewport">
-      <div className="composition-transform">
-        {scene.definition && scene.slide.scene ? (
-          <CustomScenePlayer
-            key={JSON.stringify([
-              scene.definition.code,
-              scene.definition.fields,
-              scene.definition.layers,
-            ])}
-            scene={scene}
-            definition={scene.definition}
-            still={still}
-            onReady={onReady}
-          />
-        ) : (
+      {scene.definition && scene.slide.scene ? (
+        <CustomScenePlayer
+          key={JSON.stringify([
+            scene.definition.code,
+            scene.definition.fields,
+            scene.definition.layers,
+          ])}
+          scene={scene}
+          definition={scene.definition}
+          still={still}
+          onReady={onReady}
+        />
+      ) : (
+        <div className="composition-transform">
           <Player
             ref={player}
             component={textSceneDefinition.Component}
@@ -66,8 +66,8 @@ export function ScenePlayer({
             moveToBeginningWhenEnded={false}
             style={{ width: 1920, height: 1080 }}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
