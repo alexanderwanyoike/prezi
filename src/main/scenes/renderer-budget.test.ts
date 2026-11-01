@@ -63,7 +63,7 @@ it.skipIf(process.platform !== 'linux')(
       if (!child.pid) throw Error('No process');
       const result = await bindRendererBudget(child.pid);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.error.message).toContain('Failed to connect to bus');
+      if (!result.ok) expect(result.error.message).toContain('busctl');
     } finally {
       child.kill();
       vi.unstubAllEnvs();
