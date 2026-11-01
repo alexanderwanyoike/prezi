@@ -13,6 +13,15 @@ interface AppImageDesktopOptions {
   icon: string;
 }
 
+function desktopString(value: string): string {
+  return value.replaceAll('\\', '\\\\');
+}
+
+function executable(value: string): string {
+  const quoted = value.replace(/[\\"`$]/g, (character) => `\\${character}`);
+  return `"${desktopString(quoted).replaceAll('%', '%%')}"`;
+}
+
 export async function integrateAppImage(
   options: AppImageDesktopOptions,
 ): Promise<Result<undefined>> {
@@ -48,10 +57,11 @@ export async function integrateAppImage(
         '[Desktop Entry]',
         'Type=Application',
         'Name=Prezi',
-        `Exec=env -- "${appImage}"`,
-        `Icon=${icon}`,
+        // GLib checks executable existence before expanding literal percent escapes.
+        `Exec=env -- ${executable(appImage)}`,
+        `Icon=${desktopString(icon)}`,
         'Terminal=false',
-        'Categories=AudioVideo;Presentation;',
+        'Categories=Office;Presentation;',
         'StartupWMClass=prezi',
         'X-Prezi-AppImage-Integration=true',
         '',
