@@ -124,12 +124,14 @@ test('compiles custom scenes in the installed application with portable fonts an
       .toBe(true);
     const reopened = await page.evaluate(() => window.prezi.snapshot());
     if (!reopened.ok) throw Error(reopened.error.message);
-    expect(reopened.value.project.sources?.['scene-runtime/helpers.tsx']).toContain(
-      'function Media',
+    const catalog = await page.evaluate(
+      (id) => window.prezi.sourceCatalog(id),
+      reopened.value.sourceCatalogId,
     );
-    expect(reopened.value.project.sources?.['renderer/load-project-font.ts']).toContain(
-      'new FontFace',
-    );
+    if (!catalog.ok) throw Error(catalog.error.message);
+    expect(reopened.value.project.sources).toBeUndefined();
+    expect(catalog.value.files['scene-runtime/helpers.tsx']).toContain('function Media');
+    expect(catalog.value.files['renderer/load-project-font.ts']).toContain('new FontFace');
     expect(reopened.value.project.fonts?.[0]?.license).toBe(license);
     expect(reopened.value.project.slides[2]?.media?.kind).toBe('video');
     await child.locator('video').hover();
