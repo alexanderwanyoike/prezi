@@ -53,3 +53,20 @@ it.skipIf(process.platform !== 'linux')(
   },
   10000,
 );
+
+it.skipIf(process.platform !== 'linux')(
+  'reports the underlying resource-boundary failure',
+  async () => {
+    vi.stubEnv('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/nonexistent/prezi-budget-bus');
+    const child = spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { stdio: 'ignore' });
+    try {
+      if (!child.pid) throw Error('No process');
+      const result = await bindRendererBudget(child.pid);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.message).toContain('Failed to connect to bus');
+    } finally {
+      child.kill();
+      vi.unstubAllEnvs();
+    }
+  },
+);
