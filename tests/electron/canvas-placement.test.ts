@@ -65,12 +65,20 @@ test('moves and resizes attached media on the canvas with atomic undo and cancel
     await expect
       .poll(() => page.evaluate(() => window.prezi.snapshot()))
       .toMatchObject({ ok: true, value: { revision: initial.value.revision + 4 } });
+    await expect(move).toBeEnabled();
+    const resized = await page.evaluate(() => window.prezi.snapshot());
+    if (!resized.ok) throw Error(resized.error.message);
+    expect(resized.value.project.slides[2]?.media?.frame?.width).toBeLessThan(792);
     const beforeCancel = await page.evaluate(() => window.prezi.snapshot());
     const cancel = await move.boundingBox();
     if (!cancel) throw Error('No cancel handle');
     await page.mouse.move(cancel.x + cancel.width / 2, cancel.y + cancel.height / 2);
     await page.mouse.down();
     await page.mouse.move(cancel.x + 70, cancel.y + 70);
+    const preview = page.locator('[data-frame="media"]');
+    await expect
+      .poll(async () => (await preview.boundingBox())?.x ?? 0)
+      .toBeGreaterThan(cancel.x + 20);
     await page.keyboard.press('Escape');
     await page.mouse.up();
     expect(await page.evaluate(() => window.prezi.snapshot())).toEqual(beforeCancel);
