@@ -118,6 +118,9 @@ test('compiles custom scenes in the installed application with portable fonts an
     expect(reopened.value.project.sources?.['scene-runtime/helpers.tsx']).toContain(
       'function Media',
     );
+    expect(reopened.value.project.sources?.['renderer/load-project-font.ts']).toContain(
+      'new FontFace',
+    );
     expect(reopened.value.project.fonts?.[0]?.license).toBe(license);
     expect(reopened.value.project.slides[2]?.media?.kind).toBe('video');
     await child.locator('video').hover();
