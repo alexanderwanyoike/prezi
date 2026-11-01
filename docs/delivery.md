@@ -1,15 +1,15 @@
 # Delivery
 
-All requested checkpoints and all 22 marked review fixes are complete on feature/review-fix-verification. The rebuilt Linux AppImage is release/Prezi-0.1.0-linux-x64.AppImage. No PR has been merged and no release has been published. main and dev still point to the approved empty bootstrap commit.
+All requested checkpoints, the 22 original marked findings and the three follow-up blockers are resolved on feature/rereview-verification. The rebuilt Linux AppImage is release/Prezi-0.1.0-linux-x64.AppImage. No PR has been merged and no release has been published. main and dev still point to the approved empty bootstrap commit.
 
 ## Verification
 
-- Formatting, lint, strict types, all 99 unit tests and the production build pass.
+- Formatting, lint, strict types, all 102 unit tests and the production build pass.
 - All 54 real Electron journeys pass on private displays, including the review regressions and all original editing, presentation, media, source, MCP and recovery paths.
 - Both installed Linux journeys pass, including custom compilation, fonts, media, source catalog access, portable reopening and shared MCP state.
 - The latest 0.1.0 to 0.1.1 AppImage update passes download/checksum validation, replacement, restart and saved-project recovery.
-- Linux x64, Windows x64, macOS arm64 and macOS x64 installer journeys and release-set assembly pass in native CI. See the [application PR checks](https://github.com/alexanderwanyoike/prezi/pull/55/checks).
-- Actual rendered screenshots are embedded in each visual fix PR. Final installed screenshots and measured resource limits are in [review fix verification](verification/review-fixes.md).
+- Linux x64, Windows x64, macOS arm64 and macOS x64 installer journeys and release-set assembly pass in native CI. See the [application PR checks](https://github.com/alexanderwanyoike/prezi/pull/59/checks).
+- Actual rendered screenshots are embedded in each visual fix PR. Final installed screenshots and measured resource limits are in [follow-up verification](verification/rereview-fixes.md).
 - The existing encoded OBS rehearsal remains verified; see [recording rehearsal](verification/recording-rehearsal.md).
 
 The [review fix ledger](verification/review-fix-ledger.md) maps every marked finding to its resolution. Verification used private displays, private profiles and disabled physical audio. No user desktop interaction was used.
@@ -82,3 +82,7 @@ Every feature PR targets dev. These PRs are stacked because dev remains unmerged
 | [#54](https://github.com/alexanderwanyoike/prezi/pull/54) | fix: separate reference source from editable project snapshots       | #53                |
 | [#55](https://github.com/alexanderwanyoike/prezi/pull/55) | refactor: use consistent menu arrow wrapping                         | #54                |
 | [#56](https://github.com/alexanderwanyoike/prezi/pull/56) | Review fix verification, installers and delivery ledger              | #55                |
+| [#57](https://github.com/alexanderwanyoike/prezi/pull/57) | Share the MCP status Result contract                                 | #56                |
+| [#58](https://github.com/alexanderwanyoike/prezi/pull/58) | Clear stale presenter errors when work resumes                       | #57                |
+| [#59](https://github.com/alexanderwanyoike/prezi/pull/59) | Count retained source in persisted content budgets                   | #58                |
+| [#60](https://github.com/alexanderwanyoike/prezi/pull/60) | Verify and deliver the follow-up review fixes                        | #59                |
