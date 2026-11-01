@@ -1,10 +1,10 @@
 # Prezi
 
-A small local-first Electron presentation desk for narrated explanations. Built with strict TypeScript, React, Vite and Remotion. Recording happens in OBS or ClipForge.
+Local Electron presentation editor built with TypeScript, React and Remotion. Present with manual reveals; record using OBS or ClipForge.
 
-Checkpoint one covers phases 1-5: edit a text deck, save it locally, reopen it and present manually controlled animated reveals. Media import, independent video playback, portable projects and source inspection extend checkpoint two. Shared MCP editing and validated custom Remotion scenes are available, with editable instance properties and canvas text editing. Human code authoring uses saved drafts and explicit Apply validation.
+Human and MCP clients edit the same project, including custom Remotion scenes, media, fonts and programmable transitions. Code drafts save with portable projects and use explicit Apply validation.
 
-![Dark editor](docs/screenshots/editor-dark.png)
+![Dark editor](docs/screenshots/editor-without-filler.png)
 
 ## Run
 
@@ -34,13 +34,10 @@ Build native installers with `yarn package:make --linux --x64`, `--win --x64` or
 - Missing media can be repaired with **Locate replacement…** in Media properties. **Locate font…** in Presentation theme repairs a font registration and its theme references. Replacements retain placement/playback and supplied credits, with shared Undo.
 - **File > Import font** adds TTF/OTF/WOFF/WOFF2 to the project. Choose it in Presentation theme and retain supplied source/attribution and licence text there. Fonts travel inside portable saves.
 - **View > Presentation theme** controls saved deck colours, fonts, canvas padding, entrance motion and crossfade timing. Reusable layouts use it directly; custom code receives `SceneProps.theme`. Application Appearance remains a local preference.
-- Choose **Title / chapter** or **Text / reveals**. Enter one reveal per line, up to 30. Use the reveal buttons to preview any step or **Restart preview** to replay the initial entrance.
 - Undo and redo operate on content edits. Each accepted edit batch is one undo action; typing creates successive edits. The Edit menu and button tooltips show the next action label, including agent batches. History holds up to 50 batches for the open deck and resets when opening or creating a project.
-- Missing media can be repaired with **Locate replacement…** in Media properties. **Locate font…** in Presentation theme repairs a font registration and its theme references. Replacements retain placement/playback and supplied credits, with shared Undo.
-- **File > Import font** adds TTF/OTF/WOFF/WOFF2 to the project. Choose it in Presentation theme and retain supplied source/attribution and licence text there. Fonts travel inside portable saves.
-- **View > Presentation theme** controls saved deck colours, fonts, canvas padding, entrance motion and crossfade timing. Reusable layouts use it directly; custom code receives `SceneProps.theme`. Application Appearance remains a local preference.
 - Choose **Title / chapter**, **Text / reveals**, **Code explanation** or **Process / workflow** in Layout. Diagram stages and code notes use manual reveal steps. The starting Vibez example includes a small generated video; portable saves include it.
 - The **Canvas / Code** tabs switch the workspace view. **Code** opens Remotion components, schemas and presentation styles. Choose **Create custom scene** or **Edit scene code** to edit TSX/TS/JSON drafts and declared properties. Drafts save with the project; **Apply scene code** validates before replacing the working scene. Invalid source preserves the last working version. Built-in references and **Slide properties** are read-only. See [code authoring](docs/verification/scene-code-editor.md).
+- **Code > Transition** edits transition source and staged properties. **Apply transition code** validates numeric motion samples; failed code retains the working transition. Space still controls progression. See [transition authoring](docs/verification/transition-code-editor.md).
 - **File > Import media** copies a local image or video into the open deck. Image slides use a text-and-media composition. Remove the asset from the inspector or undo its import. Use the inspector to position/resize media and choose contain or cover. Video has autoplay, looping, mute and volume settings; hover it for play/pause/restart controls.
 - Default saves create a single `.prezi` file containing deck content, scene source, local media, built-in fonts and their licences. Move that file on its own. Legacy JSON projects still use an adjacent `<project path>.assets` directory.
 - **File > Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.
