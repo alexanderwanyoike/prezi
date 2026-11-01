@@ -42,15 +42,17 @@ it('reports queue saturation as a conflict rather than a cancellation', async ()
   const first = work.run(
     () =>
       new Promise<Result<void>>((resolve) => {
-        finish = () => resolve({ ok: true, value: undefined });
+        finish = () => {
+          resolve({ ok: true, value: undefined });
+        };
       }),
     new AbortController().signal,
   );
   const pending = Array.from({ length: 3 }, () =>
-    work.run(async () => ({ ok: true, value: undefined }), new AbortController().signal),
+    work.run(() => Promise.resolve({ ok: true, value: undefined }), new AbortController().signal),
   );
   const rejected = await work.run(
-    async () => ({ ok: true, value: undefined }),
+    () => Promise.resolve({ ok: true, value: undefined }),
     new AbortController().signal,
   );
   finish();

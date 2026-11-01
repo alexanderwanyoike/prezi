@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { resultSchema } from './result';
 
 export const updateStateSchema = z.discriminatedUnion('stage', [
   z.object({ stage: z.literal('disabled'), reason: z.string() }),
@@ -20,22 +21,6 @@ export const updateSnapshotSchema = z.object({
   installedVersion: z.string(),
   state: updateStateSchema,
 });
-export const updateResultSchema = z.union([
-  z.object({ ok: z.literal(true), value: updateSnapshotSchema }),
-  z.object({
-    ok: z.literal(false),
-    error: z.object({
-      code: z.enum([
-        'INVALID_INPUT',
-        'CONFLICT',
-        'REQUEST_REUSED',
-        'NOT_FOUND',
-        'IO_ERROR',
-        'CANCELLED',
-      ]),
-      message: z.string(),
-    }),
-  }),
-]);
+export const updateResultSchema = resultSchema(updateSnapshotSchema);
 export type UpdateSnapshot = z.infer<typeof updateSnapshotSchema>;
 export type UpdateCommand = 'check' | 'download' | 'install';

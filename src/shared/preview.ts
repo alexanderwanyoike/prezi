@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { resultSchema } from './result';
 import type { Project, Slide } from './project';
 import { slideSchema } from './project';
 import { presentationThemeSchema } from './presentation-theme';
@@ -23,27 +24,8 @@ export const previewJobSchema = z.object({
   image: previewImageSchema.optional(),
   error: z.object({ code: z.string(), message: z.string() }).optional(),
 });
-export const previewResultSchema = z.discriminatedUnion('ok', [
-  z.object({ ok: z.literal(true), value: previewJobSchema }),
-  z.object({
-    ok: z.literal(false),
-    error: z.object({
-      code: z.enum([
-        'INVALID_INPUT',
-        'CONFLICT',
-        'REQUEST_REUSED',
-        'NOT_FOUND',
-        'IO_ERROR',
-        'CANCELLED',
-      ]),
-      message: z.string(),
-    }),
-  }),
-]);
-export const previewListResultSchema = z.discriminatedUnion('ok', [
-  z.object({ ok: z.literal(true), value: z.array(previewJobSchema).max(16) }),
-  previewResultSchema.options[1],
-]);
+export const previewResultSchema = resultSchema(previewJobSchema);
+export const previewListResultSchema = resultSchema(z.array(previewJobSchema).max(16));
 export type PreviewRequest = z.infer<typeof previewRequestSchema>;
 export type PreviewJob = z.infer<typeof previewJobSchema>;
 export type PreviewImage = z.infer<typeof previewImageSchema>;

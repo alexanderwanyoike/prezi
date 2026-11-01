@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { appErrorSchema } from './result';
 
 export const scenePathSchema = z
   .string()
@@ -43,16 +44,7 @@ export const compilationSchema = z.discriminatedUnion('ok', [
   }),
   z.object({
     ok: z.literal(false),
-    error: z.object({
-      code: z.enum([
-        'INVALID_INPUT',
-        'CONFLICT',
-        'REQUEST_REUSED',
-        'NOT_FOUND',
-        'IO_ERROR',
-        'CANCELLED',
-      ]),
-      message: z.string(),
+    error: appErrorSchema.extend({
       diagnostics: z
         .array(
           z.object({ file: z.string(), line: z.number(), column: z.number(), message: z.string() }),

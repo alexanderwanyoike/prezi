@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { resultSchema } from './result';
 import { sceneCandidateSchema, sceneValuesSchema } from './scene-definition';
 import { compilationSchema } from './custom-scene';
 
@@ -31,22 +32,6 @@ export const sceneJobSchema = z.object({
     })
     .optional(),
 });
-export const sceneJobResultSchema = z.discriminatedUnion('ok', [
-  z.object({ ok: z.literal(true), value: sceneJobSchema }),
-  z.object({
-    ok: z.literal(false),
-    error: z.object({
-      code: z.enum([
-        'INVALID_INPUT',
-        'CONFLICT',
-        'REQUEST_REUSED',
-        'NOT_FOUND',
-        'IO_ERROR',
-        'CANCELLED',
-      ]),
-      message: z.string(),
-    }),
-  }),
-]);
+export const sceneJobResultSchema = resultSchema(sceneJobSchema);
 export type SceneJobRequest = z.infer<typeof sceneJobRequestSchema>;
 export type SceneJob = z.infer<typeof sceneJobSchema>;

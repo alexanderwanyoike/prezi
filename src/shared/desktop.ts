@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { resultSchema } from './result';
 import type { SceneJob, SceneJobRequest } from './scene-jobs';
 import type { TransitionRequest } from './transition';
 import type { PreviewJob, PreviewRequest } from './preview';
@@ -19,23 +20,7 @@ export const snapshotSchema = z.object({
   canRedo: z.boolean(),
   filePath: z.string().nullable(),
 });
-export const snapshotResultSchema = z.union([
-  z.object({ ok: z.literal(true), value: snapshotSchema }),
-  z.object({
-    ok: z.literal(false),
-    error: z.object({
-      code: z.enum([
-        'INVALID_INPUT',
-        'CONFLICT',
-        'REQUEST_REUSED',
-        'NOT_FOUND',
-        'IO_ERROR',
-        'CANCELLED',
-      ]),
-      message: z.string(),
-    }),
-  }),
-]);
+export const snapshotResultSchema = resultSchema(snapshotSchema);
 export interface DesktopBridge {
   platform: NodeJS.Platform;
   submitTransition: (request: TransitionRequest) => Promise<Result<SceneJob>>;
@@ -75,22 +60,6 @@ export interface DesktopBridge {
   subscribe: (listener: (snapshot: ProjectSnapshot) => void) => () => void;
 }
 
-export const fullscreenResultSchema = z.union([
-  z.object({ ok: z.literal(true), value: z.boolean() }),
-  z.object({
-    ok: z.literal(false),
-    error: z.object({
-      code: z.enum([
-        'INVALID_INPUT',
-        'CONFLICT',
-        'REQUEST_REUSED',
-        'NOT_FOUND',
-        'IO_ERROR',
-        'CANCELLED',
-      ]),
-      message: z.string(),
-    }),
-  }),
-]);
+export const fullscreenResultSchema = resultSchema(z.boolean());
 
 export const booleanResultSchema = fullscreenResultSchema;

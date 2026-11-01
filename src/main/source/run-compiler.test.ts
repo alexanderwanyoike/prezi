@@ -53,3 +53,12 @@ it('cancels a running compiler and returns its resource boundary', async () => {
   expect(result.error.message).toContain('cancelled');
   expect(result.error.code).toBe('CANCELLED');
 });
+
+it('reports a missing worker as an environment failure', async () => {
+  const result = await runCompiler(
+    { entry: 'Scene.tsx', files: { 'Scene.tsx': 'export default()=>null' } },
+    new AbortController().signal,
+    `/nonexistent/prezi-worker-${crypto.randomUUID()}`,
+  );
+  expect(result).toMatchObject({ ok: false, error: { code: 'IO_ERROR' } });
+});
