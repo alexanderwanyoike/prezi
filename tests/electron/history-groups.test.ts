@@ -86,7 +86,9 @@ test('groups code typing and live colour input without losing the previous undo 
       const slide = state.value.project.slides[0];
       const draft = slide ? state.value.project.drafts?.[slide.id] : null;
       if (!draft || !slide) throw Error('No draft');
-      return { id: slide.id, entry: draft.entry, text: draft.files[draft.entry] };
+      const text = draft.files[draft.entry];
+      if (text === undefined) throw Error('No source file');
+      return { id: slide.id, entry: draft.entry, text };
     });
     const editor = page.getByRole('textbox', { name: 'Scene source code' });
     await editor.press('Control+End');
@@ -107,13 +109,13 @@ test('groups code typing and live colour input without losing the previous undo 
     await accent.focus();
     await accent.evaluate((element) => {
       if (!(element instanceof HTMLInputElement)) throw Error('No colour input');
-      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-      if (!set) throw Error('No native input setter');
+      const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+      if (!descriptor?.set) throw Error('No native input setter');
       Array.from(
         { length: 60 },
         (_, index) => `#${(0x00ff00 + index).toString(16).padStart(6, '0')}`,
       ).forEach((value) => {
-        set.call(element, value);
+        descriptor.set?.call(element, value);
         element.dispatchEvent(new Event('input', { bubbles: true }));
       });
     });
