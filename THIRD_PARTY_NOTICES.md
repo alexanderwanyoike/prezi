@@ -75,3 +75,7 @@ The CSP sandbox response-header pattern follows the browser directive documented
 Remotion's custom presentation pattern supplies explicit progress, entering/exiting direction and passed properties: https://www.remotion.dev/docs/transitions/presentations/custom . This informs the transition function contract; Remotion interpolation/easing functions execute in the existing isolated worker. Editor playback uses the retained bounded numeric samples. No upstream implementation code was copied; the existing Remotion licence applies to the dependency.
 
 Presentation applies those samples through the browser Web Animations API. The existing Remotion progress/direction pattern informs the two scene roles; no additional animation library or upstream code was added.
+
+## Canvas frame editing
+
+The W3C Pointer Events capture/cancellation pattern informs canvas gestures: https://www.w3.org/TR/pointerevents3/ . Movement stays local until pointer release and uses the existing revisioned project commands. No implementation code or additional gesture library was copied. Declared layer frames take precedence over source styles; numeric field limits and composition bounds constrain gestures.

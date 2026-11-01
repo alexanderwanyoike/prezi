@@ -31,7 +31,7 @@ The default port is 39471. Set `PREZI_MCP_PORT` to another available port before
 | `import_media`   | Register an absolute local image/video path as one reversible edit                   |
 | `undo` / `redo`  | Shared content history with revision guards and retry IDs                            |
 
-Editable text element IDs are `<slide UUID>:heading` and `<slide UUID>:body`. Imported media uses `<slide UUID>:media`. Pass null for the element to select the slide itself. Media positioning currently uses the inspector and `updateMedia` properties; canvas drag handles follow separately.
+Editable text element IDs are `<slide UUID>:heading` and `<slide UUID>:body`. Imported media uses `<slide UUID>:media`. Pass null for the element to select the slide itself. Media and custom layers with declared numeric frame mappings support Canvas move/resize handles. Each completed gesture publishes one shared edit and Undo action; Escape or pointer cancellation restores the previous frame. Media controls remain independent.
 
 For an edit, first read the latest project revision. Supply a unique request ID, a short human-readable label and operations. A stale revision or invalid operation rejects the whole batch. Agent labels appear as `Agent: <label>` in the UI. Keep related operations in one batch so the human can undo them together. Undo/redo affect the shared chronological content history, including human work; read their labels before invoking them.
 
