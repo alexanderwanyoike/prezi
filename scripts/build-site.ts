@@ -1,5 +1,5 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Result } from '../src/shared/result';
 
@@ -7,7 +7,7 @@ export async function buildSite(_release: unknown, directory: string): Promise<R
   await mkdir(directory, { recursive: true });
   await writeFile(
     join(directory, 'index.html'),
-    await readFile(new URL('../site/index.html', import.meta.url)),
+    await readFile(resolve('site/index.html')),
   );
   return { ok: true, value: undefined };
 }
