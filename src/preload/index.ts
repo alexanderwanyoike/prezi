@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { sourceCatalogResultSchema } from '../shared/reference-sources';
 import { sceneJobResultSchema } from '../shared/scene-jobs';
 import { previewResultSchema, previewListResultSchema, previewJobSchema } from '../shared/preview';
 import { fullscreenResultSchema, snapshotResultSchema, snapshotSchema } from '../shared/desktop';
@@ -45,6 +46,15 @@ async function sceneRequest(
   }
 }
 const bridge: DesktopBridge = {
+  async sourceCatalog(id) {
+    try {
+      const input: unknown = await ipcRenderer.invoke('project:sources', id);
+      const parsed = sourceCatalogResultSchema.safeParse(input);
+      return parsed.success ? parsed.data : failure('IO_ERROR', 'The source catalog was invalid.');
+    } catch {
+      return failure('IO_ERROR', 'The source catalog could not be read.');
+    }
+  },
   platform: process.platform,
   submitTransition: (input) => sceneRequest('submit', input, 'transitions'),
   transitionJob: (id) => sceneRequest('read', id, 'transitions'),

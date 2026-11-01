@@ -14,6 +14,16 @@ export function registerProjectIpc(window: BrowserWindow, owner: ProjectOwner): 
       return run(input);
     });
   }
+  ipcMain.handle('project:sources', (event, input: unknown) => {
+    if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame)
+      return failure('INVALID_INPUT', 'Untrusted source request.');
+    const id = z.uuid().safeParse(input);
+    if (!id.success) return failure('INVALID_INPUT', 'A valid source catalog ID is required.');
+    const catalog = owner.sourceCatalog();
+    return catalog.id === id.data
+      ? { ok: true, value: catalog }
+      : failure('CONFLICT', 'The source catalog changed. Read the current project.');
+  });
   handle('project:snapshot', () => ({ ok: true, value: owner.snapshot() }));
   handle('project:edit', (input) => {
     const parsed = z

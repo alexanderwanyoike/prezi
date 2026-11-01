@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { SourceCatalog } from './reference-sources';
 import { resultSchema } from './result';
 import type { SceneJob, SceneJobRequest } from './scene-jobs';
 import type { TransitionRequest } from './transition';
@@ -11,6 +12,7 @@ import type { Result } from './result';
 import type { EditRequest, ProjectSnapshot } from './project';
 
 export const snapshotSchema = z.object({
+  sourceCatalogId: z.uuid(),
   project: projectSchema,
   revision: z.number().int().nonnegative(),
   dirty: z.boolean(),
@@ -22,6 +24,7 @@ export const snapshotSchema = z.object({
 });
 export const snapshotResultSchema = resultSchema(snapshotSchema);
 export interface DesktopBridge {
+  sourceCatalog: (id: string) => Promise<Result<SourceCatalog>>;
   platform: NodeJS.Platform;
   submitTransition: (request: TransitionRequest) => Promise<Result<SceneJob>>;
   transitionJob: (id: string) => Promise<Result<SceneJob>>;

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Braces, FileCode2, Plus, Trash2 } from 'lucide-react';
+import { useReferenceSources } from './useReferenceSources';
 import { CodeResourceTabs } from './CodeResourceTabs';
 import type { CodeResource } from './CodeResourceTabs';
 import { TransitionCodeView } from './TransitionCodeView';
@@ -26,7 +27,11 @@ function SceneCodeView({
   edit,
   flush,
   tabs,
-}: CodeViewProps & { tabs: ReactNode }): React.JSX.Element {
+  referenceSources,
+}: CodeViewProps & {
+  tabs: ReactNode;
+  referenceSources: Record<string, string>;
+}): React.JSX.Element {
   const editor = useSceneDraft(project, slide, pending, edit, flush);
   const { draft } = editor;
   const definition = project.scenes?.[slide.scene?.definitionId ?? ''];
@@ -40,6 +45,7 @@ function SceneCodeView({
   const [fileError, setFileError] = useState<string | null>(null);
   const sources = projectSources({
     ...project,
+    sources: referenceSources,
     drafts: draft
       ? { ...project.drafts, [slide.id]: draft }
       : withoutSceneDraft(project.drafts, slide.id),
@@ -244,6 +250,7 @@ function SceneCodeView({
 }
 
 export function CodeView({
+  catalogId,
   project,
   slide,
   pending,
@@ -252,9 +259,11 @@ export function CodeView({
   resource,
   selectResource,
 }: CodeViewProps & {
+  catalogId: string;
   resource: CodeResource;
   selectResource: (resource: CodeResource) => void;
 }): React.JSX.Element {
+  const catalog = useReferenceSources(catalogId);
   const tabs = <CodeResourceTabs resource={resource} select={selectResource} />;
   if (resource === 'transition')
     return (
@@ -266,8 +275,15 @@ export function CodeView({
         tabs={tabs}
       />
     );
+  if (!catalog.files)
+    return (
+      <main className="workspace" role={catalog.error ? 'alert' : 'status'}>
+        {catalog.error ?? 'Opening scene source…'}
+      </main>
+    );
   return (
     <SceneCodeView
+      referenceSources={catalog.files}
       key={`${slide.id}:${slide.scene?.definitionId ?? 'built-in'}`}
       project={project}
       slide={slide}

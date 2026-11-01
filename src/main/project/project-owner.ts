@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { builtInSceneSources } from '../../shared/scene-sources';
+import type { SourceCatalog } from '../../shared/reference-sources';
 import { assetCreditSchema } from '../../shared/asset-credit';
 import type { AssetCredit } from '../../shared/asset-credit';
 import { fontCreditSchema } from '../../shared/fonts';
@@ -274,6 +276,17 @@ export class ProjectOwner {
     }
   }
 
+  private referenceSources: Project['sources'];
+
+  private sourceCatalogId: string = crypto.randomUUID();
+
+  sourceCatalog(): SourceCatalog {
+    return {
+      id: this.sourceCatalogId,
+      files: structuredClone(this.referenceSources ?? builtInSceneSources),
+    };
+  }
+
   private project: Project = createProject();
 
   private revision = 0;
@@ -295,6 +308,7 @@ export class ProjectOwner {
   snapshot(): ProjectSnapshot {
     return {
       project: structuredClone(this.project),
+      sourceCatalogId: this.sourceCatalogId,
       revision: this.revision,
       dirty: JSON.stringify(this.project) !== this.savedContent,
       undoLabel: this.past.at(-1)?.label ?? null,
@@ -317,6 +331,8 @@ export class ProjectOwner {
       return failure('CONFLICT', 'The project changed or a file operation is running.');
     this.fileBusy = true;
     try {
+      this.referenceSources = undefined;
+      this.sourceCatalogId = crypto.randomUUID();
       this.project = {
         schemaVersion: 1,
         id: crypto.randomUUID(),
@@ -352,7 +368,10 @@ export class ProjectOwner {
     if (this.restarting || this.fileBusy)
       return failure('CONFLICT', 'Another file operation or restart is still running.');
     this.fileBusy = true;
-    const project = structuredClone(this.project);
+    const content = structuredClone(this.project);
+    const project: Project = this.referenceSources
+      ? { ...content, sources: this.referenceSources }
+      : content;
     try {
       const media = projectAssets(project);
       let result: Result<void>;
@@ -364,7 +383,7 @@ export class ProjectOwner {
         result = await writeProject(path, project);
       }
       if (!result.ok) return result;
-      this.savedContent = JSON.stringify(project);
+      this.savedContent = JSON.stringify(content);
       this.filePath = path;
       if (!path.toLowerCase().endsWith('.prezi')) this.assets.remember(path, media);
       this.listeners.forEach((listener) => {
@@ -401,7 +420,10 @@ export class ProjectOwner {
         project = result.value;
         this.assets.remember(path, projectAssets(project));
       }
-      this.project = project;
+      const { sources, ...content } = project;
+      this.referenceSources = sources;
+      this.sourceCatalogId = crypto.randomUUID();
+      this.project = content;
       this.savedContent = JSON.stringify(this.project);
       this.filePath = path;
       this.revision += 1;

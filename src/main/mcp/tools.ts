@@ -19,7 +19,7 @@ import type { ProjectSnapshot } from '../../shared/project';
 import type { Result } from '../../shared/result';
 import type { ProjectOwner } from '../project/project-owner';
 
-function summary(snapshot: ProjectSnapshot) {
+function summary(snapshot: ProjectSnapshot, referenceSources: Record<string, string>) {
   return {
     revision: snapshot.revision,
     dirty: snapshot.dirty,
@@ -45,7 +45,9 @@ function summary(snapshot: ProjectSnapshot) {
         provenance,
         noticeLength: license?.length ?? 0,
       })),
-      sourceFiles: Object.entries(projectSources(snapshot.project)).map(([path, source]) => ({
+      sourceFiles: Object.entries(
+        projectSources({ ...snapshot.project, sources: referenceSources }),
+      ).map(([path, source]) => ({
         path,
         length: source.length,
       })),
@@ -68,9 +70,6 @@ function toolResult(result: Result<unknown>) {
     isError: !result.ok,
   };
 }
-function changed(result: Result<ProjectSnapshot>) {
-  return toolResult(result.ok ? { ok: true, value: summary(result.value) } : result);
-}
 export function createToolServer(
   owner: ProjectOwner,
   workspace: WorkspaceOwner,
@@ -78,6 +77,11 @@ export function createToolServer(
   previews?: PreviewJobs,
   transitions?: TransitionJobs,
 ): McpServer {
+  function changed(result: Result<ProjectSnapshot>) {
+    return toolResult(
+      result.ok ? { ok: true, value: summary(result.value, owner.sourceCatalog().files) } : result,
+    );
+  }
   const server = new McpServer(
     { name: 'prezi', version: '0.1.0' },
     {
@@ -143,7 +147,7 @@ export function createToolServer(
     },
     ({ path, offset, length }) => {
       const snapshot = owner.snapshot();
-      const sources = projectSources(snapshot.project);
+      const sources = projectSources({ ...snapshot.project, sources: owner.sourceCatalog().files });
       const source = Object.hasOwn(sources, path) ? sources[path] : undefined;
       return toolResult(
         source === undefined

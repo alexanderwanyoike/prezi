@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { referenceSourcesSchema } from './reference-sources';
 import { transitionDefinitionSchema, transitionDraftSchema } from './transition';
 import { fontSchema, fontCreditSchema } from './fonts';
 import { presentationThemeSchema } from './presentation-theme';
@@ -29,17 +30,7 @@ export const projectSchema = z
       .record(z.uuid(), sceneDefinitionSchema)
       .refine((scenes) => Object.keys(scenes).length <= 32)
       .optional(),
-    sources: z
-      .record(
-        z.string().regex(/^(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:tsx?|css|json)$/),
-        z.string().max(250000),
-      )
-      .refine(
-        (sources) =>
-          Object.keys(sources).length <= 128 &&
-          Object.values(sources).reduce((sum, source) => sum + source.length, 0) <= 1000000,
-      )
-      .optional(),
+    sources: referenceSourcesSchema.optional(),
     schemaVersion: z.literal(1),
     id: z.uuid(),
     name: z.string().min(1).max(200),
@@ -85,6 +76,7 @@ export const projectSchema = z
 export type Slide = z.infer<typeof slideSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export interface ProjectSnapshot {
+  sourceCatalogId: string;
   project: Project;
   revision: number;
   dirty: boolean;

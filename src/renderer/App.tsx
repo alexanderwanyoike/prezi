@@ -259,6 +259,7 @@ export function App(): React.JSX.Element {
               }
             >
               <CodeView
+                catalogId={snapshot.sourceCatalogId}
                 resource={codeResource}
                 selectResource={setCodeResource}
                 project={snapshot.project}
