@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Annotation, EditorState, Transaction } from '@codemirror/state';
 import { drawSelection, EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, selectAll } from '@codemirror/commands';
@@ -80,7 +80,7 @@ export function SourceCode({
       view.destroy();
     };
   }, [name, editable, maxLength]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const view = editor.current;
     if (!view || (editable && pending) || view.state.doc.toString() === source) return;
     const anchor = Math.min(view.state.selection.main.anchor, source.length);
