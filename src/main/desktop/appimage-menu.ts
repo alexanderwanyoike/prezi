@@ -36,7 +36,7 @@ export async function integrateAppImage(
     ![appImage, dataHome, options.home, options.icon].every(
       (path) =>
         isAbsolute(path) &&
-        ![...path].some((character) => character < ' ' || character === '\u007f'),
+        !Array.from(path).some((character) => character < ' ' || character === '\u007f'),
     ) ||
     appImage.includes('=')
   )
