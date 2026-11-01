@@ -76,8 +76,8 @@ test('keeps focused inspector and canvas text in sync with MCP while preserving 
         })
       ).isError,
     ).not.toBe(true);
-    await expect(canvas).toHaveText('C12anvas collaboration');
-    await expect(heading).toHaveValue('C12anvas collaboration');
+    await expect(canvas).toHaveText('Canvas collaboration');
+    await expect(heading).toHaveValue('Canvas collaboration');
     await expect(canvas).toBeFocused();
     await desktop.evaluate(
       ({ dialog }, path) =>
