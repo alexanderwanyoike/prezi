@@ -1,3 +1,4 @@
+import type { AppError } from '../../shared/result';
 interface PendingWork<Input, Output> {
   input: Input;
   signal: AbortSignal;
@@ -12,7 +13,7 @@ export class WorkQueue<Input, Output> {
 
   constructor(
     private readonly execute: (input: Input, signal: AbortSignal) => Promise<Output>,
-    private readonly rejected: (message: string) => Output,
+    private readonly rejected: (message: string, code: AppError['code']) => Output,
     private readonly copy: (input: Input) => Input = structuredClone,
   ) {}
 
@@ -21,16 +22,17 @@ export class WorkQueue<Input, Output> {
     signal: AbortSignal,
     started: () => void = () => undefined,
   ): Promise<Output> {
-    if (signal.aborted) return Promise.resolve(this.rejected('Rendering work was cancelled.'));
+    if (signal.aborted)
+      return Promise.resolve(this.rejected('Rendering work was cancelled.', 'CANCELLED'));
     if (this.pending.length >= 3)
       return Promise.resolve(
-        this.rejected('The rendering queue is full. Wait for the current jobs.'),
+        this.rejected('The rendering queue is full. Wait for the current jobs.', 'CONFLICT'),
       );
     return new Promise((resolve) => {
       const abort = (): void => {
         this.pending = this.pending.filter((job) => job.resolve !== resolve);
         signal.removeEventListener('abort', abort);
-        resolve(this.rejected('Rendering work was cancelled.'));
+        resolve(this.rejected('Rendering work was cancelled.', 'CANCELLED'));
       };
       signal.addEventListener('abort', abort, { once: true });
       this.pending.push({
@@ -56,7 +58,9 @@ export class WorkQueue<Input, Output> {
     try {
       job.resolve(await this.execute(job.input, job.signal));
     } catch {
-      job.resolve(this.rejected('The compiler worker failed. The working scene was preserved.'));
+      job.resolve(
+        this.rejected('The rendering worker failed. The working scene was preserved.', 'IO_ERROR'),
+      );
     } finally {
       this.active = false;
       void this.advance();

@@ -5,7 +5,7 @@ import type { Result } from '../../shared/result';
 export class RenderWork {
   private queue = new WorkQueue<() => Promise<Result<void>>, Result<void>>(
     (run) => run(),
-    (message) => failure('CANCELLED', message),
+    (message, code) => failure(code, message),
     (run) => run,
   );
 
