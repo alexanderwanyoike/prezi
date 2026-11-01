@@ -15,7 +15,14 @@ export function registerProjectIpc(window: BrowserWindow, owner: ProjectOwner): 
     });
   }
   handle('project:snapshot', () => ({ ok: true, value: owner.snapshot() }));
-  handle('project:edit', (input) => owner.edit(input));
+  handle('project:edit', (input) => {
+    const parsed = z
+      .object({ request: z.unknown(), historyGroup: z.uuid().optional() })
+      .safeParse(input);
+    return parsed.success
+      ? owner.edit(parsed.data.request, parsed.data.historyGroup)
+      : failure('INVALID_INPUT', 'The editor edit request is invalid.');
+  });
   (['undo', 'redo'] as const).forEach((action) => {
     handle(`project:${action}`, (input) => {
       const revision = z.number().int().nonnegative().safeParse(input);

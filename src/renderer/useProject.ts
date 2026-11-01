@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { editorHistoryTarget } from './editor-history-target';
 import type { EditOperation, ProjectSnapshot } from '../shared/project';
 import type { Result } from '../shared/result';
 
@@ -7,6 +8,16 @@ export function useProject() {
   const [snapshot, setSnapshot] = useState<ProjectSnapshot | null>(null);
   const latest = useRef<ProjectSnapshot | null>(null);
   const queue = useRef(Promise.resolve());
+  const history = useRef<{ target: string; id: string; at: number } | null>(null);
+  useEffect(() => {
+    const reset = (): void => {
+      history.current = null;
+    };
+    window.addEventListener('focusin', reset);
+    return () => {
+      window.removeEventListener('focusin', reset);
+    };
+  }, []);
   const pending = useRef(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +35,8 @@ export function useProject() {
     return unsubscribe;
   }, [accept]);
   const dispatch = useCallback(
-    (action: Action): void => {
+    (action: Action, keepGroup = false): void => {
+      if (!keepGroup) history.current = null;
       pending.current += 1;
       setBusy(true);
       queue.current = queue.current
@@ -47,13 +59,25 @@ export function useProject() {
     [accept],
   );
   function edit(operations: EditOperation[], label: string): void {
-    dispatch((current) =>
-      window.prezi.edit({
-        requestId: crypto.randomUUID(),
-        expectedRevision: current.revision,
-        label,
-        operations,
-      }),
+    const target = editorHistoryTarget(operations, label);
+    const at = performance.now();
+    if (!target) history.current = null;
+    else if (history.current?.target === target && at - history.current.at < 500)
+      history.current.at = at;
+    else history.current = { target, at, id: crypto.randomUUID() };
+    const group = history.current?.id;
+    dispatch(
+      (current) =>
+        window.prezi.edit(
+          {
+            requestId: crypto.randomUUID(),
+            expectedRevision: current.revision,
+            label,
+            operations,
+          },
+          group,
+        ),
+      true,
     );
   }
   return {
