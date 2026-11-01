@@ -57,4 +57,4 @@ Every feature PR targets dev. These PRs are stacked because dev remains unmerged
 | [#33](https://github.com/alexanderwanyoike/prezi/pull/33) | Move and resize media and mapped custom layers on Canvas             | #32                |
 | [#34](https://github.com/alexanderwanyoike/prezi/pull/34) | Recover stalled custom scenes without blocking the editor            | #33                |
 | [#35](https://github.com/alexanderwanyoike/prezi/pull/35) | Bound image resources before import and decoder access               | #34                |
-| #36                                                       | Installed custom scenes and final recording verification             | #35                |
+| [#36](https://github.com/alexanderwanyoike/prezi/pull/36) | Portable font source and installed/recording verification            | #35                |
