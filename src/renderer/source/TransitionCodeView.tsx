@@ -53,6 +53,7 @@ export function TransitionCodeView({
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [fileError, setFileError] = useState<string | null>(null);
+  const feedbackJob = draft && editor.job?.state === 'complete' ? null : editor.job;
   return (
     <main
       className="workspace transition-source-workspace"
@@ -226,7 +227,7 @@ export function TransitionCodeView({
           </div>
           <SceneJobFeedback
             resource="transition"
-            job={editor.job}
+            job={feedbackJob}
             error={editor.error ?? fileError ?? (!metadata.ok ? metadata.error.message : null)}
             conflict={editor.conflict}
           />

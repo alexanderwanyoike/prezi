@@ -17,7 +17,9 @@ export function CustomSceneInspector({
   return (
     <div className="inspector-section">
       <span className="eyebrow">
-        {heading} / {definition.name}
+        {heading.toLowerCase() === definition.name.toLowerCase()
+          ? heading
+          : `${heading} / ${definition.name}`}
       </span>
       {Object.entries(definition.fields).map(([name, field]) => {
         const value = properties[name] ?? field.default;
