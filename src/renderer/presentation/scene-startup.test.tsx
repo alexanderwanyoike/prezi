@@ -83,7 +83,9 @@ it.each(['never loads', 'preparation stalls', 'only heartbeats'])(
     vi.stubGlobal('prezi', {
       prepareScene: () =>
         mode === 'preparation stalls'
-          ? new Promise<never>(() => undefined)
+          ? new Promise<never>(() => {
+              /* This bridge intentionally never replies. */
+            })
           : Promise.resolve({ ok: true, value: true }),
       stopScene: stopped,
     });
@@ -124,18 +126,19 @@ it.each(['never loads', 'preparation stalls', 'only heartbeats'])(
       await act(async () => {
         await Promise.resolve();
       });
+      const beat = setInterval(() => {
+        if (mode === 'only heartbeats')
+          window.dispatchEvent(
+            new MessageEvent('message', {
+              source: iframe.contentWindow,
+              data: { type: 'prezi:heartbeat' },
+            }),
+          );
+      }, 500);
       await act(async () => {
-        for (let index = 0; index < 22; index += 1) {
-          if (mode === 'only heartbeats')
-            window.dispatchEvent(
-              new MessageEvent('message', {
-                source: iframe.contentWindow,
-                data: { type: 'prezi:heartbeat' },
-              }),
-            );
-          await vi.advanceTimersByTimeAsync(500);
-        }
+        await vi.advanceTimersByTimeAsync(11000);
       });
+      clearInterval(beat);
       expect(view.getByRole('alert').textContent).toContain('did not become ready');
       expect(view.queryByTitle('Custom scene')).toBeNull();
       expect(ready).toHaveBeenCalledTimes(1);
