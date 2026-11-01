@@ -15,7 +15,7 @@ A local-first Electron presentation app for recording narrated explanations with
 - Presentation position: active slide and reveal, separate from content revisions.
 - Edit batch: labelled atomic content update checked against a revision and identified for retry safety; one undo action.
 
-Checkpoint one covers text editing, saving/reopening and manual Remotion presentation. Media and shared MCP editing complete checkpoint two. Custom scenes and desktop updates/installers are available. Human code authoring, fonts, previews and the recording rehearsal follow.
+All implementation checkpoints are complete: shared UI/MCP editing, manual Remotion presentation, custom scene and transition authoring, portable resources, previews, desktop updates and the external recording rehearsal. See docs/delivery.md for verification, limits and unmerged PR dependencies.
 
 - Presentation theme: saved, revisioned deck colours, fonts, spacing and motion defaults. Separate from application appearance. Custom source receives the resolved theme through SceneProps.
 

@@ -14,12 +14,13 @@ Ubuntu OBS packages were extracted privately without a host installation. Their 
 
 | Journey                                 | Kernel charged peak | Memory ceiling | CPU ceiling | Swap ceiling |
 | --------------------------------------- | ------------------: | -------------: | ----------: | -----------: |
-| Installed editor/custom scene checks    |           626.1 MiB |          2 GiB |     2 cores |            0 |
-| Latest 0.1.1 candidate packaging        |          1463.7 MiB |          2 GiB |      1 core |            0 |
-| Download/restart/update handoff         |          1044.2 MiB |          2 GiB |     2 cores |            0 |
+| Linux 0.1.0 AppImage packaging          |          1584.5 MiB |          2 GiB |      1 core |            0 |
+| Installed editor/custom scene checks    |           823.6 MiB |          2 GiB |     2 cores |            0 |
+| Latest 0.1.1 candidate packaging        |          1426.7 MiB |          2 GiB |      1 core |            0 |
+| Download/restart/update handoff         |          1035.1 MiB |          2 GiB |     2 cores |            0 |
 | Xvfb, installed Prezi and OBS rehearsal |           741.5 MiB |          2 GiB |     3 cores |            0 |
 
-These are cgroup charged peaks with warmed filesystem caches, not summed process RSS or universal memory guarantees. The installed custom-scene checks additionally use separately bounded compiler/scene scopes. Every measured parent scope reported zero OOM events. Linux compiler and renderer limits are covered by their separate verification notes; macOS/Windows do not have the Linux cgroup boundary.
+These are cgroup charged peaks with warmed filesystem caches, not summed process RSS or universal memory guarantees. These installed and update measurements follow the final viewer-readiness fix; the recorded built-in slides use the same presentation path as the rehearsal. The installed custom-scene checks additionally use separately bounded compiler/scene scopes. Every measured parent scope reported zero OOM events. Linux compiler and renderer limits are covered by their separate verification notes; macOS/Windows do not have the Linux cgroup boundary.
 
 ![Encoded initial fullscreen frame](../screenshots/recording-title.png)
 

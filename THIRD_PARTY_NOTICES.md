@@ -87,3 +87,11 @@ Electron's frame tree and process metrics identify the exact prepared scene rend
 ## Image resource limits
 
 image-size 2.0.2 supplies header-only image dimensions under MIT; its licence is retained at [licenses/image-size.txt](licenses/image-size.txt). Its documented buffer API and Forgecut's inspected image dimension limits inform validation before copying or serving image resources. Reads are bounded to 512 KiB; no dependency or reference-application source was copied. Reference: https://github.com/image-size/image-size/tree/v2.0.2 .
+
+## Isolated viewer readiness
+
+Penpal's postMessage connection handshake provides an established reference for waiting for a remote frame before sending calls: https://github.com/Aaronius/penpal . Penpal is MIT licensed. The existing runtime protocol uses a repeated readiness announcement with an instance identity before its single scene load. No Penpal dependency or implementation code was copied.
+
+## Linux CI controller delegation
+
+Docker's rootless resource-limit documentation describes delegating cpu, memory and pids controllers to the user systemd manager: https://docs.docker.com/engine/security/rootless/tips/#limiting-resources . This informs the ephemeral CI fixture needed to exercise enforced renderer budgets. No Docker implementation code was copied or added as a dependency.

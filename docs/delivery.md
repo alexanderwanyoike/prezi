@@ -4,10 +4,10 @@ All requested implementation checkpoints are complete. The application is availa
 
 ## Verification
 
-- The combined application passed formatting, lint, strict types, 75 unit tests and its production build. All 38 real Electron journeys passed on private displays.
+- The combined application passed formatting, lint, strict types, 77 unit tests and its production build. All 38 real Electron journeys passed on private displays.
 - Both installed Linux journeys passed, including isolated compilation, imported fonts, media controls, shared MCP state and portable reopening. The custom scene was also manually presented with its imported font and playing video.
 - The latest 0.1.0 to 0.1.1 AppImage update passed download/checksum validation, replacement, restart and saved-project recovery.
-- Application code at PR #35 passed all four native installer jobs and release-set assembly. The final verification PR extends installed coverage to custom scenes and fonts.
+- Linux x64, Windows x64, macOS arm64 and macOS x64 installer journeys and complete release-set assembly are covered by the [final verification PR checks](https://github.com/alexanderwanyoike/prezi/pull/36/checks), including custom scenes and imported fonts.
 - An actual OBS recording was decoded and inspected. See [recording rehearsal](verification/recording-rehearsal.md) for frames, counters and measured resource limits.
 
 ## Scope and current limits
@@ -57,4 +57,4 @@ Every feature PR targets dev. These PRs are stacked because dev remains unmerged
 | [#33](https://github.com/alexanderwanyoike/prezi/pull/33) | Move and resize media and mapped custom layers on Canvas             | #32                |
 | [#34](https://github.com/alexanderwanyoike/prezi/pull/34) | Recover stalled custom scenes without blocking the editor            | #33                |
 | [#35](https://github.com/alexanderwanyoike/prezi/pull/35) | Bound image resources before import and decoder access               | #34                |
-| [#36](https://github.com/alexanderwanyoike/prezi/pull/36) | Portable font source and installed/recording verification            | #35                |
+| [#36](https://github.com/alexanderwanyoike/prezi/pull/36) | Reliable installed custom scenes and final verification              | #35                |

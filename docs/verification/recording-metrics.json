@@ -35,5 +35,35 @@
     "cpu.max": "300000 100000",
     "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
   },
-  "heldVideoTimeSeconds": 4.757508
+  "heldVideoTimeSeconds": 4.757508,
+  "finalAcceptanceScopes": {
+    "final-package": {
+      "memory.peak": "1661489152",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+    },
+    "installed-final": {
+      "memory.peak": "863608832",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "200000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+    },
+    "final-candidate": {
+      "memory.peak": "1496014848",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+    },
+    "final-update": {
+      "memory.peak": "1085366272",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "200000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+    }
+  }
 }
