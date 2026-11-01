@@ -51,7 +51,7 @@ jobs:
       matrix:
         include:
           - target: linux-x64
-            os: ubuntu-22.04
+            os: ubuntu-latest
             flags: --linux --x64
             suffix: linux-x64.AppImage
           - target: windows-x64
