@@ -1,4 +1,5 @@
 import type { AppError } from '../../shared/result';
+
 interface PendingWork<Input, Output> {
   input: Input;
   signal: AbortSignal;
