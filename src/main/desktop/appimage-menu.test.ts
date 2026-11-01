@@ -55,3 +55,33 @@ it.each([
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+it('refreshes its own launcher after a move and preserves a user-owned launcher', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'prezi-menu-owner-'));
+  try {
+    const appImage = join(directory, 'Prezi.AppImage');
+    const moved = join(directory, 'Prezi moved.AppImage');
+    await writeFile(appImage, 'Original image');
+    await writeFile(moved, 'Moved image');
+    const options = {
+      platform: 'linux' as const,
+      packaged: true,
+      appImage,
+      home: directory,
+      dataHome: join(directory, 'data'),
+      icon: resolve('resources/icons/icon.png'),
+    };
+    expect((await integrateAppImage(options)).ok).toBe(true);
+    const entry = join(options.dataHome, 'applications/io.github.alexanderwanyoike.prezi.desktop');
+    expect((await integrateAppImage({ ...options, appImage: moved })).ok).toBe(true);
+    expect(await readFile(entry, 'utf8')).toContain(`Exec=env -- "${moved}"`);
+    expect(await readdir(join(options.dataHome, 'applications'))).toHaveLength(1);
+    const userEntry =
+      '[Desktop Entry]\nType=Application\nName=Prezi\nExec=/custom/Prezi.AppImage\n';
+    await writeFile(entry, userEntry);
+    expect((await integrateAppImage(options)).ok).toBe(true);
+    expect(await readFile(entry, 'utf8')).toBe(userEntry);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
