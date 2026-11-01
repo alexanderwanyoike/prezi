@@ -154,25 +154,11 @@ export function createProject(): Project {
   return {
     schemaVersion: 1,
     id: crypto.randomUUID(),
-    name: 'Vibez / how I built it',
+    name: 'Untitled presentation',
     slides: [
       {
         id: crypto.randomUUID(),
-        title: 'Vibez / how I built it',
-        body: '',
-        layout: 'title',
-        reveals: [],
-      },
-      {
-        id: crypto.randomUUID(),
-        title: 'Workflow',
-        body: '',
-        layout: 'process',
-        reveals: ['Planning', 'Implementation', 'Review', 'Human testing'],
-      },
-      {
-        id: crypto.randomUUID(),
-        title: 'Video demonstration',
+        title: '',
         body: '',
         layout: 'title',
         reveals: [],

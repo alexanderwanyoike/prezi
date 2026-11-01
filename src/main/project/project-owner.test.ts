@@ -22,9 +22,9 @@ describe('project editing', () => {
     undone.value.project.name = 'Another caller mutation';
     expect(owner.undo(1, 'private-undo')).toMatchObject({
       ok: true,
-      value: { project: { name: 'Vibez / how I built it' }, revision: 2 },
+      value: { project: { name: 'Untitled presentation' }, revision: 2 },
     });
-    expect(owner.snapshot().project.name).toBe('Vibez / how I built it');
+    expect(owner.snapshot().project.name).toBe('Untitled presentation');
   });
   it('labels history and retries an undo or redo without restoring a second batch', () => {
     const owner = new ProjectOwner();
@@ -101,7 +101,7 @@ describe('project editing', () => {
       duplicateId,
       ...originalIds,
     ]);
-    expect(owner.snapshot().project.slides).toHaveLength(4);
+    expect(owner.snapshot().project.slides).toHaveLength(2);
     expect(owner.snapshot().project.slides[0]?.title).toBe('A new thought');
     expect(
       owner.edit({
@@ -112,7 +112,7 @@ describe('project editing', () => {
       }),
     ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
     owner.undo(1);
-    expect(owner.snapshot().project.slides).toHaveLength(3);
+    expect(owner.snapshot().project.slides).toHaveLength(1);
   });
   it('undoes a labelled batch as one action and clears redo after a new edit', () => {
     const owner = new ProjectOwner();

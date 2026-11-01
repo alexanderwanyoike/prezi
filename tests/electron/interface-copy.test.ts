@@ -49,8 +49,20 @@ test('keeps a new deck and its code layout free of generated slide text', async 
   });
   try {
     const page = await desktop.firstWindow();
+    const initial = await page.evaluate(() => window.prezi.snapshot());
+    if (!initial.ok) throw Error(initial.error.message);
+    const previousHeading = await page
+      .getByRole('textbox', { name: 'Heading', exact: true })
+      .elementHandle();
     await page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
     await page.getByRole('menuitem', { name: 'New presentation', exact: true }).click();
+    await expect
+      .poll(async () => {
+        const current = await page.evaluate(() => window.prezi.snapshot());
+        return current.ok ? current.value.project.id : null;
+      })
+      .not.toBe(initial.value.project.id);
+    await expect.poll(() => previousHeading.evaluate((element) => element.isConnected)).toBe(false);
     await expect(page.getByRole('textbox', { name: 'Heading', exact: true })).toHaveValue('');
     await page.getByLabel('Layout', { exact: true }).selectOption('code');
     await expect(page.getByRole('textbox', { name: 'Code block', exact: true })).toHaveValue('');

@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('opens the isolated desktop with an editor ready for a local presentation', async () => {
   const desktop = await electron.launch({
@@ -12,6 +13,7 @@ test('opens the isolated desktop with an editor ready for a local presentation',
     ),
   });
   try {
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('heading', { name: 'Your presentation desk' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Appearance', exact: true })).toBeVisible({

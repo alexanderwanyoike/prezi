@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('pauses a pending native play request without showing a codec failure', async () => {
   const desktop = await electron.launch({
@@ -15,6 +16,7 @@ test('pauses a pending native play request without showing a codec failure', asy
     },
   });
   try {
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('button', { name: /^Slide 3:/ }).click();
     const video = page.locator('video');

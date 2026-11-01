@@ -34,6 +34,12 @@ test('ships a working Electron editor with fonts portable saving code and MCP', 
       });
     }, path);
     const page = await desktop.firstWindow();
+    await expect(page.getByRole('textbox', { name: 'Presentation name', exact: true })).toHaveValue(
+      'Untitled presentation',
+    );
+    await expect(page.getByRole('textbox', { name: 'Canvas heading', exact: true })).toHaveText('');
+    await expect(page.getByRole('button', { name: /^Slide \d+:/ })).toHaveCount(1);
+    await expect(page.locator('video')).toHaveCount(0);
     await page
       .getByRole('textbox', { name: 'Canvas heading', exact: true })
       .fill('An installed presentation desk');

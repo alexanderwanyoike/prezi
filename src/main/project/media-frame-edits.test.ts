@@ -1,15 +1,14 @@
 import { expect, it } from 'vitest';
-import { resolve } from 'node:path';
-import { ProjectOwner } from './project-owner';
+import { exampleOwner } from '../../../tests/fixtures/example-owner';
 
-it('merges coordinate edits independently instead of replacing other accepted frame properties', () => {
-  const owner = new ProjectOwner(resolve('tests/fixtures/held-video.webm'));
+it('merges coordinate edits independently instead of replacing other accepted frame properties', async () => {
+  const owner = await exampleOwner();
   const slide = owner.snapshot().project.slides[2];
   if (!slide) throw Error('No media slide');
   expect(
     owner.edit({
       requestId: 'coordinates',
-      expectedRevision: 0,
+      expectedRevision: 1,
       label: 'Independent coordinates',
       operations: [
         { type: 'updateMedia', slideId: slide.id, patch: { frame: { x: 900 } } },
@@ -27,12 +26,12 @@ it('merges coordinate edits independently instead of replacing other accepted fr
   expect(
     owner.edit({
       requestId: 'out-of-bounds',
-      expectedRevision: 1,
+      expectedRevision: 2,
       label: 'Invalid move',
       operations: [{ type: 'updateMedia', slideId: slide.id, patch: { frame: { width: 1900 } } }],
     }).ok,
   ).toBe(false);
   expect(owner.snapshot()).toEqual(accepted);
-  expect(owner.undo(1).ok).toBe(true);
+  expect(owner.undo(2).ok).toBe(true);
   expect(owner.snapshot().project.slides[2]?.media?.frame).toBeUndefined();
 });

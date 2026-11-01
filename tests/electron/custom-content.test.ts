@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('retains attached video and real reveal content when creating an editable custom scene', async () => {
   const desktop = await electron.launch({
@@ -20,6 +21,7 @@ test('retains attached video and real reveal content when creating an editable c
         showMessageBox: () => Promise.resolve({ response: 1, checkboxChecked: false }),
       }),
     );
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await page.getByRole('button', { name: /^Slide 3:/ }).click();
     await page.getByLabel('Reveal text', { exact: false }).fill('Planning\nHuman testing');

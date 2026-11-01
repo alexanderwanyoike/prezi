@@ -1,5 +1,6 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { openExample } from './open-example';
 
 test('presents manual reveals without repeated-key skipping or automatic progression', async () => {
   const desktop = await electron.launch({
@@ -12,6 +13,7 @@ test('presents manual reveals without repeated-key skipping or automatic progres
     ),
   });
   try {
+    await openExample(desktop);
     const page = await desktop.firstWindow();
     await expect(page.getByRole('button', { name: 'Present', exact: true })).toBeEnabled({
       timeout: 1500,
