@@ -15,7 +15,7 @@ export async function installVerified(
     const replaced = await replaceAppImage(file, path);
     if (!replaced.ok) return replaced;
     // The relaunch helper belongs to the old mount and may disappear during quit.
-    app.once('will-quit', () => {
+    app.once('quit', () => {
       const env = Object.fromEntries(
         Object.entries(process.env).filter(
           ([key]) =>
