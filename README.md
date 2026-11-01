@@ -29,7 +29,7 @@ Build native installers with `yarn package:make --linux --x64`, `--win --x64` or
 ## Work on a deck
 
 - Use the styled **File / Edit / View** application menu for document commands, editing and workspace views. The menus follow the selected theme; file pickers and save prompts use desktop dialogs.
-- Startup and **File > New presentation** create an untitled deck with one empty slide.
+- Startup and **File > New presentation** create an untitled deck with one empty slide and a neutral white-and-grey theme.
 - Use the slide rail and inspector to add, duplicate, delete, reorder and edit slides. At least one slide remains in the deck.
 - Click a heading or body on the canvas to type directly. Selection follows the same text property in the inspector; Escape or Enter leaves heading editing. Body text supports line breaks.
 - Select attached media or a custom layer with mapped frame properties to reveal move/resize handles. Each completed gesture creates one shared Undo action; Escape cancels. The inspector retains exact numeric controls.
@@ -46,7 +46,7 @@ Build native installers with `yarn package:make --linux --x64`, `--win --x64` or
 - Default saves create a single `.prezi` file containing deck content, scene source, local media, built-in fonts and their licences. Move that file on its own. Legacy JSON projects still use an adjacent `<project path>.assets` directory.
 - **File > Save**, **Save as** and **Open** use native file dialogs. Projects use versioned `.prezi` archives and are saved with a temporary file, sync and atomic rename. Existing `.prezi.json` files remain readable; use Save as to create a portable archive.
 - The app asks whether to save, discard or cancel before replacing or closing a changed deck. Failed saves and invalid imports leave the current deck open.
-- Appearance has Studio, Aluminium and Paper materials, light/dark modes and five accents. These preferences persist locally and do not change the deck's near-black/green visual theme.
+- Appearance has Studio, Aluminium and Paper materials, light/dark modes and five accents. These preferences persist locally and are separate from the deck's saved presentation theme.
 
 ## Application shortcuts
 
