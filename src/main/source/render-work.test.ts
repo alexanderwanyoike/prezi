@@ -34,3 +34,26 @@ it('serializes trusted render tasks and drops queued cancelled work without star
   expect(await third).toMatchObject({ ok: true });
   expect(started).toEqual(['compile', 'preview']);
 });
+
+it('reports queue saturation as a conflict rather than a cancellation', async () => {
+  const { RenderWork } = await import('./render-work');
+  const work = new RenderWork();
+  let finish: () => void = () => undefined;
+  const first = work.run(
+    () =>
+      new Promise<Result<void>>((resolve) => {
+        finish = () => resolve({ ok: true, value: undefined });
+      }),
+    new AbortController().signal,
+  );
+  const pending = Array.from({ length: 3 }, () =>
+    work.run(async () => ({ ok: true, value: undefined }), new AbortController().signal),
+  );
+  const rejected = await work.run(
+    async () => ({ ok: true, value: undefined }),
+    new AbortController().signal,
+  );
+  finish();
+  await Promise.all([first, ...pending]);
+  expect(rejected).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+});
