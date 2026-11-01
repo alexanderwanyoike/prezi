@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { copyFile, mkdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { copyFile, link, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import { failure } from '../../shared/result';
 import type { Result } from '../../shared/result';
@@ -28,6 +28,12 @@ export async function integrateAppImage(
   const entry = join(applications, 'io.github.alexanderwanyoike.prezi.desktop');
   const temporary = `${entry}.${randomUUID()}.tmp`;
   try {
+    const previous = await readFile(entry, 'utf8').catch((error: unknown) => {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return null;
+      throw error;
+    });
+    if (previous !== null && !previous.split(/\r?\n/).includes('X-Prezi-AppImage-Integration=true'))
+      return { ok: true, value: undefined };
     if (!(await stat(appImage)).isFile())
       return failure(
         'INVALID_INPUT',
@@ -52,7 +58,11 @@ export async function integrateAppImage(
       ].join('\n'),
       { flag: 'wx', mode: 0o644 },
     );
-    await rename(temporary, entry);
+    if (previous !== null) await rename(temporary, entry);
+    else
+      await link(temporary, entry).catch((error: unknown) => {
+        if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) throw error;
+      });
     return { ok: true, value: undefined };
   } catch {
     return failure(
