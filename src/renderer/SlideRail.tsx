@@ -93,7 +93,6 @@ export function SlideRail({
                     />
                   ) : (
                     <>
-                      <span className="mini-kicker">THE 0SMOSYS SHOW</span>
                       <strong>{slide.title}</strong>
                       <span className="mini-rule" />
                     </>

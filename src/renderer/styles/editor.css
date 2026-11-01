@@ -170,13 +170,6 @@ button.slide-card.is-selected {
   letter-spacing: -0.3px;
   font-weight: 600;
 }
-.mini-kicker {
-  font:
-    4px 'IBM Plex Mono',
-    monospace;
-  letter-spacing: 0.6px;
-  color: #90b69a;
-}
 .mini-rule {
   display: block;
   width: 20px;
@@ -423,9 +416,6 @@ button.accent-option[aria-pressed='true'] {
   }
   .brand-caption {
     display: none;
-  }
-  .scene-kicker {
-    font-size: 7px;
   }
   .scene-text p {
     margin-top: 14px;

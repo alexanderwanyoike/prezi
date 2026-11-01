@@ -47,20 +47,7 @@ export function SlideScene({
     >
       <div
         style={{
-          fontFamily: presentationFont(theme.monoFont),
-          fontSize: 18,
-          color: theme.accent,
-          letterSpacing: 4,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 20,
-        }}
-      >
-        <span style={{ width: 36, height: 2, backgroundColor: theme.accent }} />
-        THE 0SMOSYS SHOW
-      </div>
-      <div
-        style={{
+          marginBlock: 'auto',
           opacity: entrance,
           transform: `translateY(${(theme.animation === 'rise' ? (1 - entrance) * 14 : 0).toString()}px)`,
           maxWidth: slide.media ? 760 : 1664,

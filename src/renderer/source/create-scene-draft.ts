@@ -36,7 +36,6 @@ export default function Scene({reveal, reveals, hasMedia, props, theme}: ScenePr
   const opacity = reveal === 0 ? progress : 1;
   const width = hasMedia ? 760 : 1600;
   return <AbsoluteFill style={{background:theme.background, color:props.ink, fontFamily:theme.fontFamily}}>
-    <div style={{position:'absolute', left:theme.padding, top:120, fontSize:18, letterSpacing:4, color:theme.accent}}>THE 0SMOSYS SHOW</div>
     <Layer id="heading" style={{position:'absolute',left:theme.padding,top:360,width,opacity,fontSize:props.size,lineHeight:1.15,letterSpacing:-3}}><Text property="heading"/></Layer>
     <Layer id="body" style={{position:'absolute',left:theme.padding,top:590,width,fontSize:34,color:theme.muted}}><Text property="body"/></Layer>
     <div style={{position:'absolute',left:theme.padding,top:730,width,fontSize:30,lineHeight:1.7}}>{reveals.slice(0,reveal).map((text,index)=><div key={index} style={{opacity:index===reveal-1?progress:1}}>{text}</div>)}</div>
